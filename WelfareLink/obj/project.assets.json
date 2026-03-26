@@ -3081,23 +3081,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\2481864\\.nuget\\packages\\": {},
+    "C:\\Users\\2481427\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\2481864\\OneDrive - Cognizant\\Documents\\Project Welfare Link\\DEMO\\WelfareLink\\WelfareLink\\WelfareLink.csproj",
+      "projectUniqueName": "C:\\Users\\2481427\\OneDrive - Cognizant\\Documents\\Main Project Folder\\WelfareLink\\WelfareLink\\WelfareLink.csproj",
       "projectName": "WelfareLink",
-      "projectPath": "C:\\Users\\2481864\\OneDrive - Cognizant\\Documents\\Project Welfare Link\\DEMO\\WelfareLink\\WelfareLink\\WelfareLink.csproj",
-      "packagesPath": "C:\\Users\\2481864\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\2481864\\OneDrive - Cognizant\\Documents\\Project Welfare Link\\DEMO\\WelfareLink\\WelfareLink\\obj\\",
+      "projectPath": "C:\\Users\\2481427\\OneDrive - Cognizant\\Documents\\Main Project Folder\\WelfareLink\\WelfareLink\\WelfareLink.csproj",
+      "packagesPath": "C:\\Users\\2481427\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\2481427\\OneDrive - Cognizant\\Documents\\Main Project Folder\\WelfareLink\\WelfareLink\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\2481864\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\2481427\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],

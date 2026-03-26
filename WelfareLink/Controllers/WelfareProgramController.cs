@@ -1,16 +1,358 @@
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.Interfaces;
+using WelfareLink.Models;
+using WelfareLink.ViewModels;
 
-namespace WelfareLink.Controllers;
+namespace WelfareLink.Controllers
 
-[ApiController]
-[Route("api/[controller]")]
-public class WelfareProgramController : ControllerBase
 {
-    private readonly IWelfareProgramService _programService;
-
-    public WelfareProgramController(IWelfareProgramService programService)
+    public class WelfareProgramController : Controller
     {
-        _programService = programService;
+        private readonly IWelfareProgramService _programService;
+        private readonly IResourceService _resourceService;
+
+        public WelfareProgramController(IWelfareProgramService programService, IResourceService resourceService)
+        {
+            _programService = programService;
+            _resourceService = resourceService;
+        }
+
+        // GET: Program
+        public async Task<IActionResult> Index()
+        {
+            var programs = await _programService.GetAllProgramsAsync();
+            return View(programs);
+        }
+
+        // GET: Program/Dashboard
+        public async Task<IActionResult> Dashboard()
+        {
+            var programs = await _programService.GetAllProgramsAsync();
+
+            // Get all resources to calculate allocated funds
+            var allResources = await _resourceService.GetAllResourcesAsync();
+            ViewBag.AllResources = allResources;
+
+            return View(programs);
+        }
+
+        // GET: Program/Manage (Add new programme only)
+        public IActionResult Manage()
+        {
+            // Set default dates for new programme
+            var newProgram = new WelfareProgram
+            {
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today.AddMonths(6)
+            };
+            return View(newProgram);
+        }
+
+        // POST: Program/Manage
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Manage([Bind("ProgramID,Title,Description,StartDate,EndDate,Budget,Status")] WelfareProgram program)
+        {
+            // Remove Status validation for new programmes (Status is set by service layer)
+            if (program.ProgramID == 0)
+            {
+                ModelState.Remove("Status");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "[400 Bad Request] Please fill all required fields correctly.";
+                return View(program);
+            }
+
+            try
+            {
+                if (program.ProgramID == 0)
+                {
+                    await _programService.AddProgramAsync(program);
+                    TempData["SuccessMessage"] = "Programme created successfully!";
+                }
+                else
+                {
+                    await _programService.UpdateProgramAsync(program);
+                    TempData["SuccessMessage"] = "Programme updated successfully!";
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = $"[400 Bad Request] {ex.Message}";
+                return View(program);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "[500 Server Error] An unexpected error occurred. Please try again.";
+                return View(program);
+            }
+        }
+
+        // GET: Program/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                TempData["ErrorMessage"] = "[400 Bad Request] Programme ID is required.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var program = await _programService.GetProgramByIdAsync(id.Value);
+            if (program == null)
+            {
+                TempData["ErrorMessage"] = "[404 Not Found] Programme not found. It may have been deleted.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var resources = await _resourceService.GetResourcesByProgramIdAsync(id.Value);
+
+            var totalAllocatedFunds = resources
+                .Where(r => r.Type.Equals("Funds", StringComparison.OrdinalIgnoreCase))
+                .Sum(r => r.Quantity);
+
+            var totalAllocatedMaterials = resources
+                .Where(r => r.Type.Equals("Materials", StringComparison.OrdinalIgnoreCase))
+                .Sum(r => r.Quantity);
+
+            var utilisationPercentage = program.Budget > 0
+                ? (totalAllocatedFunds / program.Budget) * 100
+                : 0;
+
+            var viewModel = new ProgramDetailViewModel
+            {
+                Program = program,
+                Resources = resources,
+                ApplicationCount = 0,
+                TotalAllocatedFunds = totalAllocatedFunds,
+                TotalAllocatedMaterials = totalAllocatedMaterials,
+                UtilisationPercentage = utilisationPercentage,
+                RemainingBudget = program.Budget - totalAllocatedFunds,
+                IsBudgetCritical = utilisationPercentage >= 80
+            };
+
+            return View(viewModel);
+        }
+
+        // GET: Program/Create
+        public IActionResult Create()
+        {
+            // Set default dates to today
+            var newProgram = new WelfareProgram
+            {
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today.AddMonths(6) // Default to 6 months from now
+            };
+            return View(newProgram);
+        }
+
+        // POST: Program/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("ProgramID,Title,Description,StartDate,EndDate,Budget")] WelfareProgram program)
+        {
+            // Remove Status from validation (set by service layer)
+            ModelState.Remove("Status");
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "[400 Bad Request] Please fill all required fields correctly.";
+                return View(program);
+            }
+
+            try
+            {
+                await _programService.AddProgramAsync(program);
+                TempData["SuccessMessage"] = "Programme created successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = $"[400 Bad Request] {ex.Message}";
+                return View(program);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "[500 Server Error] An unexpected error occurred. Please try again.";
+                return View(program);
+            }
+        }
+
+        // GET: Program/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                TempData["ErrorMessage"] = "[400 Bad Request] Programme ID is required.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var program = await _programService.GetProgramByIdAsync(id.Value);
+            if (program == null)
+            {
+                TempData["ErrorMessage"] = "[404 Not Found] Programme not found. It may have been deleted.";
+                return RedirectToAction(nameof(Index));
+            }
+            return View(program);
+        }
+
+        // POST: Program/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("ProgramID,Title,Description,StartDate,EndDate,Budget,Status")] WelfareProgram program)
+        {
+            if (id != program.ProgramID)
+            {
+                TempData["ErrorMessage"] = "[400 Bad Request] Invalid programme ID.";
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "[400 Bad Request] Please fill all required fields correctly.";
+                return View(program);
+            }
+
+            try
+            {
+                await _programService.UpdateProgramAsync(program);
+                TempData["SuccessMessage"] = "Programme updated successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = $"[400 Bad Request] {ex.Message}";
+                return View(program);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "[500 Server Error] Failed to update programme. Please try again.";
+                return View(program);
+            }
+        }
+
+        // GET: Program/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                TempData["ErrorMessage"] = "[400 Bad Request] Programme ID is required.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var program = await _programService.GetProgramByIdAsync(id.Value);
+            if (program == null)
+            {
+                TempData["ErrorMessage"] = "[404 Not Found] Programme not found. It may have been deleted.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(program);
+        }
+
+        // POST: Program/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                await _programService.DeleteProgramAsync(id);
+                TempData["SuccessMessage"] = "Programme deleted successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = $"[400 Bad Request] {ex.Message}";
+                return RedirectToAction(nameof(Delete), new { id });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "[500 Server Error] Failed to delete programme. Please try again.";
+                return RedirectToAction(nameof(Delete), new { id });
+            }
+        }
+
+        // GET: Program/BudgetMonitoring
+        public async Task<IActionResult> BudgetMonitoring()
+        {
+            var programs = await _programService.GetAllProgramsAsync();
+            var budgetViewModels = new List<BudgetMonitoringViewModel>();
+
+            foreach (var program in programs)
+            {
+                var resources = await _resourceService.GetResourcesByProgramIdAsync(program.ProgramID);
+                var allocatedFunds = resources
+                    .Where(r => r.Type.Equals("Funds", StringComparison.OrdinalIgnoreCase))
+                    .Sum(r => r.Quantity);
+
+                var utilisationPercentage = program.Budget > 0
+                    ? (allocatedFunds / program.Budget) * 100
+                    : 0;
+
+                budgetViewModels.Add(new BudgetMonitoringViewModel
+                {
+                    ProgramID = program.ProgramID,
+                    ProgramTitle = program.Title,
+                    TotalBudget = program.Budget,
+                    AllocatedFunds = allocatedFunds,
+                    DisbursedFunds = 0,
+                    RemainingBudget = program.Budget - allocatedFunds,
+                    UtilisationPercentage = utilisationPercentage,
+                    Status = program.Status,
+                    IsCritical = utilisationPercentage >= 80
+                });
+            }
+
+            var dashboardViewModel = new BudgetDashboardViewModel
+            {
+                ProgramBudgets = budgetViewModels,
+                TotalBudgetAllPrograms = budgetViewModels.Sum(b => b.TotalBudget),
+                TotalAllocated = budgetViewModels.Sum(b => b.AllocatedFunds),
+                TotalRemaining = budgetViewModels.Sum(b => b.RemainingBudget),
+                CriticalProgramsCount = budgetViewModels.Count(b => b.IsCritical)
+            };
+
+            return View(dashboardViewModel);
+        }
+
+        // GET: Program/Performance
+        public async Task<IActionResult> Performance()
+        {
+            var programs = await _programService.GetAllProgramsAsync();
+            var performanceViewModels = new List<ProgramPerformanceViewModel>();
+
+            foreach (var program in programs)
+            {
+                var resources = await _resourceService.GetResourcesByProgramIdAsync(program.ProgramID);
+                var allocatedFunds = resources
+                    .Where(r => r.Type.Equals("Funds", StringComparison.OrdinalIgnoreCase))
+                    .Sum(r => r.Quantity);
+
+                var budgetUtilisation = program.Budget > 0
+                    ? (allocatedFunds / program.Budget) * 100
+                    : 0;
+
+                performanceViewModels.Add(new ProgramPerformanceViewModel
+                {
+                    ProgramID = program.ProgramID,
+                    ProgramTitle = program.Title,
+                    TotalApplications = 0,
+                    ApprovedApplications = 0,
+                    RejectedApplications = 0,
+                    PendingApplications = 0,
+                    ApprovalRate = 0,
+                    BenefitsDisbursed = 0,
+                    CitizenCount = 0,
+                    BudgetUtilisation = budgetUtilisation,
+                    Status = program.Status
+                });
+            }
+
+            return View(performanceViewModels);
+        }
     }
 }
+

@@ -1,0 +1,64 @@
+@model WelfareLink.Models.Resource
+
+@{
+    ViewData["Title"] = "Edit Resource";
+    Layout = "_LayoutPM";
+}
+
+<header>
+    <h1>Edit Resource</h1>
+    <p>Update resource allocation details and status.</p>
+</header>
+
+<div class="form-container" style="margin-bottom: 40px;">
+    <form asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ResourceID" />
+        <input type="hidden" asp-for="ProgramID" />
+
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label asp-for="ProgramID">Programme</label>
+                <select asp-for="ProgramID" asp-items="ViewBag.Programs" disabled>
+                </select>
+                <small style="color: #7f8c8d; font-size: 0.85rem;">Programme cannot be changed after creation</small>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Type">Resource Type</label>
+                <select asp-for="Type" asp-items="ViewBag.ResourceTypes">
+                </select>
+                <span asp-validation-for="Type" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Quantity">Quantity / Amount</label>
+                <input asp-for="Quantity" type="number" step="0.01" placeholder="0.00" />
+                <span asp-validation-for="Quantity" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Status">Resource Status</label>
+                <select asp-for="Status" asp-items="ViewBag.ResourceStatuses">
+                </select>
+                <span asp-validation-for="Status" class="text-danger"></span>
+                <small style="color: #7f8c8d; font-size: 0.85rem; margin-top: 5px; display: block;">
+                    <strong>Available:</strong> Ready | <strong>Reserved:</strong> Allocated | <strong>Depleted:</strong> Consumed
+                </small>
+            </div>
+        </div>
+
+        <div style="margin-top: 25px; padding-top: 15px; padding-bottom: 20px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            <div>
+                <a asp-action="Details" asp-route-id="@Model.ResourceID" class="btn btn-info" style="margin-right: 10px;">View Details</a>
+                <button type="submit" class="btn btn-primary">Update Resource</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+}

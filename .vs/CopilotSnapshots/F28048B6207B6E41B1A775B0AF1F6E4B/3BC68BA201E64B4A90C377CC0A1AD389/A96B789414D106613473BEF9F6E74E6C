@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WelfareLink</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <nav class="sidebar">
+            <h2>PM Dashboard</h2>
+            <a asp-controller="Program" asp-action="Dashboard" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active-link" : "")">Main Dashboard</a>
+            <a asp-controller="Program" asp-action="Index" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Program" ? "active-link" : "")">View All Programs</a>
+            <a asp-controller="Program" asp-action="Manage" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Manage" || ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active-link" : "")">Add Program</a>
+            <a asp-controller="Resource" asp-action="Index" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Resource" ? "active-link" : "")">View All Resources</a>
+            <a asp-controller="Resource" asp-action="AllocateForm" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Resource" && ViewContext.RouteData.Values["action"]?.ToString() == "AllocateForm" ? "active-link" : "")">Resource Allocation</a>
+            <a asp-controller="Resource" asp-action="UtilisationReport" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "UtilisationReport" ? "active-link" : "")">Utilization Overview</a>
+            <a asp-controller="Program" asp-action="BudgetMonitoring">Budget Monitoring</a>
+            <a asp-controller="Program" asp-action="Performance">Performance Dashboard</a>
+        </nav>
+
+        <main class="main-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-check-circle-fill"></i> <strong>[200 OK]</strong> @TempData["SuccessMessage"]
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        }
+        @if (TempData["WarningMessage"] != null)
+        {
+            <div class="toast align-items-center text-bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="6000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-exclamation-circle-fill"></i> <strong>[400]</strong> @TempData["WarningMessage"]
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        }
+        @if (TempData["InfoMessage"] != null)
+        {
+            <div class="toast align-items-center text-bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-info-circle-fill"></i> @TempData["InfoMessage"]
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-show toasts on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            var toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(function (toastElement) {
+                var toast = new bootstrap.Toast(toastElement);
+                toast.show();
+            });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

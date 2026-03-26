@@ -27,7 +27,7 @@ namespace WelfareLink
             builder.Services.AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>();
             builder.Services.AddScoped<IBenefitRepository, BenefitRepository>();
             builder.Services.AddScoped<IDisbursementRepository, DisbursementRepository>();
-            builder.Services.AddScoped<IWelfareProgramRepository, WelfareProgramRepository>();
+            builder.Services.AddScoped<IWelfareProgramRepository, WelfareProgramRespository>();
             builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
             builder.Services.AddScoped<IComplainceRecordRepository, ComplainceRecordRepository>();
             builder.Services.AddScoped<IAuditRepository, AuditRepository>();
