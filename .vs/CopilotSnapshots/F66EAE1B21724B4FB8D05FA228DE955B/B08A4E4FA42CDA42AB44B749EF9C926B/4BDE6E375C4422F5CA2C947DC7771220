@@ -1,0 +1,7 @@
+﻿using WelfareLink.Models;
+
+namespace WelfareLink.Interfaces;
+
+public interface IAuditRepository : IRepository<Audit>
+{
+}
