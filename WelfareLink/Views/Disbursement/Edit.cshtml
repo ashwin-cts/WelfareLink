@@ -1,0 +1,109 @@
+@model WelfareLink.Models.Disbursement
+
+@{
+    ViewData["Title"] = "Edit Disbursement";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-pencil-square"></i> Edit Disbursement #@Model?.DisbursementID</h1>
+    <a asp-action="Index" class="btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<div class="content-card">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <form asp-action="Edit" class="needs-validation" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <input type="hidden" asp-for="DisbursementID" />
+
+                <div class="row g-4">
+                    <div class="col-md-12">
+                        <div class="form-floating-modern">
+                            <label asp-for="BenefitID" class="form-label-modern">
+                                <i class="bi bi-gift"></i> Select Benefit
+                            </label>
+                            <select asp-for="BenefitID" class="form-select" asp-items="ViewBag.BenefitID" disabled>
+                                <option value="">-- Choose a Benefit --</option>
+                            </select>
+                            <input type="hidden" asp-for="BenefitID" />
+                            <span asp-validation-for="BenefitID" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-floating-modern">
+                            <label asp-for="Amount" class="form-label-modern">
+                                <i class="bi bi-currency-rupee"></i> Disbursement Amount
+                            </label>
+                            <input asp-for="Amount" class="form-control" />
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                            <small class="text-muted">Enter amount to disburse. If less than pending, balance will remain pending.</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-floating-modern">
+                            <label asp-for="CitizenID" class="form-label-modern">
+                                <i class="bi bi-person-circle"></i> Citizen ID
+                            </label>
+                            <input asp-for="CitizenID" class="form-control" />
+                            <span asp-validation-for="CitizenID" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-floating-modern">
+                            <label asp-for="OfficerID" class="form-label-modern">
+                                <i class="bi bi-person-badge"></i> Officer ID
+                            </label>
+                            <input asp-for="OfficerID" class="form-control" />
+                            <span asp-validation-for="OfficerID" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating-modern">
+                            <label asp-for="Date" class="form-label-modern">
+                                <i class="bi bi-calendar-event"></i> Disbursement Date
+                            </label>
+                            <input asp-for="Date" type="date" class="form-control" />
+                            <span asp-validation-for="Date" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating-modern">
+                            <label asp-for="Status" class="form-label-modern">
+                                <i class="bi bi-flag"></i> Status
+                            </label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="">Select Status</option>
+                                <option value="Completed">✅ Completed</option>
+                                <option value="Pending">⏳ Pending</option>
+                                <option value="Failed">❌ Failed</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex gap-3 justify-content-end">
+                    <a asp-action="Index" class="btn-modern btn-secondary-modern">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn-modern btn-primary-modern">
+                        <i class="bi bi-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

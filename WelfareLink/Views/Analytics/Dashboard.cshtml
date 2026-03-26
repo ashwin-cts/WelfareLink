@@ -1,0 +1,404 @@
+@model WelfareLink.ViewModels.AnalyticsDashboardViewModel
+
+@{
+    ViewData["Title"] = "Analytics Dashboard";
+}
+
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+    
+    .stat-icon.blue { background: linear-gradient(135deg, #e0f2fe, #bae6fd); color: #0369a1; }
+    .stat-icon.green { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #15803d; }
+    .stat-icon.yellow { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #a16207; }
+    .stat-icon.red { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #b91c1c; }
+    .stat-icon.purple { background: linear-gradient(135deg, #f3e8ff, #e9d5ff); color: #7c3aed; }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    
+    .stat-label {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+    
+    .progress-custom {
+        height: 10px;
+        border-radius: 5px;
+        background: #e2e8f0;
+        overflow: hidden;
+    }
+    
+    .progress-bar-custom {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 0.5s ease;
+    }
+    
+    .chart-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .chart-title {
+        font-weight: 600;
+        color: #1e3c72;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .type-bar {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .type-label {
+        width: 100px;
+        font-weight: 500;
+        color: #374151;
+    }
+    
+    .type-progress {
+        flex: 1;
+        margin: 0 15px;
+    }
+    
+    .type-value {
+        width: 80px;
+        text-align: right;
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.2s ease;
+    }
+    
+    .activity-item:hover {
+        background: #f8fafc;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
+    
+    .trend-chart {
+        display: flex;
+        align-items: flex-end;
+        height: 150px;
+        gap: 8px;
+        padding: 1rem 0;
+    }
+    
+    .trend-bar-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .trend-bars {
+        display: flex;
+        gap: 4px;
+        align-items: flex-end;
+        height: 120px;
+    }
+    
+    .trend-bar {
+        width: 20px;
+        border-radius: 4px 4px 0 0;
+        transition: height 0.3s ease;
+    }
+    
+    .trend-bar.allocated {
+        background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+    }
+    
+    .trend-bar.disbursed {
+        background: linear-gradient(180deg, #10b981, #059669);
+    }
+    
+    .trend-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        text-align: center;
+    }
+</style>
+
+<div class="page-header">
+    <h1><i class="bi bi-graph-up-arrow"></i> Analytics Dashboard</h1>
+    <span class="badge bg-primary">Manager View</span>
+</div>
+
+<!-- Summary Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon blue">
+                    <i class="bi bi-gift"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="stat-value">@Model.TotalAllocated</div>
+                    <div class="stat-label">Total Allocated</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon green">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="stat-value">@Model.TotalDisbursed</div>
+                    <div class="stat-label">Disbursed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon yellow">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="stat-value">@Model.TotalPending</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon red">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="stat-value">@Model.TotalFailed</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Financial & Efficiency Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center mb-3">
+                <div class="stat-icon purple">
+                    <i class="bi bi-currency-rupee"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="stat-value">₹@Model.TotalAmountAllocated.ToString("N0")</div>
+                    <div class="stat-label">Total Amount Allocated</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center mb-3">
+                <div class="stat-icon green">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="stat-value">₹@Model.TotalAmountDisbursed.ToString("N0")</div>
+                    <div class="stat-label">Total Amount Disbursed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <h6 class="text-muted mb-3">Disbursement Efficiency</h6>
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="stat-value" style="font-size: 1.5rem;">@Model.DisbursementEfficiency%</span>
+                <i class="bi bi-speedometer2 text-primary" style="font-size: 1.5rem;"></i>
+            </div>
+            <div class="progress-custom">
+                <div class="progress-bar-custom" style="width: @Model.DisbursementEfficiency%; background: linear-gradient(90deg, #10b981, #059669);"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Benefit Type Breakdown -->
+    <div class="col-md-6">
+        <div class="chart-card">
+            <h5 class="chart-title">
+                <i class="bi bi-pie-chart"></i> Disbursement by Benefit Type
+            </h5>
+            @if (Model.BenefitTypeBreakdowns.Any())
+            {
+                @foreach (var type in Model.BenefitTypeBreakdowns)
+                {
+                    var colorClass = type.Type?.ToLower() switch
+                    {
+                        "cash" => "#3b82f6",
+                        "food" => "#f59e0b",
+                        "medical" => "#ef4444",
+                        "education" => "#8b5cf6",
+                        "housing" => "#10b981",
+                        _ => "#64748b"
+                    };
+                    var disbursedPercentage = type.TotalAmount > 0 ? Math.Round(type.DisbursedAmount / type.TotalAmount * 100, 1) : 0;
+                    <div class="type-bar">
+                        <div class="type-label">@type.Type</div>
+                        <div class="type-progress">
+                            <div class="progress-custom">
+                                <div class="progress-bar-custom" style="width: @disbursedPercentage%; background: @colorClass;"></div>
+                            </div>
+                        </div>
+                        <div class="type-value">₹@type.DisbursedAmount.ToString("N0") / ₹@type.TotalAmount.ToString("N0")</div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                    <p class="mt-2">No data available</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Monthly Trends -->
+    <div class="col-md-6">
+        <div class="chart-card">
+            <h5 class="chart-title">
+                <i class="bi bi-bar-chart"></i> Monthly Disbursement Trends (Last 6 Months)
+            </h5>
+            <div class="trend-chart">
+                @{
+                    var maxValue = Model.MonthlyTrends.Any() ? 
+                        Math.Max(Model.MonthlyTrends.Max(t => t.AllocatedAmount), Model.MonthlyTrends.Max(t => t.DisbursedAmount)) : 1;
+                    if (maxValue == 0) maxValue = 1;
+                }
+                @foreach (var trend in Model.MonthlyTrends)
+                {
+                    var allocatedHeight = (int)(trend.AllocatedAmount / maxValue * 100);
+                    var disbursedHeight = (int)(trend.DisbursedAmount / maxValue * 100);
+                    <div class="trend-bar-group">
+                        <div class="trend-bars">
+                            <div class="trend-bar allocated" style="height: @(allocatedHeight)px;" title="Allocated: ₹@trend.AllocatedAmount.ToString("N0")"></div>
+                            <div class="trend-bar disbursed" style="height: @(disbursedHeight)px;" title="Disbursed: ₹@trend.DisbursedAmount.ToString("N0")"></div>
+                        </div>
+                        <div class="trend-label">@trend.Month.Substring(0, 3)</div>
+                    </div>
+                }
+            </div>
+            <div class="d-flex justify-content-center gap-4 mt-3">
+                <span><i class="bi bi-square-fill text-primary"></i> Allocated Amount</span>
+                <span><i class="bi bi-square-fill text-success"></i> Disbursed Amount</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row g-4 mt-2">
+    <div class="col-md-12">
+        <div class="chart-card">
+            <h5 class="chart-title">
+                <i class="bi bi-activity"></i> Recent Disbursements
+            </h5>
+            @if (Model.RecentDisbursements.Any())
+            {
+                @foreach (var item in Model.RecentDisbursements)
+                {
+                    var iconClass = item.Status?.ToLower() switch
+                    {
+                        "completed" => "bg-success",
+                        "pending" => "bg-warning",
+                        "failed" => "bg-danger",
+                        _ => "bg-secondary"
+                    };
+                    <div class="activity-item">
+                        <div class="activity-icon @iconClass text-white">
+                            <i class="bi bi-cash"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <strong>Disbursement #@item.DisbursementID</strong>
+                            <span class="badge bg-info ms-2">@item.BenefitType</span>
+                            <div class="text-muted small">
+                                Citizen ID: @item.CitizenID • @item.Date.ToString("MMM dd, yyyy")
+                            </div>
+                        </div>
+                        <div>
+                            @{
+                                var statusClass = item.Status?.ToLower() switch
+                                {
+                                    "completed" => "status-completed",
+                                    "pending" => "status-pending",
+                                    "failed" => "status-failed",
+                                    _ => "status-pending"
+                                };
+                            }
+                            <span class="status-badge @statusClass">@item.Status</span>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                    <p class="mt-2">No recent activity</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
