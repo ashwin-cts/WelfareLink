@@ -1,5 +1,14 @@
-namespace WelfareLink.Interfaces;
+using WelfareLink.Models;
 
-public interface IBenefitService
+namespace WelfareLink.Interfaces
 {
+    public interface IBenefitService
+    {
+        Task<IEnumerable<Benefit>> GetAllBenefitsAsync();
+        Task<Benefit?> GetBenefitByIdAsync(int id);
+        Task<Benefit> CreateBenefitAsync(Benefit benefit);
+        Task<Benefit> UpdateBenefitAsync(Benefit benefit);
+        Task<bool> DeleteBenefitAsync(int id);
+        Task<bool> BenefitExistsAsync(int id);
+    }
 }

@@ -1,0 +1,86 @@
+@model IEnumerable<WelfareLink.Models.Benefit>
+
+@{
+    ViewData["Title"] = "Benefits";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-gift-fill"></i> Benefit Management</h1>
+    <a asp-action="Create" class="btn-modern btn-success-modern">
+        <i class="bi bi-plus-circle"></i> Create New Benefit
+    </a>
+</div>
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table table-modern">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-hash"></i> ID</th>
+                    <th><i class="bi bi-file-earmark"></i> Application</th>
+                    <th><i class="bi bi-tag"></i> Type</th>
+                    <th><i class="bi bi-currency-dollar"></i> Amount</th>
+                    <th><i class="bi bi-calendar"></i> Date</th>
+                    <th><i class="bi bi-flag"></i> Status</th>
+                    <th><i class="bi bi-gear"></i> Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>#@item.BenefitID</strong></td>
+                        <td>@item.ApplicationID</td>
+                        <td>
+                            <span class="badge bg-primary">
+                                <i class="bi bi-box"></i> @item.Type
+                            </span>
+                        </td>
+                        <td><strong>₹@item.Amount.ToString("N2")</strong></td>
+                        <td>@item.Date.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            @{
+                                var statusClass = item.Status?.ToLower() switch
+                                {
+                                    "allocated" => "status-allocated",
+                                    "disbursed" => "status-disbursed",
+                                    "pending" => "status-pending",
+                                    "failed" or "rejected" => "status-failed",
+                                    _ => "status-pending"
+                                };
+                            }
+                            <span class="status-badge @statusClass">
+                                <i class="bi bi-circle-fill" style="font-size: 8px;"></i> @item.Status
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a asp-action="Details" asp-route-id="@item.BenefitID" class="btn-modern btn-info-modern btn-sm">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.BenefitID" class="btn-modern btn-warning-modern btn-sm">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.BenefitID" class="btn-modern btn-danger-modern btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 4rem; color: #cbd5e1;"></i>
+            <h4 class="mt-3 text-muted">No benefits found</h4>
+            <p class="text-muted">Start by creating a new benefit allocation.</p>
+            <a asp-action="Create" class="btn-modern btn-primary-modern">
+                <i class="bi bi-plus-circle"></i> Create First Benefit
+            </a>
+        </div>
+    }
+</div>

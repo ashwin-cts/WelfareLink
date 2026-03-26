@@ -33,6 +33,7 @@ namespace WelfareLink
             builder.Services.AddScoped<IAuditRepository, AuditRepository>();
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+            
 
             // Service registrations
             builder.Services.AddScoped<IUserService, UserService>();
@@ -49,7 +50,7 @@ namespace WelfareLink
             builder.Services.AddScoped<IAuditService, AuditService>();
             builder.Services.AddScoped<IReportService, ReportService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
-
+            builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 
             var app = builder.Build();
