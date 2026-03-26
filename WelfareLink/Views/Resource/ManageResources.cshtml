@@ -1,0 +1,192 @@
+@model IEnumerable<WelfareLink.Models.Resource>
+
+@{
+    ViewData["Title"] = "Manage Resources - " + ViewBag.ProgramTitle;
+    Layout = "_LayoutPM";
+    var program = ViewBag.Program as WelfareLink.Models.WelfareProgram;
+    var totalAllocated = ViewBag.TotalAllocated ?? 0m;
+    var remainingBudget = ViewBag.RemainingBudget ?? 0m;
+    var utilisationPercentage = ViewBag.UtilisationPercentage ?? 0m;
+}
+
+<div class="container-fluid mt-4" style="padding-bottom: 40px;">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Program" asp-action="Index">Programmes</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Program" asp-action="Details" asp-route-id="@program?.ProgramID">@ViewBag.ProgramTitle</a></li>
+                    <li class="breadcrumb-item active">Manage Resources</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-box-seam"></i> Resource Management</h2>
+            <h5 class="text-muted">@ViewBag.ProgramTitle</h5>
+        </div>
+        <div class="col-md-4 text-end">
+            <a asp-action="Create" asp-route-programId="@program?.ProgramID" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Allocate New Resource
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Total Budget</h6>
+                    <h4 class="text-primary">₹@ViewBag.ProgramBudget.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Allocated</h6>
+                    <h4 class="text-success">₹@totalAllocated.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Remaining</h6>
+                    <h4 class="@(remainingBudget < 0 ? "text-danger" : "text-info")">₹@remainingBudget.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Utilisation</h6>
+                    <h4 class="@(utilisationPercentage >= 80 ? "text-danger" : "text-success")">
+                        @utilisationPercentage.ToString("F1")%
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (utilisationPercentage >= 80)
+    {
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i> <strong>Warning!</strong> Budget utilisation has reached critical level (≥80%).
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5><i class="bi bi-list-ul"></i> Allocated Resources</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Resource ID</th>
+                                <th>Type</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var resource in Model)
+                            {
+                                <tr>
+                                    <td>@resource.ResourceID</td>
+                                    <td>
+                                        @if (resource.Type == "Funds")
+                                        {
+                                            <span class="badge bg-success"><i class="bi bi-cash"></i> @resource.Type</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info"><i class="bi bi-box"></i> @resource.Type</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (resource.Type == "Funds")
+                                        {
+                                            <strong>₹@resource.Quantity.ToString("N2")</strong>
+                                        }
+                                        else
+                                        {
+                                            <strong>@resource.Quantity.ToString("N2")</strong>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (resource.Status == "Available")
+                                        {
+                                            <span class="badge bg-success">@resource.Status</span>
+                                        }
+                                        else if (resource.Status == "Depleted")
+                                        {
+                                            <span class="badge bg-danger">@resource.Status</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">@resource.Status</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-action="Edit" asp-route-id="@resource.ResourceID" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@resource.ResourceID" class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-eye"></i> Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="2"><strong>Total Funds Allocated:</strong></td>
+                                <td colspan="3">
+                                    <strong>₹@Model.Where(r => r.Type == "Funds").Sum(r => r.Quantity).ToString("N2")</strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> No resources allocated to this programme yet.
+                    <br>
+                    <a asp-action="Create" asp-route-programId="@program?.ProgramID" class="btn btn-primary mt-2">
+                        <i class="bi bi-plus-circle"></i> Allocate First Resource
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a asp-controller="Program" asp-action="Details" asp-route-id="@program?.ProgramID" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Programme Details
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}

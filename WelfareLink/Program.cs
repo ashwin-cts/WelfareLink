@@ -27,7 +27,7 @@ namespace WelfareLink
             builder.Services.AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>();
             builder.Services.AddScoped<IBenefitRepository, BenefitRepository>();
             builder.Services.AddScoped<IDisbursementRepository, DisbursementRepository>();
-            builder.Services.AddScoped<IProgramRepository, ProgramRepository>();
+            builder.Services.AddScoped<IWelfareProgramRepository, WelfareProgramRespository>();
             builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
             builder.Services.AddScoped<IComplainceRecordRepository, ComplainceRecordRepository>();
             builder.Services.AddScoped<IAuditRepository, AuditRepository>();
@@ -44,7 +44,7 @@ namespace WelfareLink
             builder.Services.AddScoped<IEligibilityCheckService, EligibilityCheckService>();
             builder.Services.AddScoped<IBenefitService, BenefitService>();
             builder.Services.AddScoped<IDisbursementService, DisbursementService>();
-            builder.Services.AddScoped<IProgramService, ProgramService>();
+            builder.Services.AddScoped<IWelfareProgramService, WelfareProgramService>();
             builder.Services.AddScoped<IResourceService, ResourceService>();
             builder.Services.AddScoped<IComplainceRecordService, ComplainceRecordService>();
             builder.Services.AddScoped<IAuditService, AuditService>();

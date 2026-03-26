@@ -13,5 +13,7 @@ namespace WelfareLink.Data
         public DbSet<Benefit> Benefits { get; set; }
         public DbSet<Disbursement> Disbursements { get; set; }
 
+        public DbSet<WelfareProgram> Programs { get; set; }
+        public DbSet<Resource> Resources { get; set; }
     }
 }

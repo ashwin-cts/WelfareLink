@@ -1,0 +1,77 @@
+@model IEnumerable<WelfareLink.Models.WelfareProgram>
+
+@{
+    ViewData["Title"] = "PM Dashboard";
+    Layout = "_LayoutPM";
+
+    // Get all resources from ViewBag
+    var allResources = ViewBag.AllResources as IEnumerable<WelfareLink.Models.Resource> ?? Enumerable.Empty<WelfareLink.Models.Resource>();
+
+    // Calculate total budget across all programmes
+    var totalBudget = Model.Sum(p => p.Budget);
+
+    // Calculate allocated budget from all "Funds" type resources
+    var allocatedBudget = allResources
+        .Where(r => r.Type.Equals("Funds", StringComparison.OrdinalIgnoreCase))
+        .Sum(r => r.Quantity);
+
+    // Calculate remaining budget
+    var remainingBudget = totalBudget - allocatedBudget;
+}
+
+<header>
+    <h1>Centralized Program Dashboard</h1>
+    <p>Overview of active welfare programmes and overall budget.</p>
+</header>
+
+<div class="kpi-grid">
+    <div class="card">
+        <h3>Total Budget</h3>
+        <p class="kpi-value">₹@totalBudget.ToString("N0")</p>
+    </div>
+    <div class="card">
+        <h3>Allocated</h3>
+        <p class="kpi-value">₹@allocatedBudget.ToString("N0")</p>
+    </div>
+    <div class="card">
+        <h3>Remaining</h3>
+        <p class="kpi-value" style="color:#27ae60;">₹@remainingBudget.ToString("N0")</p>
+    </div>
+</div>
+
+<div class="table-container">
+    <h2>Active Programmes</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Budget</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var program in Model.Where(p => p.Status == "Active"))
+            {
+                <tr>
+                    <td>PRG-@program.ProgramID</td>
+                    <td>@program.Title</td>
+                    <td>₹@program.Budget.ToString("N0")</td>
+                    <td>
+                        <span class="badge active">@program.Status</span>
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@program.ProgramID">Edit</a> | 
+                        <a asp-action="Details" asp-route-id="@program.ProgramID">View</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    
+    @if (!Model.Any(p => p.Status == "Active"))
+    {
+        <p style="text-align: center; color: #7f8c8d; padding: 20px;">No active programmes found.</p>
+    }
+</div>

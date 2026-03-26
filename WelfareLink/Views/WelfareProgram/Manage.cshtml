@@ -1,0 +1,62 @@
+@model WelfareLink.Models.WelfareProgram
+
+@{
+    ViewData["Title"] = "Add New Programme";
+    Layout = "_LayoutPM";
+}
+
+<header>
+    <h1>Add New Programme</h1>
+    <p>Create a new welfare programme with budget and resource allocation.</p>
+</header>
+
+<div class="form-container">
+    <form asp-action="Manage" method="post" id="mainProgramForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="ProgramID" value="0" />
+
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label asp-for="Title">Programme Title</label>
+                <input asp-for="Title" type="text" id="Title" placeholder="e.g., Housing Support" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="form-group full-width">
+                <label asp-for="Description">Description & Objectives</label>
+                <textarea asp-for="Description" id="Description" placeholder="Enter objectives and eligibility details..."></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="StartDate">Start Date</label>
+                <input asp-for="StartDate" type="date" id="StartDate" value="@Model?.StartDate.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EndDate">End Date</label>
+                <input asp-for="EndDate" type="date" id="EndDate" value="@Model?.EndDate.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Budget">Budget Allocation (₹)</label>
+                <input asp-for="Budget" type="number" id="Budget" step="0.01" placeholder="0.00" />
+                <span asp-validation-for="Budget" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.9rem; color: #7f8c8d;">* Programme will be created with "Active" status.</span>
+            <div>
+                <button type="reset" class="btn btn-secondary">Clear</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Create Programme</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

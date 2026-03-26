@@ -1,0 +1,83 @@
+@model WelfareLink.Models.Resource
+
+@{
+    ViewData["Title"] = "Allocate Resource";
+    Layout = "_LayoutPM";
+}
+
+<div class="container mt-4" style="padding-bottom: 40px;">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="bi bi-plus-circle"></i> Allocate Resource to Programme</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="ProgramID" class="form-label">Programme</label>
+                            <select asp-for="ProgramID" class="form-select" asp-items="ViewBag.Programs">
+                                <option value="">-- Select Programme --</option>
+                            </select>
+                            <span asp-validation-for="ProgramID" class="text-danger"></span>
+                        </div>
+
+                        @if (ViewBag.ProgramTitle != null)
+                        {
+                            <div class="alert alert-info">
+                                <strong>Selected Programme:</strong> @ViewBag.ProgramTitle<br />
+                                <strong>Programme Budget:</strong> ₹@ViewBag.ProgramBudget
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label asp-for="Type" class="form-label">Resource Type</label>
+                            <select asp-for="Type" class="form-select" asp-items="ViewBag.ResourceTypes">
+                                <option value="">-- Select Type --</option>
+                            </select>
+                            <span asp-validation-for="Type" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                <strong>Funds:</strong> Monetary allocation | <strong>Materials:</strong> Physical resources
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Quantity" class="form-label">Quantity / Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input asp-for="Quantity" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="Quantity" class="text-danger"></span>
+                            <small class="form-text text-muted">For Funds, enter amount in ₹. For Materials, enter quantity.</small>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> <strong>Validation Rules:</strong>
+                            <ul class="mb-0">
+                                <li>Total allocated funds cannot exceed programme budget</li>
+                                <li>Resources can only be allocated to Active programmes</li>
+                                <li>Quantity must be greater than zero</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Allocate Resource
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}
