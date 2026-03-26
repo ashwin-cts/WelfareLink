@@ -1,0 +1,5 @@
+namespace WelfareLink.Interfaces;
+
+public interface IBenefitRepository
+{
+}
