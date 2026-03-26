@@ -202,9 +202,29 @@
             gap: 6px;
         }
 
-        .status-allocated, .status-completed, .status-disbursed {
+        .status-allocated {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+
+        .status-fully-disbursed, .status-completed, .status-disbursed {
             background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
             color: #065f46;
+        }
+
+        .status-partial {
+            background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+            color: #9a3412;
+        }
+
+        .status-processing {
+            background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+            color: #92400e;
+        }
+
+        .status-partial-fail {
+            background: linear-gradient(135deg, #fecaca 0%, #f87171 100%);
+            color: #7f1d1d;
         }
 
         .status-pending {

@@ -70,12 +70,16 @@
                         <td>@item.Date.ToString("MMM dd, yyyy")</td>
                         <td>
                             @{
-                                var statusClass = item.Status?.ToLower() switch
+                                var statusLower = item.Status?.ToLower()?.Trim() ?? "";
+                                var statusClass = statusLower switch
                                 {
-                                    "completed" => "status-completed",
-                                    "disbursed" => "status-disbursed",
-                                    "pending" => "status-pending",
-                                    "failed" => "status-failed",
+                                    var s when s.Contains("fully") && s.Contains("disbursed") => "status-fully-disbursed",
+                                    var s when s.Contains("100") || s == "disbursed" || s == "completed" => "status-fully-disbursed",
+                                    var s when s.Contains("partially") && s.Contains("disbursed") => "status-processing",
+                                    var s when s.Contains("partial") => "status-processing",
+                                    var s when s.Contains("allocated") => "status-allocated",
+                                    var s when s.Contains("failed") => "status-failed",
+                                    var s when s.Contains("pending") => "status-pending",
                                     _ => "status-pending"
                                 };
                             }

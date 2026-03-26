@@ -16,12 +16,15 @@ namespace WelfareLink.Repositories
 
         public async Task<IEnumerable<Benefit>> GetAllAsync()
         {
-            return await _context.Benefits.ToListAsync();
+            return await _context.Benefits
+                .Include(b => b.Disbursements)
+                .ToListAsync();
         }
 
         public async Task<Benefit?> GetByIdAsync(int id)
         {
             return await _context.Benefits
+                .Include(b => b.Disbursements)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.BenefitID == id);
         }

@@ -9,7 +9,7 @@ namespace WelfareLink.Services
         private readonly IBenefitRepository _benefitRepository;
         private readonly IDisbursementRepository _disbursementRepository;
         private readonly string[] _validBenefitTypes = { "Cash", "Food", "Medical", "Education", "Housing" };
-        private readonly string[] _validStatuses = { "Allocated", "Partially Disbursed", "Fully Disbursed" };
+        private readonly string[] _validStatuses = { "Allocated", "Partially Disbursed", "Fully Disbursed", "Failed" };
 
         public BenefitService(IBenefitRepository benefitRepository, IDisbursementRepository disbursementRepository)
         {
