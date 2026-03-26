@@ -1,0 +1,7 @@
+WelfareLink/bin/
+WelfareLink/obj/
+.vs/
+*.user
+*.suo
+Debug/
+Release/
