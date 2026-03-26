@@ -3,17 +3,17 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - WelfareLink</title>
+    <title>@ViewData["Title"] - WelfareLinkApplication_Project</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/WelfareLink.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WelfareLinkApplication_Project.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WelfareLink</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WelfareLinkApplication_Project</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -22,6 +22,43 @@
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="WelfareApplication" asp-action="HomeIndex">Welfare Application Home</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="applicationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Applications
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="applicationsDropdown">
+                                <li><a class="dropdown-item" asp-controller="WelfareApplication" asp-action="Index">All Applications</a></li>
+                                <li><a class="dropdown-item" asp-controller="WelfareApplication" asp-action="Pending">Pending Applications</a></li>
+                                <li><a class="dropdown-item" asp-controller="WelfareApplication" asp-action="MyApplications">My Applications</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="WelfareApplication" asp-action="Create">Submit Application</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="eligibilityDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Eligibility
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="eligibilityDropdown">
+                                <li><a class="dropdown-item" asp-controller="EligibilityCheck" asp-action="Index">All Checks</a></li>
+                                <li><a class="dropdown-item" asp-controller="EligibilityCheck" asp-action="MyChecks">My Checks</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="EligibilityCheck" asp-action="Create">New Check</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="analyticsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Analytics
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="analyticsDropdown">
+                                <li><a class="dropdown-item" asp-controller="ApplicationAnalytics" asp-action="Index">Dashboard</a></li>
+                                <li><a class="dropdown-item" asp-controller="ApplicationAnalytics" asp-action="StatusBreakdown">Status Breakdown</a></li>
+                                <li><a class="dropdown-item" asp-controller="ApplicationAnalytics" asp-action="MonthlyTrends">Monthly Trends</a></li>
+                                <li><a class="dropdown-item" asp-controller="ApplicationAnalytics" asp-action="EligibilityReport">Eligibility Report</a></li>
+                            </ul>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>

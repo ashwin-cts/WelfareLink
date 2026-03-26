@@ -1,0 +1,104 @@
+@model IEnumerable<WelfareLink.Models.WelfareApplication>
+
+@{
+    ViewData["Title"] = "Pending Applications";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-4">@ViewData["Title"]</h1>
+            <p class="lead">Applications awaiting review</p>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="alert alert-warning">
+                <i class="bi bi-clock-fill"></i>
+                <strong>@Model.Count()</strong> pending applications require officer review
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5>Pending Applications List</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Application ID</th>
+                                        <th>Submitted Date</th>
+                                        <th>Days Pending</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        var daysPending = DateTime.Now.Subtract(item.SubmittedDate.ToDateTime(TimeOnly.MinValue)).Days;
+                                        <tr>
+                                            <td>@item.ApplicationID</td>
+                                            <td>@item.SubmittedDate.ToString("dd MMM yyyy")</td>
+                                            <td>
+                                                @if (daysPending > 7)
+                                                {
+                                                    <span class="badge bg-danger">@daysPending days</span>
+                                                }
+                                                else if (daysPending > 3)
+                                                {
+                                                    <span class="badge bg-warning text-dark">@daysPending days</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">@daysPending days</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-warning text-dark">@item.Status</span>
+                                            </td>
+                                            <td>
+                                                <a asp-action="Details" asp-route-id="@item.ApplicationID" class="btn btn-sm btn-info">
+                                                    <i class="bi bi-eye"></i> Review
+                                                </a>
+                                                <a asp-controller="EligibilityCheck" asp-action="Create" asp-route-applicationId="@item.ApplicationID" class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-clipboard-check"></i> Check Eligibility
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle"></i> No pending applications. All applications have been reviewed!
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to All Applications
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}

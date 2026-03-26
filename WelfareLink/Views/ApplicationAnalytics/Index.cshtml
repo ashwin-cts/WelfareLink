@@ -1,0 +1,217 @@
+@{
+    ViewData["Title"] = "Application Analytics Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-4">@ViewData["Title"]</h1>
+            <p class="lead">Monitor application metrics and performance</p>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Applications</h5>
+                    <h2 class="display-4">@ViewBag.TotalApplications</h2>
+                    <p class="card-text">All submitted applications</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Pending</h5>
+                    <h2 class="display-4">@ViewBag.PendingApplications</h2>
+                    <p class="card-text">Awaiting review</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Approved</h5>
+                    <h2 class="display-4">@ViewBag.ApprovedApplications</h2>
+                    <p class="card-text">Successfully approved</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Rejected</h5>
+                    <h2 class="display-4">@ViewBag.RejectedApplications</h2>
+                    <p class="card-text">Not eligible</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5>Approval Rate</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-3 text-success">@ViewBag.ApprovalRate%</h1>
+                    <p>Of processed applications</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5>Under Review</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-3 text-info">@ViewBag.UnderReviewApplications</h1>
+                    <p>Currently being reviewed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5>Eligibility Checks</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-3 text-primary">@ViewBag.TotalChecks</h1>
+                    <p>Total assessments performed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Eligibility Check Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-clipboard-check"></i> Eligibility Check Results</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-6">
+                            <h3 class="text-success">@ViewBag.EligibleChecks</h3>
+                            <p>Eligible</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h3 class="text-danger">@ViewBag.IneligibleChecks</h3>
+                            <p>Ineligible</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-graph-up"></i> Application Status Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress" style="height: 30px;">
+                        @{
+                            var total = ViewBag.TotalApplications > 0 ? ViewBag.TotalApplications : 1;
+                            var pendingPercent = (ViewBag.PendingApplications * 100.0 / total);
+                            var approvedPercent = (ViewBag.ApprovedApplications * 100.0 / total);
+                            var rejectedPercent = (ViewBag.RejectedApplications * 100.0 / total);
+                            var reviewPercent = (ViewBag.UnderReviewApplications * 100.0 / total);
+                        }
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: @pendingPercent%" 
+                             aria-valuenow="@pendingPercent" aria-valuemin="0" aria-valuemax="100">
+                            Pending: @Math.Round(pendingPercent, 1)%
+                        </div>
+                        <div class="progress-bar bg-success" role="progressbar" style="width: @approvedPercent%" 
+                             aria-valuenow="@approvedPercent" aria-valuemin="0" aria-valuemax="100">
+                            Approved: @Math.Round(approvedPercent, 1)%
+                        </div>
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: @rejectedPercent%" 
+                             aria-valuenow="@rejectedPercent" aria-valuemin="0" aria-valuemax="100">
+                            Rejected: @Math.Round(rejectedPercent, 1)%
+                        </div>
+                        <div class="progress-bar bg-info" role="progressbar" style="width: @reviewPercent%" 
+                             aria-valuenow="@reviewPercent" aria-valuemin="0" aria-valuemax="100">
+                            Review: @Math.Round(reviewPercent, 1)%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applications by Month -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-calendar3"></i> Applications by Month</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.ApplicationsByMonth != null && ViewBag.ApplicationsByMonth.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Applications Submitted</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var month in ViewBag.ApplicationsByMonth)
+                                    {
+                                        <tr>
+                                            <td>@month.Month</td>
+                                            <td>
+                                                <span class="badge bg-primary">@month.Count</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No monthly data available</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-link-45deg"></i> Detailed Reports</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a asp-action="StatusBreakdown" class="btn btn-outline-primary">
+                            <i class="bi bi-pie-chart"></i> Status Breakdown
+                        </a>
+                        <a asp-action="MonthlyTrends" class="btn btn-outline-primary">
+                            <i class="bi bi-graph-up-arrow"></i> Monthly Trends
+                        </a>
+                        <a asp-action="EligibilityReport" class="btn btn-outline-primary">
+                            <i class="bi bi-clipboard-data"></i> Eligibility Report
+                        </a>
+                        <a asp-action="Export" class="btn btn-outline-success">
+                            <i class="bi bi-download"></i> Export Data
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}

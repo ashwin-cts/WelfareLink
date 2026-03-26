@@ -1,0 +1,73 @@
+@model WelfareLink.Models.EligibilityCheck
+
+@{
+    ViewData["Title"] = "Delete Eligibility Check";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-4 text-danger">@ViewData["Title"]</h1>
+            <p class="lead">Confirm deletion</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5>Delete Confirmation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>Warning!</strong> Are you sure you want to delete this eligibility check?
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Check ID</dt>
+                        <dd class="col-sm-8">@Model.CheckID</dd>
+
+                        <dt class="col-sm-4">Application ID</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-secondary">#@Model.ApplicationID</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Officer ID</dt>
+                        <dd class="col-sm-8">@Model.OfficerID</dd>
+
+                        <dt class="col-sm-4">Assessment Date</dt>
+                        <dd class="col-sm-8">@Model.Date.ToString("dd MMMM yyyy")</dd>
+
+                        <dt class="col-sm-4">Result</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-secondary">@Model.Result</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Result Code</dt>
+                        <dd class="col-sm-8">@Model.ResultCode</dd>
+
+                        <dt class="col-sm-4">Notes</dt>
+                        <dd class="col-sm-8">@Model.Notes</dd>
+                    </dl>
+
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="CheckID" />
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Delete Check
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}

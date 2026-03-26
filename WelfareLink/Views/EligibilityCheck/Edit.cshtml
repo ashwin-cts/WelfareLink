@@ -1,0 +1,85 @@
+@model WelfareLink.Models.EligibilityCheck
+
+@{
+    ViewData["Title"] = "Edit Eligibility Check";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-4">@ViewData["Title"]</h1>
+            <p class="lead">Update eligibility assessment details</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5>Edit Assessment Form</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <input type="hidden" asp-for="CheckID" />
+
+                        <div class="mb-3">
+                            <label asp-for="ApplicationID" class="form-label"></label>
+                            <input asp-for="ApplicationID" type="number" class="form-control" required />
+                            <span asp-validation-for="ApplicationID" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="OfficerID" class="form-label"></label>
+                            <input asp-for="OfficerID" type="number" class="form-control" required />
+                            <span asp-validation-for="OfficerID" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Result" class="form-label"></label>
+                            <select asp-for="Result" class="form-select" required>
+                                <option value="">Select Result...</option>
+                                <option value="Eligible">Eligible</option>
+                                <option value="Ineligible">Ineligible</option>
+                            </select>
+                            <span asp-validation-for="Result" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ResultCode" class="form-label"></label>
+                            <input asp-for="ResultCode" class="form-control" required />
+                            <span asp-validation-for="ResultCode" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Date" class="form-label"></label>
+                            <input asp-for="Date" type="date" class="form-control" required />
+                            <span asp-validation-for="Date" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Notes" class="form-label"></label>
+                            <textarea asp-for="Notes" class="form-control" rows="5" required></textarea>
+                            <span asp-validation-for="Notes" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                            <a asp-action="Details" asp-route-id="@Model.CheckID" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}

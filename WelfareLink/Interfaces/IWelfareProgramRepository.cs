@@ -1,5 +1,8 @@
+using WelfareLink.Models;
+
 namespace WelfareLink.Interfaces;
 
-public interface IWelfareProgramRepository
+public interface IWelfareProgramRepository : IRepository<WelfareProgram>
 {
 }
+
