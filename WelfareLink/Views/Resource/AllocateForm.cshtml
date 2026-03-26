@@ -2,84 +2,128 @@
 
 @{
     ViewData["Title"] = "Allocate Resources";
-    Layout = "_LayoutPM";
     var programs = ViewBag.Programs as Microsoft.AspNetCore.Mvc.Rendering.SelectList;
 }
 
-<header>
-    <h1>Add Resource Allocation</h1>
-    <p>Manage resources allocated to a programme.</p>
-</header>
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-distribute-vertical"></i> Resource Allocation</h1>
+        <p style="margin: 0; color: #64748b;">Manage resources allocated to programmes.</p>
+    </div>
+    <a asp-action="Index" class="btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+</div>
 
-<div class="form-container">
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+        <i class="bi bi-check-circle-fill me-2" style="font-size: 1.5rem;"></i>
+        <div>@TempData["SuccessMessage"]</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2" style="font-size: 1.5rem;"></i>
+        <div>@TempData["ErrorMessage"]</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="content-card">
     <form asp-action="AllocateForm" method="post">
         @Html.AntiForgeryToken()
         <input type="hidden" name="ResourceID" value="0" />
 
-        <div class="form-grid">
-            <div class="form-group full-width">
-                <label asp-for="ProgramID">Select Programme</label>
-                <select asp-for="ProgramID" asp-items="programs" onchange="this.form.submit()">
-                    <option value="">-- Select Programme --</option>
-                </select>
-                <span asp-validation-for="ProgramID" class="text-danger"></span>
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="form-floating-modern">
+                    <label asp-for="ProgramID" class="form-label-modern">Select Programme</label>
+                    <select asp-for="ProgramID" asp-items="programs" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- Select Programme --</option>
+                    </select>
+                    <span asp-validation-for="ProgramID" class="text-danger"></span>
+                </div>
             </div>
 
             @if (ViewBag.ProgramBudget != null)
             {
-                <div class="form-group full-width">
-                    <div style="background: #f0f8ff; border-left: 4px solid #2980b9; padding: 15px; margin-bottom: 10px; border-radius: 4px;">
-                        <h5 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 1rem;">
+                <div class="col-12">
+                    <div class="detail-item" style="background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); border-left-color: #0096c7;">
+                        <h5 style="margin: 0 0 1rem 0; color: #1e3c72; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
                             <i class="bi bi-cash-stack"></i> Budget Information - @ViewBag.ProgramTitle
                         </h5>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                            <div>
-                                <div style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 4px;">Programme Budget</div>
-                                <div style="font-size: 1.25rem; font-weight: 600; color: #2980b9;">₹@ViewBag.ProgramBudget.ToString("N2")</div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="detail-item" style="background: white;">
+                                    <label>Programme Budget</label>
+                                    <p style="color: #2563eb; font-size: 1.3rem;">₹@ViewBag.ProgramBudget.ToString("N2")</p>
+                                </div>
                             </div>
-                            <div>
-                                <div style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 4px;">Already Allocated</div>
-                                <div style="font-size: 1.25rem; font-weight: 600; color: #e67e22;">₹@ViewBag.AllocatedFunds.ToString("N2")</div>
+                            <div class="col-md-4">
+                                <div class="detail-item" style="background: white;">
+                                    <label>Already Allocated</label>
+                                    <p style="color: #f59e0b; font-size: 1.3rem;">₹@ViewBag.AllocatedFunds.ToString("N2")</p>
+                                </div>
                             </div>
-                            <div>
-                                <div style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 4px;">Remaining Budget</div>
-                                <div style="font-size: 1.25rem; font-weight: 600; color: @(ViewBag.RemainingBudget > 0 ? "#27ae60" : "#e74c3c");">
-                                    ₹@ViewBag.RemainingBudget.ToString("N2")
+                            <div class="col-md-4">
+                                <div class="detail-item" style="background: white;">
+                                    <label>Remaining Budget</label>
+                                    <p style="color: @(ViewBag.RemainingBudget > 0 ? "#10b981" : "#ef4444"); font-size: 1.3rem;">
+                                        ₹@ViewBag.RemainingBudget.ToString("N2")
+                                    </p>
                                 </div>
                             </div>
                         </div>
                         @if (ViewBag.RemainingBudget <= 0)
                         {
-                            <div style="margin-top: 12px; padding: 10px; background: #ffe6e6; border-radius: 4px; color: #c0392b; font-size: 0.9rem;">
-                                <i class="bi bi-exclamation-triangle-fill"></i> <strong>Warning:</strong> No budget remaining. Increase programme budget before allocating more funds.
+                            <div class="alert alert-danger mt-3 d-flex align-items-center" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <strong>Warning:</strong> No budget remaining. Increase programme budget before allocating more funds.
+                                </div>
                             </div>
                         }
                     </div>
                 </div>
             }
 
-            <div class="form-group">
-                <label asp-for="Type">Resource Type</label>
-                <select asp-for="Type">
-                    <option value="">-- Select Type --</option>
-                    <option value="Funds">Funds</option>
-                    <option value="Materials">Materials</option>
-                </select>
-                <span asp-validation-for="Type" class="text-danger"></span>
+            <div class="col-md-6">
+                <div class="form-floating-modern">
+                    <label asp-for="Type" class="form-label-modern">Resource Type</label>
+                    <select asp-for="Type" class="form-select">
+                        <option value="">-- Select Type --</option>
+                        <option value="Funds">💰 Funds</option>
+                        <option value="Materials">📦 Materials</option>
+                    </select>
+                    <span asp-validation-for="Type" class="text-danger"></span>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label asp-for="Quantity">Quantity / Amount</label>
-                <input asp-for="Quantity" type="number" step="0.01" placeholder="0.00" />
-                <span asp-validation-for="Quantity" class="text-danger"></span>
+            <div class="col-md-6">
+                <div class="form-floating-modern">
+                    <label asp-for="Quantity" class="form-label-modern">Quantity / Amount (₹)</label>
+                    <input asp-for="Quantity" type="number" class="form-control" step="0.01" placeholder="0.00" />
+                    <span asp-validation-for="Quantity" class="text-danger"></span>
+                </div>
             </div>
         </div>
 
-        <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.9rem; color: #7f8c8d;">* Resource will be created with "Available" status.</span>
+        <div class="mt-4 pt-3" style="border-top: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <button type="reset" class="btn btn-secondary">Clear</button>
-                <button type="submit" class="btn btn-primary">Allocate Resource</button>
+                <i class="bi bi-info-circle text-primary"></i>
+                <span style="font-size: 0.9rem; color: #64748b; margin-left: 0.5rem;">Resource will be created with "Available" status.</span>
+            </div>
+            <div class="action-buttons">
+                <button type="reset" class="btn-modern btn-secondary-modern">
+                    <i class="bi bi-x-circle"></i> Clear
+                </button>
+                <button type="submit" class="btn-modern btn-primary-modern">
+                    <i class="bi bi-check-circle"></i> Allocate Resource
+                </button>
             </div>
         </div>
     </form>

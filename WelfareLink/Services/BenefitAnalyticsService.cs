@@ -4,12 +4,12 @@ using WelfareLink.ViewModels;
 
 namespace WelfareLink.Services
 {
-    public class AnalyticsService : IAnalyticsService
+    public class BenefitAnalyticsService : IBenefitAnalyticsService
     {
         private readonly IBenefitService _benefitService;
         private readonly IDisbursementService _disbursementService;
 
-        public AnalyticsService(IBenefitService benefitService, IDisbursementService disbursementService)
+        public BenefitAnalyticsService(IBenefitService benefitService, IDisbursementService disbursementService)
         {
             _benefitService = benefitService;
             _disbursementService = disbursementService;

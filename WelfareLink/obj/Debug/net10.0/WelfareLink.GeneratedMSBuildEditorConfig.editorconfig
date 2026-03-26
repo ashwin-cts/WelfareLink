@@ -30,8 +30,8 @@ build_property._RazorSourceGeneratorDebug =
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/2481864/OneDrive - Cognizant/Documents/Project Welfare Link/DEMO/WelfareLink/WelfareLink/WelfareLink/Views/Analytics/Dashboard.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQW5hbHl0aWNzXERhc2hib2FyZC5jc2h0bWw=
+[C:/Users/2481864/OneDrive - Cognizant/Documents/Project Welfare Link/DEMO/WelfareLink/WelfareLink/WelfareLink/Views/BenefitAnalytics/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmVuZWZpdEFuYWx5dGljc1xEYXNoYm9hcmQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/2481864/OneDrive - Cognizant/Documents/Project Welfare Link/DEMO/WelfareLink/WelfareLink/WelfareLink/Views/Benefit/Create.cshtml]
@@ -90,12 +90,8 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzb3VyY2VcQWxsb2NhdGVGb3JtLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/2481864/OneDrive - Cognizant/Documents/Project Welfare Link/DEMO/WelfareLink/WelfareLink/WelfareLink/Views/Resource/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzb3VyY2VcQ3JlYXRlLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/2481864/OneDrive - Cognizant/Documents/Project Welfare Link/DEMO/WelfareLink/WelfareLink/WelfareLink/Views/Resource/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzb3VyY2VcRGV0YWlscy5jc2h0bWw=
+[C:/Users/2481864/OneDrive - Cognizant/Documents/Project Welfare Link/DEMO/WelfareLink/WelfareLink/WelfareLink/Views/Resource/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzb3VyY2VcRGVsZXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/2481864/OneDrive - Cognizant/Documents/Project Welfare Link/DEMO/WelfareLink/WelfareLink/WelfareLink/Views/Resource/Edit.cshtml]
@@ -116,10 +112,6 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/2481864/OneDrive - Cognizant/Documents/Project Welfare Link/DEMO/WelfareLink/WelfareLink/WelfareLink/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/2481864/OneDrive - Cognizant/Documents/Project Welfare Link/DEMO/WelfareLink/WelfareLink/WelfareLink/Views/Shared/_LayoutPM.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXRQTS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/2481864/OneDrive - Cognizant/Documents/Project Welfare Link/DEMO/WelfareLink/WelfareLink/WelfareLink/Views/Shared/_ValidationScriptsPartial.cshtml]

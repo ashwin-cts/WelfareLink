@@ -3,11 +3,11 @@ using WelfareLink.Interfaces;
 
 namespace WelfareLink.Controllers
 {
-    public class AnalyticsController : Controller
+    public class BenefitAnalyticsController : Controller
     {
-        private readonly IAnalyticsService _analyticsService;
+        private readonly IBenefitAnalyticsService _analyticsService;
 
-        public AnalyticsController(IAnalyticsService analyticsService)
+        public BenefitAnalyticsController(IBenefitAnalyticsService analyticsService)
         {
             _analyticsService = analyticsService;
         }

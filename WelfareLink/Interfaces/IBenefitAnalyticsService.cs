@@ -2,7 +2,7 @@ using WelfareLink.ViewModels;
 
 namespace WelfareLink.Interfaces
 {
-    public interface IAnalyticsService
+    public interface IBenefitAnalyticsService
     {
         Task<AnalyticsDashboardViewModel> GetDashboardDataAsync();
         Task<int> GetTotalAllocatedCountAsync();

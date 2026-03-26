@@ -135,70 +135,6 @@ public class ResourceController : Controller
         return View(resource);
     }
 
-    // GET: Resource/Create
-    public async Task<IActionResult> Create(int? programId)
-    {
-        var programs = await _programService.GetAllProgramsAsync();
-        var activePrograms = programs.Where(p => p.Status == "Active");
-
-        ViewBag.Programs = new SelectList(activePrograms, "ProgramID", "Title", programId);
-        ViewBag.ResourceTypes = new SelectList(new[] { "Funds", "Materials" });
-
-        if (programId.HasValue)
-        {
-            var program = await _programService.GetProgramByIdAsync(programId.Value);
-            ViewBag.ProgramTitle = program?.Title;
-            ViewBag.ProgramBudget = program?.Budget;
-        }
-
-        return View();
-    }
-
-    // POST: Resource/Create
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("ProgramID,Type,Quantity")] Resource resource)
-    {
-        // Remove Status and Program navigation property from validation
-        ModelState.Remove("Status");
-        ModelState.Remove("Program");
-
-        if (!ModelState.IsValid)
-        {
-            TempData["ErrorMessage"] = "[400 Bad Request] Please fill all required fields correctly.";
-            var programs = await _programService.GetAllProgramsAsync();
-            var activePrograms = programs.Where(p => p.Status == "Active");
-            ViewBag.Programs = new SelectList(activePrograms, "ProgramID", "Title", resource.ProgramID);
-            ViewBag.ResourceTypes = new SelectList(new[] { "Funds", "Materials" }, resource.Type);
-            return View(resource);
-        }
-
-        try
-        {
-            await _resourceService.AddResourceAsync(resource);
-            TempData["SuccessMessage"] = "Resource allocated successfully!";
-            return RedirectToAction(nameof(ManageResources), new { programId = resource.ProgramID });
-        }
-        catch (InvalidOperationException ex)
-        {
-            TempData["ErrorMessage"] = $"[400 Bad Request] {ex.Message}";
-            var programs = await _programService.GetAllProgramsAsync();
-            var activePrograms = programs.Where(p => p.Status == "Active");
-            ViewBag.Programs = new SelectList(activePrograms, "ProgramID", "Title", resource.ProgramID);
-            ViewBag.ResourceTypes = new SelectList(new[] { "Funds", "Materials" }, resource.Type);
-            return View(resource);
-        }
-        catch (Exception ex)
-        {
-            TempData["ErrorMessage"] = "[500 Server Error] Failed to allocate resource. Please try again.";
-            var programs = await _programService.GetAllProgramsAsync();
-            var activePrograms = programs.Where(p => p.Status == "Active");
-            ViewBag.Programs = new SelectList(activePrograms, "ProgramID", "Title", resource.ProgramID);
-            ViewBag.ResourceTypes = new SelectList(new[] { "Funds", "Materials" }, resource.Type);
-            return View(resource);
-        }
-    }
-
     // GET: Resource/Edit/5
     public async Task<IActionResult> Edit(int? id)
     {
@@ -216,6 +152,10 @@ public class ResourceController : Controller
             TempData["ErrorMessage"] = "[404 Not Found] Resource not found. It may have been deleted.";
             return RedirectToAction(nameof(Index));
         }
+
+        // Get program title for display
+        var program = await _programService.GetProgramByIdAsync(resource.ProgramID);
+        ViewBag.ProgramTitle = program?.Title ?? "Unknown Programme";
 
         var programs = await _programService.GetAllProgramsAsync();
         ViewBag.Programs = new SelectList(programs, "ProgramID", "Title", resource.ProgramID);
@@ -241,6 +181,11 @@ public class ResourceController : Controller
         if (!ModelState.IsValid)
         {
             TempData["ErrorMessage"] = "[400 Bad Request] Please fill all required fields correctly.";
+
+            // Get program title for display on error
+            var program = await _programService.GetProgramByIdAsync(resource.ProgramID);
+            ViewBag.ProgramTitle = program?.Title ?? "Unknown Programme";
+
             var programs = await _programService.GetAllProgramsAsync();
             ViewBag.Programs = new SelectList(programs, "ProgramID", "Title", resource.ProgramID);
             ViewBag.ResourceTypes = new SelectList(new[] { "Funds", "Materials" }, resource.Type);
@@ -252,11 +197,17 @@ public class ResourceController : Controller
         {
             await _resourceService.UpdateResourceAsync(resource);
             TempData["SuccessMessage"] = "Resource updated successfully!";
-            return RedirectToAction(nameof(Index));
+            // Redirect to ManageResources for the specific programme
+            return RedirectToAction(nameof(ManageResources), new { programId = resource.ProgramID });
         }
         catch (InvalidOperationException ex)
         {
             TempData["ErrorMessage"] = $"[400 Bad Request] {ex.Message}";
+
+            // Get program title for display on error
+            var program = await _programService.GetProgramByIdAsync(resource.ProgramID);
+            ViewBag.ProgramTitle = program?.Title ?? "Unknown Programme";
+
             var programs = await _programService.GetAllProgramsAsync();
             ViewBag.Programs = new SelectList(programs, "ProgramID", "Title", resource.ProgramID);
             ViewBag.ResourceTypes = new SelectList(new[] { "Funds", "Materials" }, resource.Type);
@@ -266,6 +217,11 @@ public class ResourceController : Controller
         catch (Exception ex)
         {
             TempData["ErrorMessage"] = "[500 Server Error] Failed to update resource. Please try again.";
+
+            // Get program title for display on error
+            var program = await _programService.GetProgramByIdAsync(resource.ProgramID);
+            ViewBag.ProgramTitle = program?.Title ?? "Unknown Programme";
+
             var programs = await _programService.GetAllProgramsAsync();
             ViewBag.Programs = new SelectList(programs, "ProgramID", "Title", resource.ProgramID);
             ViewBag.ResourceTypes = new SelectList(new[] { "Funds", "Materials" }, resource.Type);
@@ -313,7 +269,16 @@ public class ResourceController : Controller
 
         foreach (var resource in resources)
         {
-            var usedQuantity = 0m;
+            // Estimate used quantity based on status
+            // Since there's no actual usage tracking, we use status as a proxy
+            decimal usedQuantity = resource.Status switch
+            {
+                "Depleted" => resource.Quantity,  // 100% used
+                "Reserved" => resource.Quantity * 0.5m,  // 50% used (estimated)
+                "Available" => 0m,  // 0% used
+                _ => 0m
+            };
+
             var remainingQuantity = resource.Quantity - usedQuantity;
             var utilisationPercentage = resource.Quantity > 0
                 ? (usedQuantity / resource.Quantity) * 100
