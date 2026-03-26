@@ -1,7 +1,95 @@
 using WelfareLink.Interfaces;
+using WelfareLink.Models;
 
 namespace WelfareLink.Services;
 
 public class CitizenDocumentService : ICitizenDocumentService
 {
+    private readonly ICitizenDocumentRepository _documentRepository;
+    private readonly IWebHostEnvironment _environment;
+
+    public CitizenDocumentService(ICitizenDocumentRepository documentRepository, IWebHostEnvironment environment)
+    {
+        _documentRepository = documentRepository;
+        _environment = environment;
+    }
+
+    public async Task<IEnumerable<CitizenDocument>> GetDocumentsByCitizenIdAsync(int citizenId)
+    {
+        return await _documentRepository.GetByCitizenIdAsync(citizenId);
+    }
+
+    public async Task<CitizenDocument> GetDocumentByIdAsync(int documentId)
+    {
+        return await _documentRepository.GetByIdAsync(documentId);
+    }
+
+    public async Task<bool> UploadDocumentAsync(CitizenDocument document, IFormFile file)
+    {
+        try
+        {
+            if (file != null && file.Length > 0)
+            {
+                document.FileURI = await SaveFileAsync(file, document.DocType);
+            }
+
+            document.UploadedDate = DateTime.UtcNow;
+            document.VerificationStatus = "Pending";
+
+            await _documentRepository.AddAsync(document);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteDocumentAsync(int documentId)
+    {
+        try
+        {
+            var document = await _documentRepository.GetByIdAsync(documentId);
+            if (document != null)
+            {
+                if (!string.IsNullOrEmpty(document.FileURI))
+                {
+                    var filePath = Path.Combine(_environment.WebRootPath, document.FileURI.TrimStart('/'));
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                    }
+                }
+
+                await _documentRepository.DeleteAsync(documentId);
+            }
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<string> SaveFileAsync(IFormFile file, string docType)
+    {
+        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "documents");
+
+        if (!Directory.Exists(uploadsFolder))
+        {
+            Directory.CreateDirectory(uploadsFolder);
+        }
+
+        var uniqueFileName = $"{docType}_{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid()}_{file.FileName}";
+        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(fileStream);
+        }
+
+        return $"/uploads/documents/{uniqueFileName}";
+    }
 }
+
+

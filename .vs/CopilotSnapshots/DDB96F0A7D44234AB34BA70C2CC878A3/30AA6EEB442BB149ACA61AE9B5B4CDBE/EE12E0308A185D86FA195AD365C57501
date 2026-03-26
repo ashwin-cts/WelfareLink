@@ -1,0 +1,3 @@
+﻿@using WelfareLink
+@using WelfareLink.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

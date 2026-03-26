@@ -22,84 +22,98 @@ namespace WelfareLink.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
+            modelBuilder.Entity("WelfareLink.Models.Citizen", b =>
                 {
-                    b.Property<int>("BenefitID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BenefitID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("float");
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
-                    b.Property<int>("ApplicationID")
-                        .HasColumnType("int");
+                    b.Property<string>("ContactInfo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
-                    b.HasKey("BenefitID");
+                    b.HasKey("Id");
 
-                    b.ToTable("Benefits");
+                    b.ToTable("Citizens");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.Disbursement", b =>
+            modelBuilder.Entity("WelfareLink.Models.CitizenDocument", b =>
                 {
-                    b.Property<int>("DisbursementID")
+                    b.Property<int>("DocumentID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DisbursementID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocumentID"));
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("float");
-
-                    b.Property<int>("BenefitID")
+                    b.Property<int>("CitizenId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CitizenID")
-                        .HasColumnType("int");
+                    b.Property<string>("DocType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<string>("FileURI")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("UploadedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("OfficerID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
+                    b.Property<string>("VerificationStatus")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
-                    b.HasKey("DisbursementID");
+                    b.HasKey("DocumentID");
 
-                    b.HasIndex("BenefitID");
+                    b.HasIndex("CitizenId");
 
-                    b.ToTable("Disbursements");
+                    b.ToTable("CitizenDocuments");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.Disbursement", b =>
+            modelBuilder.Entity("WelfareLink.Models.CitizenDocument", b =>
                 {
-                    b.HasOne("WelfareLink.Models.Benefit", "Benefit")
-                        .WithMany("Disbursements")
-                        .HasForeignKey("BenefitID")
+                    b.HasOne("WelfareLink.Models.Citizen", "Citizen")
+                        .WithMany("CitizenDocuments")
+                        .HasForeignKey("CitizenId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Benefit");
+                    b.Navigation("Citizen");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
+            modelBuilder.Entity("WelfareLink.Models.Citizen", b =>
                 {
-                    b.Navigation("Disbursements");
+                    b.Navigation("CitizenDocuments");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WelfareLink.Models;
 
 namespace WelfareLink.Data
 {
@@ -8,5 +9,9 @@ namespace WelfareLink.Data
         public WelfareLinkDbContext(DbContextOptions<WelfareLinkDbContext> options) : base(options) { }
 
         public WelfareLinkDbContext() { }
+       // public WelfareDbContext() { }
+        public DbSet<Citizen> Citizens { get; set; }
+        public DbSet<CitizenDocument> CitizenDocuments { get; set; }
+
     }
 }
