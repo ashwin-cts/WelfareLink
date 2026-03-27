@@ -1,5 +1,7 @@
-namespace WelfareLink.Interfaces;
 
+using WelfareLink.Models;
+
+namespace WelfareLink.Interfaces;
 public interface IAuditRepository
 {
    Task<IEnumerable<Audit>> GetAllAsync();
