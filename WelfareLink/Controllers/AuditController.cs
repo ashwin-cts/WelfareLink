@@ -1,77 +1,85 @@
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.Interfaces;
-using WelfareLink.Models; // Ensure this points to where ComplianceRecord is stored
+using WelfareLink.Models; // Ensure this matches your Audit model namespace
 
 namespace WelfareLink.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ComplainceRecordController : ControllerBase
+    public class AuditController : ControllerBase
     {
-        private readonly IComplainceRecordService _complainceRecordService;
+        private readonly IAuditService _auditService;
 
-        public ComplainceRecordController(IComplainceRecordService complainceRecordService)
+        public AuditController(IAuditService auditService)
         {
-            _complainceRecordService = complainceRecordService;
+            _auditService = auditService;
         }
 
-        // GET: api/ComplainceRecord
+        // GET: api/Audit
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ComplianceRecord>>> GetAllRecords()
+        public async Task<ActionResult<IEnumerable<Audit>>> GetAudits()
         {
-            var records = await _complainceRecordService.GetAllRecordsAsync();
-            return Ok(records);
+            var audits = await _auditService.GetAllAuditsAsync();
+            return Ok(audits);
         }
 
-        // GET: api/ComplainceRecord/{id}
+        // GET: api/Audit/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<ComplianceRecord>> GetRecordById(string id)
+        public async Task<ActionResult<Audit>> GetAudit(string id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            var audit = await _auditService.GetAuditByIdAsync(id);
+            
+            if (audit == null)
             {
-                return BadRequest("Compliance Record ID is required.");
+                return NotFound($"Audit with ID {id} not found.");
             }
 
-            var record = await _complainceRecordService.GetRecordByIdAsync(id);
-
-            if (record == null)
-            {
-                return NotFound($"Compliance record with ID '{id}' was not found.");
-            }
-
-            return Ok(record);
+            return Ok(audit);
         }
 
-        // GET: api/ComplainceRecord/entity/{entityId}
-        [HttpGet("entity/{entityId}")]
-        public async Task<ActionResult<IEnumerable<ComplianceRecord>>> GetRecordsByEntity(string entityId)
-        {
-            if (string.IsNullOrWhiteSpace(entityId))
-            {
-                return BadRequest("Entity ID is required.");
-            }
-
-            var records = await _complainceRecordService.GetRecordsByEntityAsync(entityId);
-            return Ok(records);
-        }
-
-        // POST: api/ComplainceRecord
+        // POST: api/Audit
         [HttpPost]
-        public async Task<ActionResult<ComplianceRecord>> CreateRecord([FromBody] ComplianceRecord record)
+        public async Task<ActionResult<Audit>> CreateAudit([FromBody] Audit audit)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var success = await _complainceRecordService.CreateRecordAsync(record);
+            var success = await _auditService.CreateAuditAsync(audit);
+            
+            if (!success)
+            {
+                return BadRequest("Unable to create the audit record.");
+            }
+
+            return CreatedAtAction(nameof(GetAudit), new { id = audit.AuditID }, audit);
+        }
+
+        // PUT: api/Audit/{id}/status
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> UpdateAuditStatus(string id, [FromBody] AuditUpdateDto updateDto)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Audit ID is required.");
+            }
+
+            var success = await _auditService.UpdateAuditStatusAsync(id, updateDto.Status, updateDto.Findings);
 
             if (!success)
             {
-                return BadRequest("Could not create the compliance record. Please check server logs.");
+                return NotFound($"Unable to find or update Audit with ID {id}.");
             }
 
-            return CreatedAtAction(nameof(GetRecordById), new { id = record.ComplianceID }, record);
+            return NoContent();
         }
+    }
+
+    // A lightweight Data Transfer Object (DTO) for cleaner PUT payloads
+    public class AuditUpdateDto
+    {
+        public string Status { get; set; }
+        public string Findings { get; set; }
     }
 }
