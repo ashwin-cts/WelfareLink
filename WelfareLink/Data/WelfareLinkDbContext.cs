@@ -8,5 +8,7 @@ namespace WelfareLink.Data
         public WelfareLinkDbContext(DbContextOptions<WelfareLinkDbContext> options) : base(options) { }
 
         public WelfareLinkDbContext() { }
+         public DbSet<ComplainceRecord>ComplainceRecords{ get; set; }
+ public DbSet<Audit> Audits{ get; set; }
     }
 }
