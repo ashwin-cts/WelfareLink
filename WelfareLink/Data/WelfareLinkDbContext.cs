@@ -9,6 +9,6 @@ namespace WelfareLink.Data
 
         public WelfareLinkDbContext() { }
          public DbSet<ComplainceRecord>ComplainceRecords{ get; set; }
- public DbSet<Audit> Audits{ get; set; }
+         public DbSet<Audit> Audits{ get; set; }
     }
 }
