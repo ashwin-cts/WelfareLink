@@ -1,8 +1,10 @@
 namespace WelfareLink.Interfaces;
 
 public interface IAuditService
-{    Task<IEnumerable<ComplainceRecord>> GetAllRecordsAsync();
-    Task<ComplainceRecord> GetRecordByIdAsync(string complianceId);
-    Task<bool> CreateRecordAsync(ComplainceRecord record);
-    Task<IEnumerable<ComplainceRecord>> GetRecordsByEntityAsync(string entityId);
+{  
+ 
+  Task<IEnumerable<Audit>> GetAllAuditsAsync();
+ Task<Audit> GetAuditByIdAsync(string auditId);
+ Task<bool> CreateAuditAsync(Audit audit);
+ Task<bool> UpdateAuditStatusAsync(string auditId, string status, string findings);
 }
