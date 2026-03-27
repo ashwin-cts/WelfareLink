@@ -1,3 +1,4 @@
+
 # Visual Studio cache
 .vs/
 
@@ -12,3 +13,7 @@ Release/
 *.suo
 *.log
 *.tmp
+
+WelfareLink/bin/
+WelfareLink/obj/
+

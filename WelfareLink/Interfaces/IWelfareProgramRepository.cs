@@ -2,7 +2,7 @@ using WelfareLink.Models;
 
 namespace WelfareLink.Interfaces;
 
-public interface IWelfareProgramRepository
+public interface IWelfareProgramRepository 
 {
     Task<IEnumerable<WelfareProgram>> GetAllProgramsAsync();
     Task<WelfareProgram> GetProgramByIdAsync(int id);
@@ -10,3 +10,4 @@ public interface IWelfareProgramRepository
     Task UpdateProgramAsync(WelfareProgram program);
     Task DeleteProgramAsync(int id);
 }
+
