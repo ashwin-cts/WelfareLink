@@ -7,6 +7,7 @@ namespace WelfareLink.Models
         [Key]
         public int CheckID { get; set; }
 
+        [ForeignKey("WelfareApplication")]
         [Required(ErrorMessage = "Application ID is required")]
         [Display(Name = "Application ID")]
         public int ApplicationID { get; set; }
@@ -31,9 +32,9 @@ namespace WelfareLink.Models
         [Display(Name = "Notes")]
         public string Notes { get; set; }
 
-        // Navigation properties (optional - for EF Core relationships)
-        [ForeignKey("ApplicationID")]
-        public WelfareApplication? WelfareApplication { get; set; }
+        // Navigation property
+        // One EligibilityCheck belongs to one WelfareApplication
+        public virtual WelfareApplication? WelfareApplication { get; set; }
     }
 }
 

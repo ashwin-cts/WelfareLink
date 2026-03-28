@@ -16,17 +16,46 @@ namespace WelfareLink.Repositories
 
         public async Task<IEnumerable<Benefit>> GetAllAsync()
         {
-            return await _context.Benefits
+            var benefits = await _context.Benefits
                 .Include(b => b.Disbursements)
+                .Include(b => b.WelfareApplication)
+                    .ThenInclude(a => a.Program)
                 .ToListAsync();
+
+            foreach (var benefit in benefits)
+            {
+                if (benefit.WelfareApplication is not null)
+                {
+                    benefit.WelfareApplication.Citizen = new Citizen
+                    {
+                        CitizenID = benefit.WelfareApplication.CitizenID,
+                        FullName = "citizenName"
+                    };
+                }
+            }
+
+            return benefits;
         }
 
         public async Task<Benefit?> GetByIdAsync(int id)
         {
-            return await _context.Benefits
+            var benefit = await _context.Benefits
                 .Include(b => b.Disbursements)
+                .Include(b => b.WelfareApplication)
+                    .ThenInclude(a => a.Program)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.BenefitID == id);
+
+            if (benefit?.WelfareApplication is not null)
+            {
+                benefit.WelfareApplication.Citizen = new Citizen
+                {
+                    CitizenID = benefit.WelfareApplication.CitizenID,
+                    FullName = "citizenName"
+                };
+            }
+
+            return benefit;
         }
 
         public async Task<Benefit> AddAsync(Benefit benefit)
@@ -59,6 +88,13 @@ namespace WelfareLink.Repositories
         public async Task<bool> ExistsAsync(int id)
         {
             return await _context.Benefits.AnyAsync(e => e.BenefitID == id);
+        }
+
+        public async Task<IEnumerable<Benefit>> GetByApplicationIdAsync(int applicationId)
+        {
+            return await _context.Benefits
+                .Where(b => b.ApplicationID == applicationId)
+                .ToListAsync();
         }
     }
 }

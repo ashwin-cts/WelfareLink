@@ -7,8 +7,6 @@
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-<<<<<<< HEAD
-    <link rel="stylesheet" href="~/WelfareLinkPRJ.styles.css" asp-append-version="true" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         :root {
@@ -388,15 +386,6 @@
                     <i class="bi bi-heart-pulse-fill"></i>
                     WelfareLink
                 </a>
-=======
-    <link rel="stylesheet" href="~/WelfareLinkApplication_Project.styles.css" asp-append-version="true" />
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WelfareLinkApplication_Project</a>
->>>>>>> origin/Amirtha
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -410,7 +399,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
-<<<<<<< HEAD
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" || ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck" ? "active" : "")"
+                               asp-area="" asp-controller="WelfareApplication" asp-action="HomeIndex">
+                                <i class="bi bi-file-earmark-text"></i> Applications
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Benefit" || ViewContext.RouteData.Values["controller"]?.ToString() == "BenefitAnalytics" ? "active" : "")" 
                                asp-area="" asp-controller="Benefit" asp-action="Index">
                                 <i class="bi bi-gift"></i> Benefit
@@ -438,51 +432,58 @@
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">
                                 <i class="bi bi-shield-check"></i> Privacy
                             </a>
-=======
-                            <a class="nav-link text-dark" asp-area="" asp-controller="WelfareApplication" asp-action="HomeIndex">Welfare Application Home</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" id="applicationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Applications
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="applicationsDropdown">
-                                <li><a class="dropdown-item" asp-controller="WelfareApplication" asp-action="Index">All Applications</a></li>
-                                <li><a class="dropdown-item" asp-controller="WelfareApplication" asp-action="Pending">Pending Applications</a></li>
-                                <li><a class="dropdown-item" asp-controller="WelfareApplication" asp-action="MyApplications">My Applications</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" asp-controller="WelfareApplication" asp-action="Create">Submit Application</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" id="eligibilityDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Eligibility
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="eligibilityDropdown">
-                                <li><a class="dropdown-item" asp-controller="EligibilityCheck" asp-action="Index">All Checks</a></li>
-                                <li><a class="dropdown-item" asp-controller="EligibilityCheck" asp-action="MyChecks">My Checks</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" asp-controller="EligibilityCheck" asp-action="Create">New Check</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" id="analyticsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Analytics
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="analyticsDropdown">
-                                <li><a class="dropdown-item" asp-controller="ApplicationAnalytics" asp-action="Index">Dashboard</a></li>
-                                <li><a class="dropdown-item" asp-controller="ApplicationAnalytics" asp-action="StatusBreakdown">Status Breakdown</a></li>
-                                <li><a class="dropdown-item" asp-controller="ApplicationAnalytics" asp-action="MonthlyTrends">Monthly Trends</a></li>
-                                <li><a class="dropdown-item" asp-controller="ApplicationAnalytics" asp-action="EligibilityReport">Eligibility Report</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
->>>>>>> origin/Amirtha
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
+
+        <!-- Sub-Navigation for WelfareApplication -->
+        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" || ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck")
+        {
+            <nav class="sub-navbar">
+                <div class="container">
+                    <ul class="sub-nav-list">
+                        <li>
+                            <a asp-controller="WelfareApplication" asp-action="HomeIndex"
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "HomeIndex" ? "active" : "")">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="WelfareApplication" asp-action="Index"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                <i class="bi bi-list-ul"></i> All Applications
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="WelfareApplication" asp-action="Create"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" && ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
+                                <i class="bi bi-plus-circle"></i> Submit Application
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="WelfareApplication" asp-action="MyApplications"
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyApplications" ? "active" : "")">
+                                <i class="bi bi-person-lines-fill"></i> My Applications
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="WelfareApplication" asp-action="Pending"
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Pending" ? "active" : "")">
+                                <i class="bi bi-clock-history"></i> Pending Review
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="EligibilityCheck" asp-action="Index"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck" ? "active" : "")">
+                                <i class="bi bi-clipboard-check"></i> Eligibility Checks
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        }
 
         <!-- Sub-Navigation for Benefit -->
         @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Benefit" || ViewContext.RouteData.Values["controller"]?.ToString() == "BenefitAnalytics")

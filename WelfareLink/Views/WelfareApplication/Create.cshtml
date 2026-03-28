@@ -30,7 +30,9 @@
 
                         <div class="mb-3">
                             <label asp-for="ProgramID" class="form-label"></label>
-                            <input asp-for="ProgramID" type="number" class="form-control" placeholder="Enter Program ID" />
+                            <select asp-for="ProgramID" asp-items="ViewBag.ProgramList" class="form-select">
+                                <option value="">-- Select a Program --</option>
+                            </select>
                             <span asp-validation-for="ProgramID" class="text-danger"></span>
                         </div>
 

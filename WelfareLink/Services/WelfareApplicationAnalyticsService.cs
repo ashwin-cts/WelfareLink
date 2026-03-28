@@ -2,12 +2,12 @@
 
 namespace WelfareLink.Services
 {
-    public class ApplicationAnalyticsService : IApplicationAnalyticsService
+    public class WelfareApplicationAnalyticsService : IWelfareApplicationAnalyticsService
     {
         private readonly IWelfareApplicationRepository _applicationRepository;
         private readonly IEligibilityCheckRepository _eligibilityCheckRepository;
 
-        public ApplicationAnalyticsService(
+        public WelfareApplicationAnalyticsService(
             IWelfareApplicationRepository applicationRepository,
             IEligibilityCheckRepository eligibilityCheckRepository)
         {

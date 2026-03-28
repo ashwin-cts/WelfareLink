@@ -81,8 +81,17 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label class="form-label">Program ID</label>
-                                    <input type="number" name="ProgramID" class="form-control" required placeholder="Enter Program ID" />
+                                    <label class="form-label">Program</label>
+                                    <select name="ProgramID" class="form-select" required>
+                                        <option value="">-- Select Program --</option>
+                                        @if (ViewBag.ProgramList != null)
+                                        {
+                                            foreach (var item in (IEnumerable<SelectListItem>)ViewBag.ProgramList)
+                                            {
+                                                <option value="@item.Value">@item.Text</option>
+                                            }
+                                        }
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -127,7 +136,7 @@
                                     <tr>
                                         <th>Application ID</th>
                                         <th>Citizen ID</th>
-                                        <th>Program ID</th>
+                                        <th>Program</th>
                                         <th>Submitted Date</th>
                                         <th>Status</th>
                                         <th>Actions</th>
@@ -139,7 +148,22 @@
                                         <tr>
                                             <td><strong>#@item.ApplicationID</strong></td>
                                             <td>@item.CitizenID</td>
-                                            <td>@item.ProgramID</td>
+                                            <td>
+                                                @if (item.Program != null)
+                                                {
+                                                    <a asp-controller="WelfareProgram" asp-action="Details" asp-route-id="@item.ProgramID"
+                                                       class="text-decoration-none">
+                                                        <span class="badge bg-primary">
+                                                            <i class="bi bi-clipboard"></i> @item.Program.Title
+                                                        </span>
+                                                    </a>
+                                                    <br /><small class="text-muted">#@item.ProgramID</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">#@item.ProgramID</span>
+                                                }
+                                            </td>
                                             <td>@item.SubmittedDate.ToString("dd MMM yyyy")</td>
                                             <td>
                                                 @if (item.Status == "Pending")
@@ -213,7 +237,7 @@
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a asp-controller="ApplicationAnalytics" asp-action="Index" class="btn btn-outline-success w-100 mb-2">
+                            <a asp-controller="WelfareApplicationAnalytics" asp-action="Index" class="btn btn-outline-success w-100 mb-2">
                                 <i class="bi bi-graph-up"></i> Analytics Dashboard
                             </a>
                         </div>

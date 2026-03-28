@@ -33,12 +33,18 @@ namespace WelfareLink.Services
         {
             await ValidateDisbursementAsync(disbursement);
 
+            // Resolve CitizenID from the WelfareApplication linked to this Benefit
+            var benefit = await _benefitRepository.GetByIdAsync(disbursement.BenefitID);
+            if (benefit?.WelfareApplication != null)
+            {
+                disbursement.CitizenID = benefit.WelfareApplication.CitizenID;
+            }
+
             var createdDisbursement = await _disbursementRepository.AddAsync(disbursement);
 
             // If disbursement is completed and amount is less than benefit amount, create pending record for balance
             if (disbursement.Status == "Completed")
             {
-                var benefit = await _benefitRepository.GetByIdAsync(disbursement.BenefitID);
                 if (benefit != null)
                 {
                     // Get total already disbursed (including the one just created)
@@ -55,8 +61,8 @@ namespace WelfareLink.Services
                         var balanceDisbursement = new Disbursement
                         {
                             BenefitID = disbursement.BenefitID,
-                            CitizenID = 0, // To be assigned by officer
-                            OfficerID = 0, // To be assigned by officer
+                            CitizenID = disbursement.CitizenID,
+                            OfficerID = 0,
                             Amount = remainingBalance,
                             Date = DateTime.Now,
                             Status = "Pending"
@@ -89,6 +95,13 @@ namespace WelfareLink.Services
             // Get existing disbursement to check if amount changed and create balance record if needed
             var existingDisbursement = await _disbursementRepository.GetByIdAsync(disbursement.DisbursementID);
 
+            // Resolve CitizenID from the WelfareApplication linked to this Benefit
+            var benefit = await _benefitRepository.GetByIdAsync(disbursement.BenefitID);
+            if (benefit?.WelfareApplication != null)
+            {
+                disbursement.CitizenID = benefit.WelfareApplication.CitizenID;
+            }
+
             var updatedDisbursement = await _disbursementRepository.UpdateAsync(disbursement);
 
             // If disbursement is completed and amount is less than original pending amount, create new pending record for balance
@@ -103,8 +116,8 @@ namespace WelfareLink.Services
                 var balanceDisbursement = new Disbursement
                 {
                     BenefitID = disbursement.BenefitID,
-                    CitizenID = 0, // To be assigned by officer
-                    OfficerID = 0, // To be assigned by officer
+                    CitizenID = disbursement.CitizenID,
+                    OfficerID = 0,
                     Amount = balanceAmount,
                     Date = DateTime.Now,
                     Status = "Pending"

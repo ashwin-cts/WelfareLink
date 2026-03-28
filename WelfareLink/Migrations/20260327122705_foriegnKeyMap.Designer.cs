@@ -12,8 +12,8 @@ using WelfareLink.Data;
 namespace WelfareLink.Migrations
 {
     [DbContext(typeof(WelfareLinkDbContext))]
-    [Migration("20260326094108_adding_tables_welfareprogram_resource")]
-    partial class adding_tables_welfareprogram_resource
+    [Migration("20260327122705_foriegnKeyMap")]
+    partial class foriegnKeyMap
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -89,6 +89,42 @@ namespace WelfareLink.Migrations
                     b.ToTable("Disbursements");
                 });
 
+            modelBuilder.Entity("WelfareLink.Models.EligibilityCheck", b =>
+                {
+                    b.Property<int>("CheckID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CheckID"));
+
+                    b.Property<int>("ApplicationID")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OfficerID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResultCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("CheckID");
+
+                    b.HasIndex("ApplicationID");
+
+                    b.ToTable("EligibilityChecks");
+                });
+
             modelBuilder.Entity("WelfareLink.Models.Resource", b =>
                 {
                     b.Property<int>("ResourceID")
@@ -117,6 +153,42 @@ namespace WelfareLink.Migrations
                     b.HasIndex("ProgramID");
 
                     b.ToTable("Resources");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
+                {
+                    b.Property<int>("ApplicationID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ApplicationID"));
+
+                    b.Property<int?>("BenefitID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CitizenID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProgramID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly>("SubmittedDate")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("WelfareProgramsProgramID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ApplicationID");
+
+                    b.HasIndex("BenefitID");
+
+                    b.HasIndex("WelfareProgramsProgramID");
+
+                    b.ToTable("WelfareApplications");
                 });
 
             modelBuilder.Entity("WelfareLink.Models.WelfareProgram", b =>
@@ -165,6 +237,17 @@ namespace WelfareLink.Migrations
                     b.Navigation("Benefit");
                 });
 
+            modelBuilder.Entity("WelfareLink.Models.EligibilityCheck", b =>
+                {
+                    b.HasOne("WelfareLink.Models.WelfareApplication", "WelfareApplication")
+                        .WithMany("EligibilityChecks")
+                        .HasForeignKey("ApplicationID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WelfareApplication");
+                });
+
             modelBuilder.Entity("WelfareLink.Models.Resource", b =>
                 {
                     b.HasOne("WelfareLink.Models.WelfareProgram", "Program")
@@ -176,14 +259,36 @@ namespace WelfareLink.Migrations
                     b.Navigation("Program");
                 });
 
+            modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
+                {
+                    b.HasOne("WelfareLink.Models.Benefit", null)
+                        .WithMany("WelfareApplications")
+                        .HasForeignKey("BenefitID");
+
+                    b.HasOne("WelfareLink.Models.WelfareProgram", "WelfarePrograms")
+                        .WithMany("WelfareApplications")
+                        .HasForeignKey("WelfareProgramsProgramID");
+
+                    b.Navigation("WelfarePrograms");
+                });
+
             modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
                 {
                     b.Navigation("Disbursements");
+
+                    b.Navigation("WelfareApplications");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
+                {
+                    b.Navigation("EligibilityChecks");
                 });
 
             modelBuilder.Entity("WelfareLink.Models.WelfareProgram", b =>
                 {
                     b.Navigation("Resources");
+
+                    b.Navigation("WelfareApplications");
                 });
 #pragma warning restore 612, 618
         }

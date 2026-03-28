@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using WelfareLink.Interfaces;
 using WelfareLink.Models;
 using WelfareLink.Services;
@@ -8,15 +9,19 @@ namespace WelfareLink.Controllers;
 public class WelfareApplicationController : Controller
 {
     private readonly IWelfareApplicationService _welfareApplicationService;
+    private readonly IWelfareProgramService _welfareProgramService;
 
-    public WelfareApplicationController(IWelfareApplicationService welfareApplicationService)
+    public WelfareApplicationController(IWelfareApplicationService welfareApplicationService, IWelfareProgramService welfareProgramService)
     {
         _welfareApplicationService = welfareApplicationService;
+        _welfareProgramService = welfareProgramService;
     }
 
     public async Task<IActionResult> HomeIndex()
     {
         var applications = await _welfareApplicationService.GetAllApplicationsAsync();
+        var programs = await _welfareProgramService.GetAllProgramsAsync();
+        ViewBag.ProgramList = new SelectList(programs, "ProgramID", "Title");
         return View(applications);
     }
 
@@ -49,8 +54,10 @@ public class WelfareApplicationController : Controller
     }
     // GET: WelfareApplication/Create
     // Application Submission Page - Display form
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        var programs = await _welfareProgramService.GetAllProgramsAsync();
+        ViewBag.ProgramList = new SelectList(programs, "ProgramID", "Title");
         return View();
     }
 
@@ -66,6 +73,8 @@ public class WelfareApplicationController : Controller
             TempData["SuccessMessage"] = "Application submitted successfully!";
             return RedirectToAction(nameof(MyApplications));
         }
+        var programs = await _welfareProgramService.GetAllProgramsAsync();
+        ViewBag.ProgramList = new SelectList(programs, "ProgramID", "Title");
         return View(application);
     }
     // GET: WelfareApplication/MyApplications

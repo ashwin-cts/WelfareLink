@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using WelfareLink.Interfaces;
 using WelfareLink.Models;
 
@@ -7,10 +8,39 @@ namespace WelfareLink.Controllers
     public class BenefitController : Controller
     {
         private readonly IBenefitService _benefitService;
+        private readonly IWelfareApplicationService _welfareApplicationService;
 
-        public BenefitController(IBenefitService benefitService)
+        public BenefitController(IBenefitService benefitService, IWelfareApplicationService welfareApplicationService)
         {
             _benefitService = benefitService;
+            _welfareApplicationService = welfareApplicationService;
+        }
+
+        private async Task PopulateApplicationDropdown(int? selectedId = null)
+        {
+            var applications = await _welfareApplicationService.GetAllApplicationsAsync();
+            var appList = applications.ToList();
+
+            ViewBag.ApplicationList = new SelectList(
+                appList.Select(a => new {
+                    a.ApplicationID,
+                    Display = $"App #{a.ApplicationID} | {a.Citizen?.FullName ?? $"Citizen #{a.CitizenID}"} | {a.Program?.Title ?? $"Program #{a.ProgramID}"}"
+                }),
+                "ApplicationID", "Display", selectedId);
+
+            ViewBag.ApplicationsJson = System.Text.Json.JsonSerializer.Serialize(
+                appList.Select(a => new {
+                    a.ApplicationID,
+                    a.CitizenID,
+                    CitizenName     = a.Citizen?.FullName ?? "-",
+                    a.ProgramID,
+                    ProgramTitle    = a.Program?.Title ?? $"Program #{a.ProgramID}",
+                    ProgramDesc     = a.Program?.Description ?? "-",
+                    ProgramBudget   = a.Program?.Budget,
+                    ProgramStatus   = a.Program?.Status ?? "-",
+                    SubmittedDate   = a.SubmittedDate.ToString("dd MMM yyyy"),
+                    a.Status
+                }));
         }
 
         // GET: Benefit
@@ -38,8 +68,9 @@ namespace WelfareLink.Controllers
         }
 
         // GET: Benefit/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            await PopulateApplicationDropdown();
             return View();
         }
 
@@ -53,6 +84,7 @@ namespace WelfareLink.Controllers
                 await _benefitService.CreateBenefitAsync(benefit);
                 return RedirectToAction(nameof(Index));
             }
+            await PopulateApplicationDropdown(benefit.ApplicationID);
             return View(benefit);
         }
 
@@ -70,6 +102,7 @@ namespace WelfareLink.Controllers
                 return NotFound();
             }
 
+            await PopulateApplicationDropdown(benefit.ApplicationID);
             return View(benefit);
         }
 
@@ -93,6 +126,7 @@ namespace WelfareLink.Controllers
                 await _benefitService.UpdateBenefitAsync(benefit);
                 return RedirectToAction(nameof(Index));
             }
+            await PopulateApplicationDropdown(benefit.ApplicationID);
             return View(benefit);
         }
 

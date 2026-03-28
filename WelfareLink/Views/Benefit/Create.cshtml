@@ -14,6 +14,29 @@
 <div class="content-card">
     <div class="row justify-content-center">
         <div class="col-lg-8">
+
+            <div id="app-detail-box" class="d-none alert alert-info border-0 shadow-sm mb-4 p-3">
+                <h6 class="mb-3 fw-bold"><i class="bi bi-info-circle-fill me-1"></i> Application, Citizen &amp; Program Details</h6>
+                <div class="row g-2 small">
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">Application ID</span><br /><strong id="d-app-id"></strong></div>
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">Submitted Date</span><br /><strong id="d-submitted"></strong></div>
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">App Status</span><br /><strong id="d-app-status"></strong></div>
+                </div>
+                <hr class="my-2" />
+                <div class="row g-2 small">
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">Citizen ID</span><br /><strong id="d-citizen-id"></strong></div>
+                    <div class="col-sm-6 col-md-9"><span class="text-muted">Citizen Name</span><br /><strong id="d-citizen-name"></strong></div>
+                </div>
+                <hr class="my-2" />
+                <div class="row g-2 small">
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">Program ID</span><br /><strong id="d-prog-id"></strong></div>
+                    <div class="col-sm-6 col-md-6"><span class="text-muted">Program Title</span><br /><strong id="d-prog-title"></strong></div>
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">Program Status</span><br /><strong id="d-prog-status"></strong></div>
+                    <div class="col-sm-12 col-md-9"><span class="text-muted">Description</span><br /><span id="d-prog-desc"></span></div>
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">Budget</span><br /><strong id="d-prog-budget"></strong></div>
+                </div>
+            </div>
+
             <form asp-action="Create" class="needs-validation" novalidate>
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
@@ -21,9 +44,11 @@
                     <div class="col-md-6">
                         <div class="form-floating-modern">
                             <label asp-for="ApplicationID" class="form-label-modern">
-                                <i class="bi bi-file-earmark-text"></i> Application ID
+                                <i class="bi bi-file-earmark-text"></i> Welfare Application
                             </label>
-                            <input asp-for="ApplicationID" class="form-control" placeholder="Enter Application ID" />
+                            <select asp-for="ApplicationID" asp-items="ViewBag.ApplicationList" class="form-select">
+                                <option value="">-- Select Application --</option>
+                            </select>
                             <span asp-validation-for="ApplicationID" class="text-danger"></span>
                         </div>
                     </div>
@@ -100,4 +125,31 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        const appData = @Html.Raw(ViewBag.ApplicationsJson ?? "[]");
+
+        function showAppDetails(id) {
+            const box = document.getElementById('app-detail-box');
+            const app = appData.find(a => a.ApplicationID == id);
+            if (!app) { box.classList.add('d-none'); return; }
+
+            document.getElementById('d-app-id').textContent      = '#' + app.ApplicationID;
+            document.getElementById('d-submitted').textContent    = app.SubmittedDate;
+            document.getElementById('d-app-status').textContent   = app.Status;
+            document.getElementById('d-citizen-id').textContent   = '#' + app.CitizenID;
+            document.getElementById('d-citizen-name').textContent = app.CitizenName || '-';
+            document.getElementById('d-prog-id').textContent      = '#' + app.ProgramID;
+            document.getElementById('d-prog-title').textContent   = app.ProgramTitle;
+            document.getElementById('d-prog-status').textContent  = app.ProgramStatus;
+            document.getElementById('d-prog-desc').textContent    = app.ProgramDesc;
+            document.getElementById('d-prog-budget').textContent  = app.ProgramBudget != null
+                ? '₹' + Number(app.ProgramBudget).toLocaleString('en-IN') : '-';
+
+            box.classList.remove('d-none');
+        }
+
+        document.getElementById('ApplicationID').addEventListener('change', function () {
+            showAppDetails(this.value);
+        });
+    </script>
 }

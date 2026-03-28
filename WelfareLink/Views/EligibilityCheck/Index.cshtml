@@ -72,7 +72,7 @@
                                 <thead class="table-dark">
                                     <tr>
                                         <th>Check ID</th>
-                                        <th>Application ID</th>
+                                        <th>Application</th>
                                         <th>Officer ID</th>
                                         <th>Date</th>
                                         <th>Result</th>
@@ -87,10 +87,15 @@
                                         <tr>
                                             <td>@item.CheckID</td>
                                             <td>
-                                                <a asp-controller="WelfareApplication" asp-action="Details" asp-route-id="@item.ApplicationID" 
-                                                   class="badge bg-primary text-decoration-none">
-                                                    #@item.ApplicationID
-                                                </a>
+                                                <a asp-controller="WelfareApplication" asp-action="Details" asp-route-id="@item.ApplicationID"
+                                                   class="badge bg-primary text-decoration-none mb-1 d-inline-block">#@item.ApplicationID</a>
+                                                @if (item.WelfareApplication != null)
+                                                {
+                                                    <div class="small"><span class="text-muted">Citizen ID:</span> @item.WelfareApplication.CitizenID</div>
+                                                    <div class="small"><span class="text-muted">Program:</span> @(item.WelfareApplication.Program?.Title ?? $"#{item.WelfareApplication.ProgramID}")</div>
+                                                    <div class="small"><span class="text-muted">Submitted:</span> @item.WelfareApplication.SubmittedDate.ToString("dd MMM yyyy")</div>
+                                                    <div class="small"><span class="badge bg-light text-dark border">@item.WelfareApplication.Status</span></div>
+                                                }
                                             </td>
                                             <td>@item.OfficerID</td>
                                             <td>@item.Date.ToString("dd MMM yyyy")</td>

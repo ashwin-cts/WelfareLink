@@ -7,13 +7,16 @@ public class EligibilityCheckService : IEligibilityCheckService
 {
     private readonly IEligibilityCheckRepository _eligibilityCheckRepository;
     private readonly IWelfareApplicationRepository _applicationRepository;
+    private readonly IBenefitRepository _benefitRepository;
 
     public EligibilityCheckService(
         IEligibilityCheckRepository eligibilityCheckRepository,
-        IWelfareApplicationRepository applicationRepository)
+        IWelfareApplicationRepository applicationRepository,
+        IBenefitRepository benefitRepository)
     {
         _eligibilityCheckRepository = eligibilityCheckRepository;
         _applicationRepository = applicationRepository;
+        _benefitRepository = benefitRepository;
     }
 
     public async Task<IEnumerable<EligibilityCheck>> GetAllChecksAsync()
@@ -52,7 +55,23 @@ public class EligibilityCheckService : IEligibilityCheckService
             string newStatus = check.Result.ToLower() == "eligible" ? "Approved" : "Rejected";
             await _applicationRepository.UpdateStatusAsync(applicationId.Value, newStatus);
 
-            // TODO: Send notification to citizen with outcome
+            // Auto-create a Benefit when application is eligible
+            if (check.Result.ToLower() == "eligible")
+            {
+                var existingBenefits = await _benefitRepository.GetByApplicationIdAsync(applicationId.Value);
+                if (!existingBenefits.Any())
+                {
+                    var benefit = new Benefit
+                    {
+                        ApplicationID = applicationId.Value,
+                        Type = "General",
+                        Amount = 0.0,
+                        Date = DateTime.Now,
+                        Status = "Allocated"
+                    };
+                    await _benefitRepository.AddAsync(benefit);
+                }
+            }
         }
 
         return createdCheck;
@@ -72,6 +91,28 @@ public class EligibilityCheckService : IEligibilityCheckService
         }
 
         await _eligibilityCheckRepository.UpdateAsync(check);
+
+        // Sync application status based on updated result
+        string newStatus = check.Result.ToLower() == "eligible" ? "Approved" : "Rejected";
+        await _applicationRepository.UpdateStatusAsync(check.ApplicationID, newStatus);
+
+        // Auto-create a Benefit if result is now Eligible and none exists yet
+        if (check.Result.ToLower() == "eligible")
+        {
+            var existingBenefits = await _benefitRepository.GetByApplicationIdAsync(check.ApplicationID);
+            if (!existingBenefits.Any())
+            {
+                var benefit = new Benefit
+                {
+                    ApplicationID = check.ApplicationID,
+                    Type = "General",
+                    Amount = 0.0,
+                    Date = DateTime.Now,
+                    Status = "Allocated"
+                };
+                await _benefitRepository.AddAsync(benefit);
+            }
+        }
     }
 
     public async Task DeleteCheckAsync(int id)

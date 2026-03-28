@@ -31,6 +31,31 @@
                             </a>
                         </dd>
 
+                        @if (Model.WelfareApplication != null)
+                        {
+                            <dt class="col-sm-4">Citizen ID</dt>
+                            <dd class="col-sm-8">@Model.WelfareApplication.CitizenID</dd>
+
+                            <dt class="col-sm-4">Program</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.WelfareApplication.Program != null)
+                                {
+                                    <span>@Model.WelfareApplication.Program.Title</span>
+                                    <small class="text-muted d-block">ID: @Model.WelfareApplication.ProgramID</small>
+                                }
+                                else
+                                {
+                                    <span>#@Model.WelfareApplication.ProgramID</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">Submitted Date</dt>
+                            <dd class="col-sm-8">@Model.WelfareApplication.SubmittedDate.ToString("dd MMMM yyyy")</dd>
+
+                            <dt class="col-sm-4">Application Status</dt>
+                            <dd class="col-sm-8"><span class="badge bg-secondary">@Model.WelfareApplication.Status</span></dd>
+                        }
+
                         <dt class="col-sm-4">Officer ID</dt>
                         <dd class="col-sm-8">@Model.OfficerID</dd>
 

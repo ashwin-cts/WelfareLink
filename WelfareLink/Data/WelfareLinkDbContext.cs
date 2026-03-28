@@ -17,17 +17,7 @@ namespace WelfareLink.Data
         public DbSet<Resource> Resources { get; set; }
         public DbSet<WelfareApplication> WelfareApplications { get; set; }
         public DbSet<EligibilityCheck> EligibilityChecks { get; set; }
+        public DbSet<Citizen> Citizens { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            // Configure WelfareApplication - EligibilityCheck relationship
-            modelBuilder.Entity<EligibilityCheck>()
-                .HasOne(e => e.WelfareApplication)
-                .WithMany()
-                .HasForeignKey(e => e.ApplicationID)
-                .OnDelete(DeleteBehavior.Restrict); // Changed from CASCADE to RESTRICT to prevent accidental deletions
-        }
     }
 }

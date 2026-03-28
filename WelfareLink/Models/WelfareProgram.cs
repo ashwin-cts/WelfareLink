@@ -32,5 +32,9 @@ namespace WelfareLink.Models
         public string? Status { get; set; }
 
         public ICollection<Resource>? Resources { get; set; }
+
+        //navigation property for one-to-many relationship
+        //means one WelfareProgram can have many WelfareApplications
+        public virtual ICollection<WelfareApplication>? WelfareApplications { get; set; }
     }
 }

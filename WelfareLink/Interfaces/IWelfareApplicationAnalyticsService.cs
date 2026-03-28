@@ -1,6 +1,6 @@
 ﻿namespace WelfareLink.Interfaces
 {
-    public interface IApplicationAnalyticsService
+    public interface IWelfareApplicationAnalyticsService
     {
         Task<Dictionary<string, object>> GetDashboardMetricsAsync();
         Task<Dictionary<string, int>> GetStatusBreakdownAsync();

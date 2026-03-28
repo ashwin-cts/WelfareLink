@@ -1,7 +1,7 @@
 using WelfareLink.Data;
 using WelfareLink.Interfaces;
 using WelfareLink.Models;
-
+using WelfareLink.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace WelfareLink.Repositories;
@@ -51,6 +51,5 @@ public class WelfareProgramRespository : IWelfareProgramRepository
             _context.Programs.Remove(program);
             await _context.SaveChangesAsync();
         }
-
     }
 }

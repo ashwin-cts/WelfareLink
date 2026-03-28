@@ -5,16 +5,16 @@ using WelfareLink.Services;
 namespace WelfareLink.Controllers
 {
     
-    public class ApplicationAnalyticsController : Controller
+    public class WelfareApplicationAnalyticsController : Controller
     {
-        private readonly IApplicationAnalyticsService _analyticsService;
+        private readonly IWelfareApplicationAnalyticsService _analyticsService;
 
-        public ApplicationAnalyticsController(IApplicationAnalyticsService analyticsService)
+        public WelfareApplicationAnalyticsController(IWelfareApplicationAnalyticsService analyticsService)
         {
             _analyticsService = analyticsService;
         }
-        // GET: ApplicationAnalytics
-        // Application Analytics Dashboard (Manager)
+        // GET: WelfareApplicationAnalytics
+        // WelfareApplication Analytics Dashboard (Manager)
         // Displays metrics: applications submitted, pending, approved, rejected per programme
         public async Task<IActionResult> Index()
         {
@@ -53,7 +53,7 @@ namespace WelfareLink.Controllers
             ViewBag.StatusBreakdown = statusData;
             return View();
         }
-        // GET: ApplicationAnalytics/MonthlyTrends
+        // GET: WelfareApplicationAnalytics/MonthlyTrends
         // Get monthly application trends
         public async Task<IActionResult> MonthlyTrends(int? year)
         {
@@ -65,7 +65,7 @@ namespace WelfareLink.Controllers
             return View();
         }
 
-        // GET: ApplicationAnalytics/EligibilityReport
+        // GET: WelfareApplicationAnalytics/EligibilityReport
         // Eligibility check performance report
         public async Task<IActionResult> EligibilityReport()
         {
@@ -75,7 +75,7 @@ namespace WelfareLink.Controllers
             ViewBag.ChecksByMonth = report["ChecksByMonth"];
             return View();
         }
-        // GET: ApplicationAnalytics/Export
+        // GET: WelfareApplicationAnalytics/Export
         // Export analytics data (placeholder for future implementation)
         public async Task<IActionResult> Export(string format = "csv")
         {

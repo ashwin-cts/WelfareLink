@@ -70,8 +70,14 @@ public class EligibilityCheckController : Controller
         if (ModelState.IsValid)
         {
             await _eligibilityCheckService.CreateCheckAsync(check, applicationId);
-            TempData["SuccessMessage"] = "Eligibility check recorded successfully!";
 
+            if (check.Result?.ToLower() == "eligible")
+            {
+                TempData["SuccessMessage"] = "Application is Eligible — status set to Approved and a Benefit has been automatically created.";
+                return RedirectToAction("Index", "Benefit");
+            }
+
+            TempData["SuccessMessage"] = "Eligibility check recorded. Application has been marked as Rejected.";
             if (applicationId.HasValue)
             {
                 return RedirectToAction("Details", "WelfareApplication", new { id = applicationId });
@@ -114,6 +120,9 @@ public class EligibilityCheckController : Controller
             TempData["SuccessMessage"] = "Eligibility check updated successfully!";
             return RedirectToAction(nameof(Index));
         }
+
+        var existing = await _eligibilityCheckService.GetCheckByIdAsync(check.CheckID);
+        if (existing != null) check.WelfareApplication = existing.WelfareApplication;
         return View(check);
     }
 

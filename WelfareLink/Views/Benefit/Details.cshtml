@@ -37,37 +37,90 @@
         </div>
     </div>
 
-    <div class="detail-grid">
+    <div class="detail-grid mb-4">
         <div class="detail-item">
             <label><i class="bi bi-hash"></i> Benefit ID</label>
             <p>@Model?.BenefitID</p>
         </div>
-
-        <div class="detail-item">
-            <label><i class="bi bi-file-earmark-text"></i> Application ID</label>
-            <p>@Model?.ApplicationID</p>
-        </div>
-
         <div class="detail-item">
             <label><i class="bi bi-tag"></i> Benefit Type</label>
             <p>@Model?.Type</p>
         </div>
-
         <div class="detail-item">
             <label><i class="bi bi-currency-rupee"></i> Amount</label>
             <p><strong style="color: #10b981; font-size: 1.3rem;">₹@Model?.Amount.ToString("N2")</strong></p>
         </div>
-
         <div class="detail-item">
             <label><i class="bi bi-calendar-event"></i> Allocation Date</label>
             <p>@Model?.Date.ToString("MMMM dd, yyyy")</p>
         </div>
-
         <div class="detail-item">
             <label><i class="bi bi-flag"></i> Current Status</label>
             <p>@Model?.Status</p>
         </div>
     </div>
+
+    @if (Model?.WelfareApplication != null)
+    {
+        <h5 class="fw-bold mb-3"><i class="bi bi-file-earmark-text text-primary me-2"></i>Application Details</h5>
+        <div class="detail-grid mb-4">
+            <div class="detail-item">
+                <label><i class="bi bi-hash"></i> Application ID</label>
+                <p>
+                    <a asp-controller="WelfareApplication" asp-action="Details" asp-route-id="@Model.WelfareApplication.ApplicationID" class="text-decoration-none fw-bold">
+                        App #@Model.WelfareApplication.ApplicationID
+                    </a>
+                </p>
+            </div>
+            <div class="detail-item">
+                <label><i class="bi bi-calendar"></i> Submitted Date</label>
+                <p>@Model.WelfareApplication.SubmittedDate.ToString("MMMM dd, yyyy")</p>
+            </div>
+            <div class="detail-item">
+                <label><i class="bi bi-flag"></i> Application Status</label>
+                <p>@Model.WelfareApplication.Status</p>
+            </div>
+        </div>
+
+        <h5 class="fw-bold mb-3"><i class="bi bi-person-fill text-success me-2"></i>Citizen Details</h5>
+        <div class="detail-grid mb-4">
+            <div class="detail-item">
+                <label><i class="bi bi-person-badge"></i> Citizen ID</label>
+                <p>#@Model.WelfareApplication.CitizenID</p>
+            </div>
+            <div class="detail-item">
+                <label><i class="bi bi-person"></i> Citizen Name</label>
+                <p>@(Model.WelfareApplication.Citizen?.FullName ?? "-")</p>
+            </div>
+        </div>
+
+        @if (Model.WelfareApplication.Program != null)
+        {
+            <h5 class="fw-bold mb-3"><i class="bi bi-diagram-3-fill text-warning me-2"></i>Program Details</h5>
+            <div class="detail-grid mb-4">
+                <div class="detail-item">
+                    <label><i class="bi bi-hash"></i> Program ID</label>
+                    <p>#@Model.WelfareApplication.Program.ProgramID</p>
+                </div>
+                <div class="detail-item">
+                    <label><i class="bi bi-grid"></i> Program Title</label>
+                    <p>@Model.WelfareApplication.Program.Title</p>
+                </div>
+                <div class="detail-item">
+                    <label><i class="bi bi-flag"></i> Program Status</label>
+                    <p>@Model.WelfareApplication.Program.Status</p>
+                </div>
+                <div class="detail-item">
+                    <label><i class="bi bi-currency-rupee"></i> Budget</label>
+                    <p>₹@Model.WelfareApplication.Program.Budget.ToString("N2")</p>
+                </div>
+                <div class="detail-item" style="grid-column: span 2;">
+                    <label><i class="bi bi-card-text"></i> Description</label>
+                    <p>@(Model.WelfareApplication.Program.Description ?? "-")</p>
+                </div>
+            </div>
+        }
+    }
 
     <hr class="my-4" />
 

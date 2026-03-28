@@ -14,6 +14,7 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
     {
         return await _dbSet
             .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Program)
             .Where(e => e.ApplicationID == applicationId)
             .OrderByDescending(e => e.Date)
             .ToListAsync();
@@ -23,6 +24,7 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
     {
         return await _dbSet
             .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Program)
             .Where(e => e.OfficerID == officerId)
             .OrderByDescending(e => e.Date)
             .ToListAsync();
@@ -32,6 +34,7 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
     {
         return await _dbSet
             .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Program)
             .Where(e => e.Result == result)
             .OrderByDescending(e => e.Date)
             .ToListAsync();
@@ -41,6 +44,7 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
     {
         return await _dbSet
             .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Program)
             .Where(e => e.Date >= startDate && e.Date <= endDate)
             .OrderBy(e => e.Date)
             .ToListAsync();
@@ -50,6 +54,7 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
     {
         return await _dbSet
             .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Program)
             .Where(e => e.ApplicationID == applicationId)
             .OrderByDescending(e => e.Date)
             .FirstOrDefaultAsync();
@@ -59,13 +64,16 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
     {
         return await _dbSet
             .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Program)
             .ToListAsync();
     }
 
     public override async Task<EligibilityCheck?> GetByIdAsync(int id)
     {
         return await _dbSet
+            .AsNoTracking()
             .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Program)
             .FirstOrDefaultAsync(e => e.CheckID == id);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WelfareLink.Models
 {
@@ -11,6 +12,7 @@ namespace WelfareLink.Models
         [Display(Name = "Citizen ID")]
         public int CitizenID { get; set; }
 
+        [ForeignKey("Program")]
         [Required(ErrorMessage = "Program ID is required")]
         [Display(Name = "Program ID")]
         public int ProgramID { get; set; }
@@ -22,5 +24,21 @@ namespace WelfareLink.Models
         [Required]
         [Display(Name = "Status")]
         public string Status { get; set; } = "Pending";
+
+        //navigation property for one-to-many relationship
+        //means one WelfareApplication can have many EligibilityChecks
+        public virtual ICollection<EligibilityCheck>? EligibilityChecks { get; set; }
+
+        // Navigation property for one-to-many relationship
+        // One WelfareApplication can have many Benefits
+        public virtual ICollection<Benefit>? Benefits { get; set; }
+
+        // Navigation property
+        // One WelfareApplication belongs to one WelfareProgram
+        public virtual WelfareProgram? Program { get; set; }
+
+        // Navigation property
+        // One WelfareApplication belongs to one Citizen
+        public virtual Citizen? Citizen { get; set; }
     }
 }

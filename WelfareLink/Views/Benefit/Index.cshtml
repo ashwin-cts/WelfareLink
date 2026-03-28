@@ -30,7 +30,18 @@
                 {
                     <tr>
                         <td><strong>#@item.BenefitID</strong></td>
-                        <td>@item.ApplicationID</td>
+                        <td>
+                            <a asp-controller="WelfareApplication" asp-action="Details" asp-route-id="@item.ApplicationID" class="text-decoration-none">
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-file-earmark-text"></i> App #@item.ApplicationID
+                                </span>
+                                @if (item.WelfareApplication != null)
+                                {
+                                    <br /><small class="text-muted">Citizen #@item.WelfareApplication.CitizenID</small>
+                                    <br /><small class="text-muted"><i class="bi bi-grid"></i> @(item.WelfareApplication.Program?.Title ?? $"Program #{item.WelfareApplication.ProgramID}")</small>
+                                }
+                            </a>
+                        </td>
                         <td>
                             <span class="badge bg-primary">
                                 <i class="bi bi-box"></i> @item.Type
