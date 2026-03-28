@@ -7,12 +7,14 @@ namespace WelfareLink.Services
     {
         private readonly IDisbursementRepository _disbursementRepository;
         private readonly IBenefitRepository _benefitRepository;
-        private readonly string[] _validStatuses = { "Completed", "Pending", "Failed" };
+        private readonly IWelfareApplicationRepository _applicationRepository;
+        private readonly string[] _validStatuses = { "Completed", "Pending", "Disbursement Pending", "Failed" };
 
-        public DisbursementService(IDisbursementRepository disbursementRepository, IBenefitRepository benefitRepository)
+        public DisbursementService(IDisbursementRepository disbursementRepository, IBenefitRepository benefitRepository, IWelfareApplicationRepository applicationRepository)
         {
             _disbursementRepository = disbursementRepository;
             _benefitRepository = benefitRepository;
+            _applicationRepository = applicationRepository;
         }
 
         public async Task<IEnumerable<Disbursement>> GetAllDisbursementsAsync()
@@ -207,6 +209,15 @@ namespace WelfareLink.Services
             {
                 benefit.Status = newStatus;
                 await _benefitRepository.UpdateAsync(benefit);
+
+                if (newStatus == "Fully Disbursed")
+                {
+                    var allBenefits = await _benefitRepository.GetByApplicationIdAsync(benefit.ApplicationID);
+                    if (allBenefits.Any() && allBenefits.All(b => b.Status.Equals("Fully Disbursed", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        await _applicationRepository.UpdateStatusAsync(benefit.ApplicationID, "Fully Disbursed");
+                    }
+                }
             }
         }
 

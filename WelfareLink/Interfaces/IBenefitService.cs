@@ -10,5 +10,6 @@ namespace WelfareLink.Interfaces
         Task<Benefit> UpdateBenefitAsync(Benefit benefit);
         Task<bool> DeleteBenefitAsync(int id);
         Task<bool> BenefitExistsAsync(int id);
+        Task<Benefit?> CreateBenefitForApprovedApplicationAsync(int applicationId);
     }
 }

@@ -63,63 +63,6 @@
         </div>
     </div>
 
-    <!-- Application Form -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5><i class="bi bi-plus-circle"></i> Submit New Welfare Application</h5>
-                </div>
-                <div class="card-body">
-                    <form asp-controller="WelfareApplication" asp-action="Create" method="post">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label class="form-label">Citizen ID</label>
-                                    <input type="number" name="CitizenID" class="form-control" required placeholder="Enter Citizen ID" />
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label class="form-label">Program</label>
-                                    <select name="ProgramID" class="form-select" required>
-                                        <option value="">-- Select Program --</option>
-                                        @if (ViewBag.ProgramList != null)
-                                        {
-                                            foreach (var item in (IEnumerable<SelectListItem>)ViewBag.ProgramList)
-                                            {
-                                                <option value="@item.Value">@item.Text</option>
-                                            }
-                                        }
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label class="form-label">Status</label>
-                                    <select name="Status" class="form-select" required>
-                                        <option value="Pending" selected>Pending</option>
-                                        <option value="Under Review">Under Review</option>
-                                        <option value="Approved">Approved</option>
-                                        <option value="Rejected">Rejected</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label class="form-label">&nbsp;</label>
-                                    <button type="submit" class="btn btn-primary w-100">
-                                        <i class="bi bi-send"></i> Submit Application
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Applications Table -->
     <div class="row">
         <div class="col-md-12">
@@ -189,14 +132,6 @@
                                                            class="btn btn-sm btn-info" title="View Details">
                                                         <i class="bi bi-eye"></i> View
                                                     </a>
-                                                    <a asp-controller="WelfareApplication" asp-action="Edit" asp-route-id="@item.ApplicationID"
-                                                           class="btn btn-sm btn-warning" title="Edit">
-                                                        <i class="bi bi-pencil"></i> Edit
-                                                    </a>
-                                                    <a asp-controller="WelfareApplication" asp-action="Delete" asp-route-id="@item.ApplicationID"
-                                                           class="btn btn-sm btn-danger" title="Delete">
-                                                        <i class="bi bi-trash"></i> Delete
-                                                    </a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -212,41 +147,6 @@
                             <strong>No applications found.</strong> Submit your first application using the form above.
                         </div>
                     }
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Links -->
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5><i class="bi bi-link-45deg"></i> Quick Links</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <a asp-controller="WelfareApplication" asp-action="Pending" class="btn btn-outline-warning w-100 mb-2">
-                                <i class="bi bi-clock"></i> Pending Applications
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a asp-controller="EligibilityCheck" asp-action="Index" class="btn btn-outline-primary w-100 mb-2">
-                                <i class="bi bi-clipboard-check"></i> Eligibility Checks
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a asp-controller="WelfareApplicationAnalytics" asp-action="Index" class="btn btn-outline-success w-100 mb-2">
-                                <i class="bi bi-graph-up"></i> Analytics Dashboard
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a asp-controller="WelfareApplication" asp-action="MyApplications" class="btn btn-outline-info w-100 mb-2">
-                                <i class="bi bi-person-check"></i> My Applications
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

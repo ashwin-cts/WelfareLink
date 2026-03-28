@@ -6,24 +6,30 @@
     <div class="row mb-4">
         <div class="col-md-12">
             <h1 class="display-4">@ViewData["Title"]</h1>
-            <p class="lead">Eligibility check performance analysis</p>
-        </div>
-    </div>
+            <p class="lead">Final eligibility outcome per application &mdash; re-checked applications show their latest result only</p>
+                </div>
+            </div>
 
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <a asp-action="Index" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Dashboard
-            </a>
-        </div>
-    </div>
+            @if (ViewBag.TotalApplicationsChecked != null)
+            {
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="alert alert-info d-inline-flex align-items-center gap-2 mb-0">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <span>Based on <strong>@ViewBag.TotalApplicationsChecked</strong> application(s) assessed &mdash; each counted once using its most recent eligibility check.</span>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @await Html.PartialAsync("_AnalyticsNav")
 
     <!-- Result Breakdown -->
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h5>Eligibility Check Results Distribution</h5>
+                    <h5>Final Eligibility Result per Application</h5>
                 </div>
                 <div class="card-body">
                     @if (ViewBag.ResultBreakdown != null && ViewBag.ResultBreakdown.Count > 0)
@@ -33,7 +39,7 @@
                                 <thead class="table-dark">
                                     <tr>
                                         <th>Result</th>
-                                        <th>Count</th>
+                                        <th>Applications</th>
                                         <th>Percentage</th>
                                         <th>Visual</th>
                                     </tr>
@@ -88,7 +94,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header bg-info text-white">
-                    <h5>Eligibility Checks by Month</h5>
+                    <h5>Applications by Month (Final Eligibility Status)</h5>
                 </div>
                 <div class="card-body">
                     @if (ViewBag.ChecksByMonth != null && ViewBag.ChecksByMonth.Count > 0)
@@ -98,7 +104,7 @@
                                 <thead class="table-dark">
                                     <tr>
                                         <th>Month</th>
-                                        <th>Total Checks</th>
+                                        <th>Applications</th>
                                         <th>Eligible</th>
                                         <th>Ineligible</th>
                                         <th>Eligibility Rate</th>

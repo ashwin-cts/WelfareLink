@@ -24,7 +24,7 @@ namespace WelfareLink.Controllers
             ViewBag.ApplicationList = new SelectList(
                 appList.Select(a => new {
                     a.ApplicationID,
-                    Display = $"App #{a.ApplicationID} | {a.Citizen?.FullName ?? $"Citizen #{a.CitizenID}"} | {a.Program?.Title ?? $"Program #{a.ProgramID}"}"
+                    Display = $"App #{a.ApplicationID} | {a.Citizen?.Name ?? $"Citizen #{a.CitizenID}"} | {a.Program?.Title ?? $"Program #{a.ProgramID}"}"
                 }),
                 "ApplicationID", "Display", selectedId);
 
@@ -32,7 +32,7 @@ namespace WelfareLink.Controllers
                 appList.Select(a => new {
                     a.ApplicationID,
                     a.CitizenID,
-                    CitizenName     = a.Citizen?.FullName ?? "-",
+                    CitizenName     = a.Citizen?.Name ?? "-",
                     a.ProgramID,
                     ProgramTitle    = a.Program?.Title ?? $"Program #{a.ProgramID}",
                     ProgramDesc     = a.Program?.Description ?? "-",

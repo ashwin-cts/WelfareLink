@@ -6,10 +6,12 @@ namespace WelfareLink.Services;
 public class WelfareApplicationService : IWelfareApplicationService
 {
     private readonly IWelfareApplicationRepository _applicationRepository;
+    private readonly IBenefitService _benefitService;
 
-    public WelfareApplicationService(IWelfareApplicationRepository applicationRepository)
+    public WelfareApplicationService(IWelfareApplicationRepository applicationRepository, IBenefitService benefitService)
     {
         _applicationRepository = applicationRepository;
+        _benefitService = benefitService;
     }
 
     public async Task<IEnumerable<WelfareApplication>> GetAllApplicationsAsync()
@@ -50,6 +52,11 @@ public class WelfareApplicationService : IWelfareApplicationService
         }
 
         await _applicationRepository.UpdateAsync(application);
+
+        if (application.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+        {
+            await _benefitService.CreateBenefitForApprovedApplicationAsync(application.ApplicationID);
+        }
     }
 
     public async Task DeleteApplicationAsync(int id)
@@ -96,13 +103,20 @@ public class WelfareApplicationService : IWelfareApplicationService
     public async Task<bool> UpdateApplicationStatusAsync(int applicationId, string status)
     {
         // Validate status
-        var validStatuses = new[] { "Pending", "Under Review", "Approved", "Rejected" };
+        var validStatuses = new[] { "Pending", "Under Review", "Approved", "Rejected", "Fully Disbursed" };
         if (!validStatuses.Contains(status))
         {
             throw new ArgumentException($"Invalid status. Must be one of: {string.Join(", ", validStatuses)}");
         }
 
-        return await _applicationRepository.UpdateStatusAsync(applicationId, status);
+        var result = await _applicationRepository.UpdateStatusAsync(applicationId, status);
+
+        if (result && status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+        {
+            await _benefitService.CreateBenefitForApprovedApplicationAsync(applicationId);
+        }
+
+        return result;
     }
 
     public async Task<bool> SubmitApplicationAsync(WelfareApplication application)

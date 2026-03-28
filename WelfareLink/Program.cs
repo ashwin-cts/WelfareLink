@@ -51,6 +51,7 @@ namespace WelfareLink
             builder.Services.AddScoped<IReportService, ReportService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<IBenefitAnalyticsService, BenefitAnalyticsService>();
+            builder.Services.AddScoped<IWelfareApplicationAnalyticsService, WelfareApplicationAnalyticsService>();
 
 
             var app = builder.Build();

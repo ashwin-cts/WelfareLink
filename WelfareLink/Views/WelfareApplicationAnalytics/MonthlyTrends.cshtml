@@ -8,17 +8,14 @@
         <div class="col-md-12">
             <h1 class="display-4">@ViewData["Title"]</h1>
             <p class="lead">Application trends for @currentYear</p>
-        </div>
-    </div>
+                </div>
+            </div>
 
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <a asp-action="Index" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Dashboard
-            </a>
-        </div>
-        <div class="col-md-6 text-end">
-            <div class="btn-group" role="group">
+            @await Html.PartialAsync("_AnalyticsNav")
+
+            <div class="row mb-3">
+                <div class="col-md-12 text-end">
+                    <div class="btn-group" role="group">
                 <a asp-action="MonthlyTrends" asp-route-year="@(currentYear - 1)" class="btn btn-outline-primary">
                     <i class="bi bi-chevron-left"></i> @(currentYear - 1)
                 </a>

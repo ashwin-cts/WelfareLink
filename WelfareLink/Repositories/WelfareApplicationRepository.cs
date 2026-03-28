@@ -13,39 +13,21 @@ public class WelfareApplicationRepository : Repository<WelfareApplication> ,IWel
 
     public override async Task<IEnumerable<WelfareApplication>> GetAllAsync()
     {
-        var applications = await _dbSet
+        return await _dbSet
             .Include(a => a.Program)
+            .Include(a => a.Citizen)
             .OrderByDescending(a => a.SubmittedDate)
             .ToListAsync();
-
-        foreach (var application in applications)
-        {
-            application.Citizen = new Citizen
-            {
-                CitizenID = application.CitizenID,
-                FullName = "citizenName"
-            };
-        }
-
-        return applications;
     }
 
     public override async Task<WelfareApplication?> GetByIdAsync(int id)
     {
-        var application = await _dbSet
+        return await _dbSet
+            .AsNoTracking()
             .Include(a => a.Program)
+            .Include(a => a.Citizen)
+            .Include(a => a.EligibilityChecks)
             .FirstOrDefaultAsync(a => a.ApplicationID == id);
-
-        if (application is not null)
-        {
-            application.Citizen = new Citizen
-            {
-                CitizenID = application.CitizenID,
-                FullName = "citizenName"
-            };
-        }
-
-        return application;
     }
     public async Task<IEnumerable<WelfareApplication>> GetByStatusAsync(string status)
     {

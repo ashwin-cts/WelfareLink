@@ -7,16 +7,10 @@
         <div class="col-md-12">
             <h1 class="display-4">@ViewData["Title"]</h1>
             <p class="lead">Detailed application status analysis</p>
-        </div>
-    </div>
+                </div>
+            </div>
 
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <a asp-action="Index" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Dashboard
-            </a>
-        </div>
-    </div>
+            @await Html.PartialAsync("_AnalyticsNav")
 
     <div class="row">
         <div class="col-md-12">

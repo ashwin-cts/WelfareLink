@@ -8,13 +8,15 @@ namespace WelfareLink.Services
     {
         private readonly IBenefitRepository _benefitRepository;
         private readonly IDisbursementRepository _disbursementRepository;
+        private readonly IWelfareApplicationRepository _applicationRepository;
         private readonly string[] _validBenefitTypes = { "Cash", "Food", "Medical", "Education", "Housing" };
-        private readonly string[] _validStatuses = { "Allocated", "Partially Disbursed", "Fully Disbursed", "Failed" };
+        private readonly string[] _validStatuses = { "Allocation Pending", "Allocated", "Partially Disbursed", "Fully Disbursed", "Failed" };
 
-        public BenefitService(IBenefitRepository benefitRepository, IDisbursementRepository disbursementRepository)
+        public BenefitService(IBenefitRepository benefitRepository, IDisbursementRepository disbursementRepository, IWelfareApplicationRepository applicationRepository)
         {
             _benefitRepository = benefitRepository;
             _disbursementRepository = disbursementRepository;
+            _applicationRepository = applicationRepository;
         }
 
         public async Task<IEnumerable<Benefit>> GetAllBenefitsAsync()
@@ -34,23 +36,7 @@ namespace WelfareLink.Services
         public async Task<Benefit> CreateBenefitAsync(Benefit benefit)
         {
             ValidateBenefit(benefit);
-
-            // Create the benefit first
-            var createdBenefit = await _benefitRepository.AddAsync(benefit);
-
-            // Auto-create a disbursement with "Pending" status for this benefit with full amount
-            var disbursement = new Disbursement
-            {
-                BenefitID = createdBenefit.BenefitID,
-                CitizenID = 0, // To be assigned by officer later
-                OfficerID = 0, // To be assigned by officer later
-                Amount = createdBenefit.Amount, // Full benefit amount pending disbursement
-                Date = DateTime.Now,
-                Status = "Pending"
-            };
-            await _disbursementRepository.AddAsync(disbursement);
-
-            return createdBenefit;
+            return await _benefitRepository.AddAsync(benefit);
         }
 
         public async Task<Benefit> UpdateBenefitAsync(Benefit benefit)
@@ -60,13 +46,33 @@ namespace WelfareLink.Services
                 throw new ArgumentException("Benefit ID must be greater than zero.", nameof(benefit.BenefitID));
             }
 
-            if (!await _benefitRepository.ExistsAsync(benefit.BenefitID))
+            var existingBenefit = await _benefitRepository.GetByIdAsync(benefit.BenefitID);
+            if (existingBenefit == null)
             {
                 throw new InvalidOperationException($"Benefit with ID {benefit.BenefitID} does not exist.");
             }
 
             ValidateBenefit(benefit);
-            return await _benefitRepository.UpdateAsync(benefit);
+            var updatedBenefit = await _benefitRepository.UpdateAsync(benefit);
+
+            // When status transitions to "Allocated", auto-create a disbursement with "Disbursement Pending"
+            if (!existingBenefit.Status.Equals("Allocated", StringComparison.OrdinalIgnoreCase) &&
+                benefit.Status.Equals("Allocated", StringComparison.OrdinalIgnoreCase))
+            {
+                var application = await _applicationRepository.GetByIdAsync(updatedBenefit.ApplicationID);
+                var disbursement = new Disbursement
+                {
+                    BenefitID = updatedBenefit.BenefitID,
+                    CitizenID = application?.CitizenID ?? 0,
+                    OfficerID = 0,
+                    Amount = updatedBenefit.Amount,
+                    Date = DateTime.Now,
+                    Status = "Disbursement Pending"
+                };
+                await _disbursementRepository.AddAsync(disbursement);
+            }
+
+            return updatedBenefit;
         }
 
         public async Task<bool> DeleteBenefitAsync(int id)
@@ -91,6 +97,33 @@ namespace WelfareLink.Services
                 return false;
             }
             return await _benefitRepository.ExistsAsync(id);
+        }
+
+        public async Task<Benefit?> CreateBenefitForApprovedApplicationAsync(int applicationId)
+        {
+            var application = await _applicationRepository.GetByIdAsync(applicationId);
+            if (application == null)
+            {
+                return null;
+            }
+
+            // Avoid creating a duplicate while a benefit is still awaiting allocation
+            var existing = await _benefitRepository.GetByApplicationIdAsync(applicationId);
+            if (existing.Any(b => b.Status.Equals("Allocation Pending", StringComparison.OrdinalIgnoreCase)))
+            {
+                return null;
+            }
+
+            var benefit = new Benefit
+            {
+                ApplicationID = applicationId,
+                Type = "Cash",
+                Amount = (double)(application.Program?.Budget ?? 0),
+                Date = DateTime.Now,
+                Status = "Allocation Pending"
+            };
+
+            return await _benefitRepository.AddAsync(benefit);
         }
 
         #region Private Validation Methods

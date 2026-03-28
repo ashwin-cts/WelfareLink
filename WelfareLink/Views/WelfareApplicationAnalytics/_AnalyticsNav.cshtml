@@ -1,0 +1,32 @@
+@{
+    var current = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a asp-controller="WelfareApplication" asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Applications
+            </a>
+            <span class="text-muted">|</span>
+            <div class="btn-group" role="group" aria-label="Analytics reports">
+                <a asp-controller="WelfareApplicationAnalytics" asp-action="StatusBreakdown"
+                   class="btn @(current == "StatusBreakdown" ? "btn-primary" : "btn-outline-primary")">
+                    <i class="bi bi-pie-chart-fill"></i> Status Breakdown
+                </a>
+                <a asp-controller="WelfareApplicationAnalytics" asp-action="MonthlyTrends"
+                   class="btn @(current == "MonthlyTrends" ? "btn-info" : "btn-outline-info")">
+                    <i class="bi bi-bar-chart-fill"></i> Monthly Trends
+                </a>
+                <a asp-controller="WelfareApplicationAnalytics" asp-action="EligibilityReport"
+                   class="btn @(current == "EligibilityReport" ? "btn-warning" : "btn-outline-warning")">
+                    <i class="bi bi-clipboard-data-fill"></i> Eligibility Report
+                </a>
+                <a asp-controller="WelfareApplicationAnalytics" asp-action="Export"
+                   class="btn btn-outline-success">
+                    <i class="bi bi-download"></i> Export Data
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

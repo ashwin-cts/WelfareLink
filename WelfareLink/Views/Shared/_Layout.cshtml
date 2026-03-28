@@ -429,6 +429,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" || ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument" ? "active" : "")" 
+                               asp-area="" asp-controller="Citizen" asp-action="Dashboard">
+                                <i class="bi bi-person-badge"></i> Citizen
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">
                                 <i class="bi bi-shield-check"></i> Privacy
                             </a>
@@ -439,7 +445,7 @@
         </nav>
 
         <!-- Sub-Navigation for WelfareApplication -->
-        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" || ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck")
+        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" || ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck" || ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplicationAnalytics")
         {
             <nav class="sub-navbar">
                 <div class="container">
@@ -457,18 +463,6 @@
                             </a>
                         </li>
                         <li>
-                            <a asp-controller="WelfareApplication" asp-action="Create"
-                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" && ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
-                                <i class="bi bi-plus-circle"></i> Submit Application
-                            </a>
-                        </li>
-                        <li>
-                            <a asp-controller="WelfareApplication" asp-action="MyApplications"
-                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyApplications" ? "active" : "")">
-                                <i class="bi bi-person-lines-fill"></i> My Applications
-                            </a>
-                        </li>
-                        <li>
                             <a asp-controller="WelfareApplication" asp-action="Pending"
                                class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Pending" ? "active" : "")">
                                 <i class="bi bi-clock-history"></i> Pending Review
@@ -478,6 +472,12 @@
                             <a asp-controller="EligibilityCheck" asp-action="Index"
                                class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck" ? "active" : "")">
                                 <i class="bi bi-clipboard-check"></i> Eligibility Checks
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="WelfareApplicationAnalytics" asp-action="Index"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplicationAnalytics" ? "active" : "")">
+                                <i class="bi bi-graph-up"></i> Analytics
                             </a>
                         </li>
                     </ul>
@@ -606,6 +606,58 @@
                             <a asp-controller="Resource" asp-action="UtilisationReport" 
                                class="@(ViewContext.RouteData.Values["action"]?.ToString() == "UtilisationReport" ? "active" : "")">
                                 <i class="bi bi-pie-chart"></i> Utilization
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        }
+        <!-- Sub-Navigation for Citizen -->
+        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" || ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument")
+        {
+            <nav class="sub-navbar">
+                <div class="container">
+                    <ul class="sub-nav-list">
+                        <li>
+                            <a asp-controller="Citizen" asp-action="Dashboard"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" && ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Citizen" asp-action="CreateProfile"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" && ViewContext.RouteData.Values["action"]?.ToString() == "CreateProfile" ? "active" : "")">
+                                <i class="bi bi-person-plus"></i> Create Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Citizen" asp-action="EditProfile"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" && ViewContext.RouteData.Values["action"]?.ToString() == "EditProfile" ? "active" : "")">
+                                <i class="bi bi-pencil-square"></i> Edit Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="CitizenDocument" asp-action="UploadDocument"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument" && ViewContext.RouteData.Values["action"]?.ToString() == "UploadDocument" ? "active" : "")">
+                                <i class="bi bi-upload"></i> Upload Document
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="CitizenDocument" asp-action="DocumentStatus"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument" && ViewContext.RouteData.Values["action"]?.ToString() == "DocumentStatus" ? "active" : "")">
+                                <i class="bi bi-file-earmark-check"></i> Document Status
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Citizen" asp-action="MyApplications"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" && ViewContext.RouteData.Values["action"]?.ToString() == "MyApplications" ? "active" : "")">
+                                <i class="bi bi-person-lines-fill"></i> My Applications
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Citizen" asp-action="ProgramList"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" && ViewContext.RouteData.Values["action"]?.ToString() == "ProgramList" ? "active" : "")">
+                                <i class="bi bi-grid-3x3-gap"></i> Program List
                             </a>
                         </li>
                     </ul>

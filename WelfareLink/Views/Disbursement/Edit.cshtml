@@ -24,11 +24,35 @@
                             <label asp-for="BenefitID" class="form-label-modern">
                                 <i class="bi bi-gift"></i> Select Benefit
                             </label>
-                            <select asp-for="BenefitID" class="form-select" asp-items="ViewBag.BenefitID" disabled>
+                            <select asp-for="BenefitID" id="BenefitID" class="form-select" asp-items="ViewBag.BenefitID" disabled>
                                 <option value="">-- Choose a Benefit --</option>
                             </select>
                             <input type="hidden" asp-for="BenefitID" />
                             <span asp-validation-for="BenefitID" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12" id="benefit-details" style="display:none;">
+                        <div class="card border-0 bg-light p-3">
+                            <h6 class="mb-3 fw-bold text-primary"><i class="bi bi-info-circle"></i> Benefit &amp; Program Details</h6>
+                            <div class="row g-2">
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">Benefit Type</small>
+                                    <span id="detail-type" class="fw-semibold">-</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">Benefit Amount</small>
+                                    <span id="detail-amount" class="fw-semibold">-</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">Program</small>
+                                    <span id="detail-program" class="fw-semibold">-</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">Citizen</small>
+                                    <span id="detail-citizen" class="fw-semibold">-</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -48,7 +72,8 @@
                             <label asp-for="CitizenID" class="form-label-modern">
                                 <i class="bi bi-person-circle"></i> Citizen ID
                             </label>
-                            <input asp-for="CitizenID" class="form-control" />
+                            <input asp-for="CitizenID" id="CitizenID" class="form-control" readonly />
+                            <input type="hidden" asp-for="CitizenID" />
                             <span asp-validation-for="CitizenID" class="text-danger"></span>
                         </div>
                     </div>
@@ -106,4 +131,26 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function loadBenefitDetails(benefitId) {
+            const panel = document.getElementById('benefit-details');
+            if (!benefitId) { panel.style.display = 'none'; return; }
+            fetch(`/Disbursement/GetBenefitDetails?benefitId=${benefitId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data) { panel.style.display = 'none'; return; }
+                    document.getElementById('detail-type').textContent    = data.benefitType    ?? '-';
+                    document.getElementById('detail-amount').textContent  = data.benefitAmount != null ? '\u20B9' + data.benefitAmount.toLocaleString('en-IN') : '-';
+                    document.getElementById('detail-program').textContent = data.programTitle  ?? '-';
+                    document.getElementById('detail-citizen').textContent = data.citizenName   ?? '-';
+                    panel.style.display = '';
+                })
+                .catch(() => panel.style.display = 'none');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const benefitId = document.getElementById('BenefitID')?.value;
+            if (benefitId) loadBenefitDetails(benefitId);
+        });
+    </script>
 }

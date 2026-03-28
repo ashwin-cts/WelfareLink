@@ -12,8 +12,8 @@ using WelfareLink.Data;
 namespace WelfareLink.Migrations
 {
     [DbContext(typeof(WelfareLinkDbContext))]
-    [Migration("20260327122705_foriegnKeyMap")]
-    partial class foriegnKeyMap
+    [Migration("20260328092046_tablesCreated")]
+    partial class tablesCreated
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,7 +52,87 @@ namespace WelfareLink.Migrations
 
                     b.HasKey("BenefitID");
 
+                    b.HasIndex("ApplicationID");
+
                     b.ToTable("Benefits");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.Citizen", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("ContactInfo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Citizens");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.CitizenDocument", b =>
+                {
+                    b.Property<int>("DocumentID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocumentID"));
+
+                    b.Property<int>("CitizenId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("FileURI")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("UploadedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("VerificationStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("DocumentID");
+
+                    b.HasIndex("CitizenId");
+
+                    b.ToTable("CitizenDocuments");
                 });
 
             modelBuilder.Entity("WelfareLink.Models.Disbursement", b =>
@@ -163,9 +243,6 @@ namespace WelfareLink.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ApplicationID"));
 
-                    b.Property<int?>("BenefitID")
-                        .HasColumnType("int");
-
                     b.Property<int>("CitizenID")
                         .HasColumnType("int");
 
@@ -179,14 +256,11 @@ namespace WelfareLink.Migrations
                     b.Property<DateOnly>("SubmittedDate")
                         .HasColumnType("date");
 
-                    b.Property<int?>("WelfareProgramsProgramID")
-                        .HasColumnType("int");
-
                     b.HasKey("ApplicationID");
 
-                    b.HasIndex("BenefitID");
+                    b.HasIndex("CitizenID");
 
-                    b.HasIndex("WelfareProgramsProgramID");
+                    b.HasIndex("ProgramID");
 
                     b.ToTable("WelfareApplications");
                 });
@@ -226,6 +300,28 @@ namespace WelfareLink.Migrations
                     b.ToTable("Programs");
                 });
 
+            modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
+                {
+                    b.HasOne("WelfareLink.Models.WelfareApplication", "WelfareApplication")
+                        .WithMany("Benefits")
+                        .HasForeignKey("ApplicationID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WelfareApplication");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.CitizenDocument", b =>
+                {
+                    b.HasOne("WelfareLink.Models.Citizen", "Citizen")
+                        .WithMany("CitizenDocuments")
+                        .HasForeignKey("CitizenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Citizen");
+                });
+
             modelBuilder.Entity("WelfareLink.Models.Disbursement", b =>
                 {
                     b.HasOne("WelfareLink.Models.Benefit", "Benefit")
@@ -261,26 +357,37 @@ namespace WelfareLink.Migrations
 
             modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
                 {
-                    b.HasOne("WelfareLink.Models.Benefit", null)
-                        .WithMany("WelfareApplications")
-                        .HasForeignKey("BenefitID");
+                    b.HasOne("WelfareLink.Models.Citizen", "Citizen")
+                        .WithMany()
+                        .HasForeignKey("CitizenID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("WelfareLink.Models.WelfareProgram", "WelfarePrograms")
+                    b.HasOne("WelfareLink.Models.WelfareProgram", "Program")
                         .WithMany("WelfareApplications")
-                        .HasForeignKey("WelfareProgramsProgramID");
+                        .HasForeignKey("ProgramID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("WelfarePrograms");
+                    b.Navigation("Citizen");
+
+                    b.Navigation("Program");
                 });
 
             modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
                 {
                     b.Navigation("Disbursements");
+                });
 
-                    b.Navigation("WelfareApplications");
+            modelBuilder.Entity("WelfareLink.Models.Citizen", b =>
+                {
+                    b.Navigation("CitizenDocuments");
                 });
 
             modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
                 {
+                    b.Navigation("Benefits");
+
                     b.Navigation("EligibilityChecks");
                 });
 

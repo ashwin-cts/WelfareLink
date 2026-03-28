@@ -6,7 +6,6 @@ namespace WelfareLink.Models
     public class CitizenDocument
     {
         [Key]
-
         public int DocumentID { get; set; }
 
         [Required]

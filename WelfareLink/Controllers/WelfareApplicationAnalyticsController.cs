@@ -73,6 +73,7 @@ namespace WelfareLink.Controllers
 
             ViewBag.ResultBreakdown = report["ResultBreakdown"];
             ViewBag.ChecksByMonth = report["ChecksByMonth"];
+            ViewBag.TotalApplicationsChecked = report["TotalApplicationsChecked"];
             return View();
         }
         // GET: WelfareApplicationAnalytics/Export

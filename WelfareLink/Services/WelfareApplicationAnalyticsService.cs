@@ -99,25 +99,36 @@ namespace WelfareLink.Services
         {
             var allChecks = await _eligibilityCheckRepository.GetAllAsync();
 
-            var resultBreakdown = allChecks
+            // Take only the latest check per application so re-checked applications
+            // are represented by their final (most recent) result only.
+            var latestPerApplication = allChecks
+                .GroupBy(c => c.ApplicationID)
+                .Select(g => g.OrderByDescending(c => c.Date).First())
+                .ToList();
+
+            var totalApplicationsChecked = latestPerApplication.Count;
+
+            var resultBreakdown = latestPerApplication
                 .GroupBy(c => c.Result)
                 .Select(g => new
                 {
                     Result = g.Key,
                     Count = g.Count(),
-                    Percentage = (double)g.Count() / allChecks.Count() * 100
+                    Percentage = totalApplicationsChecked > 0
+                        ? (double)g.Count() / totalApplicationsChecked * 100
+                        : 0
                 })
                 .OrderByDescending(x => x.Count)
                 .ToList();
 
-            var checksByMonth = allChecks
+            var checksByMonth = latestPerApplication
                 .GroupBy(c => new { c.Date.Year, c.Date.Month })
                 .Select(g => new
                 {
                     Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"),
                     Total = g.Count(),
-                    Eligible = g.Count(c => c.Result.ToLower() == "eligible"),
-                    Ineligible = g.Count(c => c.Result.ToLower() == "ineligible")
+                    Eligible = g.Count(c => c.Result.Equals("Eligible", StringComparison.OrdinalIgnoreCase)),
+                    Ineligible = g.Count(c => c.Result.Equals("Ineligible", StringComparison.OrdinalIgnoreCase))
                 })
                 .OrderBy(x => x.Month)
                 .ToList();
@@ -125,7 +136,8 @@ namespace WelfareLink.Services
             return new Dictionary<string, object>
             {
                 { "ResultBreakdown", resultBreakdown },
-                { "ChecksByMonth", checksByMonth }
+                { "ChecksByMonth", checksByMonth },
+                { "TotalApplicationsChecked", totalApplicationsChecked }
             };
         }
 

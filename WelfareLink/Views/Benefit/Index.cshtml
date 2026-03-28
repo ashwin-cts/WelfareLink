@@ -37,7 +37,7 @@
                                 </span>
                                 @if (item.WelfareApplication != null)
                                 {
-                                    <br /><small class="text-muted">Citizen #@item.WelfareApplication.CitizenID</small>
+                                    <br /><small class="text-muted"><i class="bi bi-person"></i> @(item.WelfareApplication.Citizen?.Name ?? $"Citizen #{item.WelfareApplication.CitizenID}")</small>
                                     <br /><small class="text-muted"><i class="bi bi-grid"></i> @(item.WelfareApplication.Program?.Title ?? $"Program #{item.WelfareApplication.ProgramID}")</small>
                                 }
                             </a>

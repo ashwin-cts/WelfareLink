@@ -16,46 +16,25 @@ namespace WelfareLink.Repositories
 
         public async Task<IEnumerable<Benefit>> GetAllAsync()
         {
-            var benefits = await _context.Benefits
+            return await _context.Benefits
                 .Include(b => b.Disbursements)
                 .Include(b => b.WelfareApplication)
                     .ThenInclude(a => a.Program)
+                .Include(b => b.WelfareApplication)
+                    .ThenInclude(a => a.Citizen)
                 .ToListAsync();
-
-            foreach (var benefit in benefits)
-            {
-                if (benefit.WelfareApplication is not null)
-                {
-                    benefit.WelfareApplication.Citizen = new Citizen
-                    {
-                        CitizenID = benefit.WelfareApplication.CitizenID,
-                        FullName = "citizenName"
-                    };
-                }
-            }
-
-            return benefits;
         }
 
         public async Task<Benefit?> GetByIdAsync(int id)
         {
-            var benefit = await _context.Benefits
+            return await _context.Benefits
                 .Include(b => b.Disbursements)
                 .Include(b => b.WelfareApplication)
                     .ThenInclude(a => a.Program)
+                .Include(b => b.WelfareApplication)
+                    .ThenInclude(a => a.Citizen)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.BenefitID == id);
-
-            if (benefit?.WelfareApplication is not null)
-            {
-                benefit.WelfareApplication.Citizen = new Citizen
-                {
-                    CitizenID = benefit.WelfareApplication.CitizenID,
-                    FullName = "citizenName"
-                };
-            }
-
-            return benefit;
         }
 
         public async Task<Benefit> AddAsync(Benefit benefit)

@@ -20,8 +20,6 @@ public class WelfareApplicationController : Controller
     public async Task<IActionResult> HomeIndex()
     {
         var applications = await _welfareApplicationService.GetAllApplicationsAsync();
-        var programs = await _welfareProgramService.GetAllProgramsAsync();
-        ViewBag.ProgramList = new SelectList(programs, "ProgramID", "Title");
         return View(applications);
     }
 
@@ -52,40 +50,6 @@ public class WelfareApplicationController : Controller
         }
         return View(application);
     }
-    // GET: WelfareApplication/Create
-    // Application Submission Page - Display form
-    public async Task<IActionResult> Create()
-    {
-        var programs = await _welfareProgramService.GetAllProgramsAsync();
-        ViewBag.ProgramList = new SelectList(programs, "ProgramID", "Title");
-        return View();
-    }
-
-    // POST: WelfareApplication/Create
-    // Application Submission Page - Submit application
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(WelfareApplication application)
-    {
-        if (ModelState.IsValid)
-        {
-            await _welfareApplicationService.SubmitApplicationAsync(application);
-            TempData["SuccessMessage"] = "Application submitted successfully!";
-            return RedirectToAction(nameof(MyApplications));
-        }
-        var programs = await _welfareProgramService.GetAllProgramsAsync();
-        ViewBag.ProgramList = new SelectList(programs, "ProgramID", "Title");
-        return View(application);
-    }
-    // GET: WelfareApplication/MyApplications
-    // Application Status Page (Citizen) - Track application status
-    public async Task<IActionResult> MyApplications()
-    {
-        // TODO: Filter by logged-in citizen's ID once authentication is implemented
-        var applications = await _welfareApplicationService.GetAllApplicationsAsync();
-        return View(applications);
-    }
-
     // GET: WelfareApplication/Edit/5
     public async Task<IActionResult> Edit(int id)
     {

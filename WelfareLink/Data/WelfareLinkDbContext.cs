@@ -20,7 +20,6 @@ namespace WelfareLink.Data
         public DbSet<EligibilityCheck> EligibilityChecks { get; set; }
         public DbSet<Citizen> Citizens { get; set; }
 
-        public DbSet<Citizen> Citizens { get; set; }
         public DbSet<CitizenDocument> CitizenDocuments { get; set; }
 
 

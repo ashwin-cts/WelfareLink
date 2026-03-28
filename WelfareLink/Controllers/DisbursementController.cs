@@ -194,6 +194,29 @@ namespace WelfareLinkPRJ.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // GET: Disbursement/GetBenefitDetails?benefitId=5
+        [HttpGet]
+        public async Task<IActionResult> GetBenefitDetails(int benefitId)
+        {
+            if (benefitId <= 0)
+                return Json(null);
+
+            var benefit = await _benefitService.GetBenefitByIdAsync(benefitId);
+            if (benefit == null)
+                return Json(null);
+
+            return Json(new
+            {
+                benefitType   = benefit.Type,
+                benefitAmount = benefit.Amount,
+                benefitStatus = benefit.Status,
+                programTitle  = benefit.WelfareApplication?.Program?.Title,
+                programBudget = benefit.WelfareApplication?.Program?.Budget,
+                citizenId     = benefit.WelfareApplication?.CitizenID,
+                citizenName   = benefit.WelfareApplication?.Citizen?.Name
+            });
+        }
+
         private async Task PopulateBenefitDropdown(int? selectedBenefitId = null)
         {
             var benefits = await _benefitService.GetAllBenefitsAsync();
