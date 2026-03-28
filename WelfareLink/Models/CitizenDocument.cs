@@ -1,6 +1,34 @@
-﻿namespace WelfareLink.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace WelfareLink.Models
 {
     public class CitizenDocument
     {
+        [Key]
+
+        public int DocumentID { get; set; }
+
+        [Required]
+        [ForeignKey("Citizen")]
+        public int CitizenId { get; set; } // Updated to match the Citizen model
+
+        [StringLength(30)]
+        public string DocType { get; set; } // e.g., "IDProof", "Residence"
+
+        [StringLength(500)]
+        public string FileURI { get; set; }
+
+        public DateTime UploadedDate { get; set; } = DateTime.UtcNow;
+
+        [StringLength(30)]
+        public string VerificationStatus { get; set; }
+
+        // Navigation property mapping back to the Citizen
+        public virtual Citizen Citizen { get; set; }
+
+
+
+
     }
 }
