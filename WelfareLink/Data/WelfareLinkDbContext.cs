@@ -22,6 +22,8 @@ namespace WelfareLink.Data
 
         public DbSet<CitizenDocument> CitizenDocuments { get; set; }
 
+        public DbSet<User> Users { get; set; }
+
 
     }
 }

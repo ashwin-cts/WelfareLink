@@ -1,0 +1,63 @@
+@model WelfareLink.Models.User
+@{
+    ViewData["Title"] = "Create Admin";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-shield-plus"></i>
+        Create Admin Account
+    </h1>
+    <a asp-action="Index" class="btn btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="content-card">
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i>
+        <strong>Warning:</strong> You are creating a new admin account with full system access.
+    </div>
+
+    <form asp-action="CreateAdmin" method="post">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Username" class="form-label-modern"></label>
+                <input asp-for="Username" class="form-control" placeholder="Enter username" required />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="Password" class="form-label-modern"></label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" required />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="FullName" class="form-label-modern"></label>
+                <input asp-for="FullName" class="form-control" placeholder="Enter full name" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="Email" class="form-label-modern"></label>
+                <input asp-for="Email" type="email" class="form-control" placeholder="Enter email address" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-modern btn-warning-modern btn-lg">
+                <i class="bi bi-shield-plus"></i> Create Admin Account
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,236 @@
+@{
+    ViewData["Title"] = "Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WelfareLink - Login</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --accent-color: #00b4d8;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+            margin: 20px;
+        }
+
+        .login-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .login-header h2 {
+            margin: 0;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-body {
+            padding: 2rem;
+        }
+
+        .user-type-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .user-type-card {
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-type-card:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,180,216,0.2);
+        }
+
+        .user-type-card.active {
+            border-color: var(--accent-color);
+            background: linear-gradient(135deg, #e0f7ff 0%, #f0fbff 100%);
+        }
+
+        .user-type-card i {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .user-type-card h5 {
+            margin: 0;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.1);
+        }
+
+        .btn-login {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 10px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(30,60,114,0.3);
+            color: white;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .register-link a {
+            color: var(--accent-color);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h2>
+                <i class="bi bi-heart-pulse-fill"></i>
+                WelfareLink Login
+            </h2>
+            <p class="mb-0">Select your user type and login</p>
+        </div>
+        <div class="login-body">
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+                </div>
+            }
+
+            <form asp-action="Login" asp-controller="Account" method="post" id="loginForm">
+                <div class="user-type-cards">
+                    <div class="user-type-card" onclick="selectUserType('Citizen')">
+                        <i class="bi bi-person-badge"></i>
+                        <h5>Citizen</h5>
+                    </div>
+                    <div class="user-type-card" onclick="selectUserType('WelfareOfficer')">
+                        <i class="bi bi-briefcase"></i>
+                        <h5>Welfare Officer</h5>
+                    </div>
+                    <div class="user-type-card" onclick="selectUserType('ProgramManager')">
+                        <i class="bi bi-diagram-3"></i>
+                        <h5>Program Manager</h5>
+                    </div>
+                    <div class="user-type-card" onclick="selectUserType('Admin')">
+                        <i class="bi bi-shield-lock"></i>
+                        <h5>Admin</h5>
+                    </div>
+                </div>
+
+                <input type="hidden" name="userType" id="userTypeInput" required />
+
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" name="username" placeholder="Enter your username" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" name="password" placeholder="Enter your password" required />
+                </div>
+
+                <button type="submit" class="btn btn-login">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </button>
+            </form>
+
+            <div class="register-link" id="citizenRegisterLink" style="display: none;">
+                <p>Don't have an account? <a asp-controller="Citizen" asp-action="CreateProfile">Register as a Citizen</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedUserType = null;
+
+        function selectUserType(type) {
+            selectedUserType = type;
+            document.getElementById('userTypeInput').value = type;
+
+            document.querySelectorAll('.user-type-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            event.target.closest('.user-type-card').classList.add('active');
+
+            if (type === 'Citizen') {
+                document.getElementById('citizenRegisterLink').style.display = 'block';
+            } else {
+                document.getElementById('citizenRegisterLink').style.display = 'none';
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            if (!selectedUserType) {
+                e.preventDefault();
+                alert('Please select a user type');
+            }
+        });
+    </script>
+</body>
+</html>

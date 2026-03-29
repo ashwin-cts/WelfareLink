@@ -1,0 +1,121 @@
+@model IEnumerable<WelfareLink.Models.User>
+@{
+    ViewData["Title"] = "Admin Dashboard - User Management";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-shield-lock"></i>
+        Admin Dashboard
+    </h1>
+    <div class="action-buttons">
+        <a asp-action="CreateOfficer" class="btn btn-modern btn-primary-modern">
+            <i class="bi bi-person-plus"></i> Create Officer
+        </a>
+        <a asp-action="CreateAdmin" class="btn btn-modern btn-warning-modern">
+            <i class="bi bi-shield-plus"></i> Create Admin
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="content-card">
+    <h4 class="mb-4">User Management</h4>
+
+    <div class="table-responsive">
+        <table class="table table-modern">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>@user.UserId</td>
+                        <td>@user.Username</td>
+                        <td>@(user.FullName ?? "-")</td>
+                        <td>@(user.Email ?? "-")</td>
+                        <td>
+                            @if (user.Role == "Admin")
+                            {
+                                <span class="status-badge" style="background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%); color: #92400e;">
+                                    <i class="bi bi-shield-lock"></i> Admin
+                                </span>
+                            }
+                            else if (user.Role == "ProgramManager")
+                            {
+                                <span class="status-badge status-allocated">
+                                    <i class="bi bi-diagram-3"></i> Program Manager
+                                </span>
+                            }
+                            else if (user.Role == "WelfareOfficer")
+                            {
+                                <span class="status-badge status-processing">
+                                    <i class="bi bi-briefcase"></i> Welfare Officer
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-pending">
+                                    <i class="bi bi-person"></i> Citizen
+                                </span>
+                            }
+                        </td>
+                        <td>
+                            @if (user.IsActive)
+                            {
+                                <span class="status-badge status-fully-disbursed">
+                                    <i class="bi bi-check-circle"></i> Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-failed">
+                                    <i class="bi bi-x-circle"></i> Blocked
+                                </span>
+                            }
+                        </td>
+                        <td>@user.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <div class="action-buttons">
+                                @if (user.IsActive)
+                                {
+                                    <form asp-action="BlockUser" asp-route-userId="@user.UserId" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-modern btn-danger-modern" 
+                                                onclick="return confirm('Are you sure you want to block this user?')">
+                                            <i class="bi bi-slash-circle"></i> Block
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="UnblockUser" asp-route-userId="@user.UserId" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-modern btn-success-modern">
+                                            <i class="bi bi-check-circle"></i> Unblock
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

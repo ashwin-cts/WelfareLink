@@ -378,6 +378,11 @@
     </style>
 </head>
 <body>
+    @{
+        var userRole = Context.Session.GetString("UserRole");
+        var userName = Context.Session.GetString("FullName");
+        var isLoggedIn = !string.IsNullOrEmpty(userRole);
+    }
     <header>
         <!-- Main Navigation -->
         <nav class="navbar navbar-expand-lg navbar-custom">
@@ -392,60 +397,110 @@
                 </button>
                 <div class="navbar-collapse collapse">
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")" 
-                               asp-area="" asp-controller="Home" asp-action="Index">
-                                <i class="bi bi-house-door"></i> Home
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" || ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck" ? "active" : "")"
-                               asp-area="" asp-controller="WelfareApplication" asp-action="HomeIndex">
-                                <i class="bi bi-file-earmark-text"></i> Applications
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Benefit" || ViewContext.RouteData.Values["controller"]?.ToString() == "BenefitAnalytics" ? "active" : "")" 
-                               asp-area="" asp-controller="Benefit" asp-action="Index">
-                                <i class="bi bi-gift"></i> Benefit
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Disbursement" ? "active" : "")" 
-                               asp-area="" asp-controller="Disbursement" asp-action="Index">
-                                <i class="bi bi-cash-stack"></i> Disbursement
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareProgram" ? "active" : "")" 
-                               asp-area="" asp-controller="WelfareProgram" asp-action="Dashboard">
-                                <i class="bi bi-diagram-3"></i> Program
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Resource" ? "active" : "")" 
-                               asp-area="" asp-controller="Resource" asp-action="Index">
-                                <i class="bi bi-box-seam"></i> Resource
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" || ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument" ? "active" : "")" 
-                               asp-area="" asp-controller="Citizen" asp-action="Dashboard">
-                                <i class="bi bi-person-badge"></i> Citizen
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">
-                                <i class="bi bi-shield-check"></i> Privacy
-                            </a>
-                        </li>
+                        @if (isLoggedIn)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")" 
+                                   asp-area="" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-house-door"></i> Home
+                                </a>
+                            </li>
+
+                            @if (userRole == "WelfareOfficer")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" || ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck" ? "active" : "")"
+                                       asp-area="" asp-controller="WelfareApplication" asp-action="HomeIndex">
+                                        <i class="bi bi-file-earmark-text"></i> Applications
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Benefit" || ViewContext.RouteData.Values["controller"]?.ToString() == "BenefitAnalytics" ? "active" : "")" 
+                                       asp-area="" asp-controller="Benefit" asp-action="Index">
+                                        <i class="bi bi-gift"></i> Benefit
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Disbursement" ? "active" : "")" 
+                                       asp-area="" asp-controller="Disbursement" asp-action="Index">
+                                        <i class="bi bi-cash-stack"></i> Disbursement
+                                    </a>
+                                </li>
+                            }
+                            else if (userRole == "ProgramManager")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareProgram" ? "active" : "")" 
+                                       asp-area="" asp-controller="WelfareProgram" asp-action="Dashboard">
+                                        <i class="bi bi-diagram-3"></i> Program
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Resource" ? "active" : "")" 
+                                       asp-area="" asp-controller="Resource" asp-action="Index">
+                                        <i class="bi bi-box-seam"></i> Resource
+                                    </a>
+                                </li>
+                            }
+                            else if (userRole == "Citizen")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" || ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument" ? "active" : "")" 
+                                       asp-area="" asp-controller="Citizen" asp-action="Dashboard">
+                                        <i class="bi bi-person-badge"></i> Dashboard
+                                    </a>
+                                </li>
+                            }
+                            else if (userRole == "Admin")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" ? "active" : "")" 
+                                       asp-area="" asp-controller="Admin" asp-action="Index">
+                                        <i class="bi bi-shield-lock"></i> User Management
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareProgram" ? "active" : "")" 
+                                       asp-area="" asp-controller="WelfareProgram" asp-action="Dashboard">
+                                        <i class="bi bi-diagram-3"></i> Programs
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Benefit" ? "active" : "")" 
+                                       asp-area="" asp-controller="Benefit" asp-action="Index">
+                                        <i class="bi bi-gift"></i> Benefits
+                                    </a>
+                                </li>
+                            }
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle"></i> @userName
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><span class="dropdown-item-text"><strong>Role:</strong> @userRole</span></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </a></li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
         </nav>
 
         <!-- Sub-Navigation for WelfareApplication -->
-        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" || ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck" || ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplicationAnalytics")
+        @if ((userRole == "WelfareOfficer" || userRole == "Admin") && (ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" || ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck" || ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplicationAnalytics"))
         {
             <nav class="sub-navbar">
                 <div class="container">
@@ -486,7 +541,7 @@
         }
 
         <!-- Sub-Navigation for Benefit -->
-        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Benefit" || ViewContext.RouteData.Values["controller"]?.ToString() == "BenefitAnalytics")
+        @if ((userRole == "WelfareOfficer" || userRole == "Admin") && (ViewContext.RouteData.Values["controller"]?.ToString() == "Benefit" || ViewContext.RouteData.Values["controller"]?.ToString() == "BenefitAnalytics"))
         {
             <nav class="sub-navbar">
                 <div class="container">
@@ -515,7 +570,7 @@
         }
 
         <!-- Sub-Navigation for Disbursement -->
-        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Disbursement")
+        @if ((userRole == "WelfareOfficer" || userRole == "Admin") && ViewContext.RouteData.Values["controller"]?.ToString() == "Disbursement")
         {
             <nav class="sub-navbar">
                 <div class="container">
@@ -544,7 +599,7 @@
         }
 
         <!-- Sub-Navigation for Program -->
-        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareProgram")
+        @if ((userRole == "ProgramManager" || userRole == "Admin") && ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareProgram")
         {
             <nav class="sub-navbar">
                 <div class="container">
@@ -585,7 +640,7 @@
         }
 
         <!-- Sub-Navigation for Resource -->
-        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Resource")
+        @if ((userRole == "ProgramManager" || userRole == "Admin") && ViewContext.RouteData.Values["controller"]?.ToString() == "Resource")
         {
             <nav class="sub-navbar">
                 <div class="container">
@@ -613,7 +668,7 @@
             </nav>
         }
         <!-- Sub-Navigation for Citizen -->
-        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" || ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument")
+        @if (userRole == "Citizen" && (ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" || ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument"))
         {
             <nav class="sub-navbar">
                 <div class="container">

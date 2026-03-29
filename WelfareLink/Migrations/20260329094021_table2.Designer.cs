@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WelfareLink.Data;
 
@@ -11,9 +12,11 @@ using WelfareLink.Data;
 namespace WelfareLink.Migrations
 {
     [DbContext(typeof(WelfareLinkDbContext))]
-    partial class WelfareLinkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260329094021_table2")]
+    partial class table2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -232,53 +235,6 @@ namespace WelfareLink.Migrations
                     b.ToTable("Resources");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.User", b =>
-                {
-                    b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
-
-                    b.Property<int?>("CitizenId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("FullName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("UserId");
-
-                    b.HasIndex("CitizenId");
-
-                    b.ToTable("Users");
-                });
-
             modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
                 {
                     b.Property<int>("ApplicationID")
@@ -397,15 +353,6 @@ namespace WelfareLink.Migrations
                         .IsRequired();
 
                     b.Navigation("Program");
-                });
-
-            modelBuilder.Entity("WelfareLink.Models.User", b =>
-                {
-                    b.HasOne("WelfareLink.Models.Citizen", "Citizen")
-                        .WithMany()
-                        .HasForeignKey("CitizenId");
-
-                    b.Navigation("Citizen");
                 });
 
             modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>

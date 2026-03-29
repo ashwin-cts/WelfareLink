@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using WelfareLink.Data;
 using WelfareLink.Interfaces;
 using WelfareLink.Models;
 using WelfareLink.Services;
@@ -12,27 +13,34 @@ namespace WelfareLink.Controllers
         private readonly ICitizenDocumentService _documentService;
         private readonly IWelfareProgramService _programService;
         private readonly IWelfareApplicationService _applicationService;
+        private readonly WelfareLinkDbContext _context;
 
         public CitizenController(
             ICitizenService citizenService,
             ICitizenDocumentService documentService,
             IWelfareProgramService programService,
-            IWelfareApplicationService applicationService)
+            IWelfareApplicationService applicationService,
+            WelfareLinkDbContext context)
         {
             _citizenService = citizenService;
             _documentService = documentService;
             _programService = programService;
             _applicationService = applicationService;
+            _context = context;
         }
 
         // GET: Citizen/Dashboard
         public async Task<IActionResult> Dashboard()
         {
-            // For demo purposes, using a hardcoded UserId = 1
-            // In production, get this from authenticated user claims
-            int currentUserId = 1;
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
 
-            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
 
             if (citizenProfile == null)
             {
@@ -56,25 +64,46 @@ namespace WelfareLink.Controllers
         // GET: Citizen/CreateProfile
         public IActionResult CreateProfile()
         {
-            return View();
+            return View(new CreateCitizenViewModelWithCredentials());
         }
 
         // POST: Citizen/CreateProfile
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateProfile(CreateCitizenViewModel model)
+        public async Task<IActionResult> CreateProfile(CreateCitizenViewModelWithCredentials model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            // For demo purposes, using a hardcoded UserId = 1
-            int currentUserId = 1;
+            // Check if username already exists
+            var existingUser = _context.Users.FirstOrDefault(u => u.Username == model.Username);
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("Username", "Username already exists");
+                return View(model);
+            }
 
+            // Create User account first
+            var user = new User
+            {
+                Username = model.Username,
+                Password = model.Password,
+                Role = "Citizen",
+                FullName = model.Name,
+                Email = model.Email,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // Create Citizen profile
             var citizen = new Citizen
             {
-                UserId = currentUserId,
+                UserId = user.UserId,
                 Name = model.Name,
                 DateOfBirth = model.DateOfBirth,
                 Address = model.Address,
@@ -87,8 +116,12 @@ namespace WelfareLink.Controllers
 
             if (success)
             {
-                TempData["SuccessMessage"] = "Profile created successfully!";
-                return RedirectToAction(nameof(Dashboard));
+                // Update user with CitizenId
+                user.CitizenId = citizen.Id;
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = "Profile created successfully! Please login.";
+                return RedirectToAction("Login", "Account");
             }
 
             ModelState.AddModelError(string.Empty, "Failed to create profile.");
@@ -98,10 +131,15 @@ namespace WelfareLink.Controllers
         // GET: Citizen/EditProfile
         public async Task<IActionResult> EditProfile()
         {
-            // For demo purposes, using a hardcoded UserId = 1
-            int currentUserId = 1;
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
 
-            var citizen = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizen = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
 
             if (citizen == null)
             {
@@ -160,8 +198,15 @@ namespace WelfareLink.Controllers
         // GET: Citizen/ApplicationDetails/5
         public async Task<IActionResult> ApplicationDetails(int id)
         {
-            int currentUserId = 1;
-            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
             if (citizenProfile == null)
                 return RedirectToAction(nameof(CreateProfile));
 
@@ -175,8 +220,15 @@ namespace WelfareLink.Controllers
         // GET: Citizen/EditApplication/5
         public async Task<IActionResult> EditApplication(int id)
         {
-            int currentUserId = 1;
-            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
             if (citizenProfile == null)
                 return RedirectToAction(nameof(CreateProfile));
 
@@ -203,8 +255,15 @@ namespace WelfareLink.Controllers
             if (id != application.ApplicationID)
                 return NotFound();
 
-            int currentUserId = 1;
-            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
             if (citizenProfile == null)
                 return RedirectToAction(nameof(CreateProfile));
 
@@ -242,8 +301,15 @@ namespace WelfareLink.Controllers
         // GET: Citizen/DeleteApplication/5
         public async Task<IActionResult> DeleteApplication(int id)
         {
-            int currentUserId = 1;
-            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
             if (citizenProfile == null)
                 return RedirectToAction(nameof(CreateProfile));
 
@@ -265,8 +331,15 @@ namespace WelfareLink.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteApplicationConfirmed(int id)
         {
-            int currentUserId = 1;
-            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
             if (citizenProfile == null)
                 return RedirectToAction(nameof(CreateProfile));
 
@@ -288,8 +361,15 @@ namespace WelfareLink.Controllers
         // GET: Citizen/MyApplications
         public async Task<IActionResult> MyApplications()
         {
-            int currentUserId = 1;
-            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
             if (citizenProfile == null)
             {
                 return RedirectToAction(nameof(CreateProfile));
@@ -303,8 +383,15 @@ namespace WelfareLink.Controllers
         // GET: Citizen/ProgramList
         public async Task<IActionResult> ProgramList()
         {
-            int currentUserId = 1;
-            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
             if (citizenProfile == null)
             {
                 return RedirectToAction(nameof(CreateProfile));
@@ -327,8 +414,15 @@ namespace WelfareLink.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApplyForProgram(int programId)
         {
-            int currentUserId = 1;
-            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
             if (citizenProfile == null)
             {
                 return RedirectToAction(nameof(CreateProfile));
@@ -356,6 +450,40 @@ namespace WelfareLink.Controllers
         public int PendingDocuments { get; set; }
         public int ApprovedDocuments { get; set; }
         public int RejectedDocuments { get; set; }
+    }
+
+    public class CreateCitizenViewModelWithCredentials
+    {
+        [Required]
+        [StringLength(100)]
+        public string Username { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; }
+
+        [Required]
+        [DataType(DataType.Date)]
+        [Display(Name = "Date of Birth")]
+        public DateTime DateOfBirth { get; set; }
+
+        [Required]
+        [StringLength(300)]
+        public string Address { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        [Display(Name = "Contact Information (Phone/Email)")]
+        public string ContactInfo { get; set; }
+
+        [StringLength(100)]
+        [EmailAddress]
+        public string? Email { get; set; }
     }
 
     public class CreateCitizenViewModel
