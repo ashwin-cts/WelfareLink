@@ -1,6 +1,9 @@
-﻿namespace WelfareLink.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace WelfareLink.Models
 {
     public class Audit
     {
+        
     }
 }

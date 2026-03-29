@@ -1,0 +1,185 @@
+@page
+@model WelfareLink.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Register - WelfareLink IAM";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row min-vh-100">
+        <!-- Left Side - Branding -->
+        <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center bg-success text-white">
+            <div class="text-center">
+                <h1 class="display-4 fw-bold mb-3">Join WelfareLink</h1>
+                <p class="lead">Create your account to access welfare services</p>
+                <div class="mt-4">
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="badge bg-light text-success p-3 me-3">
+                            <i class="fas fa-shield-alt fa-2x"></i>
+                        </div>
+                        <div class="badge bg-light text-success p-3 me-3">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                        <div class="badge bg-light text-success p-3">
+                            <i class="fas fa-clipboard-check fa-2x"></i>
+                        </div>
+                    </div>
+                    <p>Secure • Connected • Efficient</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Registration Form -->
+        <div class="col-md-6 d-flex align-items-center justify-content-center">
+            <div class="card shadow-lg border-0" style="width: 100%; max-width: 450px;">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="card-title">Create Account</h2>
+                        <p class="text-muted">Sign up as a citizen to access services</p>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @Model.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @Model.SuccessMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form method="post">
+                        <div class="mb-3">
+                            <label asp-for="Input.Name" class="form-label">
+                                <i class="fas fa-user me-2"></i>Full Name *
+                            </label>
+                            <input asp-for="Input.Name" class="form-control form-control-lg" 
+                                   placeholder="Enter your full name" required />
+                            <span asp-validation-for="Input.Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email Address *
+                            </label>
+                            <input asp-for="Input.Email" type="email" class="form-control form-control-lg" 
+                                   placeholder="Enter your email address" required />
+                            <small class="form-text text-muted">
+                                This will be used for login
+                            </small>
+                            <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Phone" class="form-label">
+                                <i class="fas fa-phone me-2"></i>Phone Number (Optional)
+                            </label>
+                            <input asp-for="Input.Phone" type="tel" class="form-control form-control-lg" 
+                                   placeholder="Enter your phone number" />
+                            <span asp-validation-for="Input.Phone" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Password *
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="Input.Password" type="password" class="form-control form-control-lg" 
+                                       placeholder="Enter your password" required />
+                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('Input_Password')">
+                                    <i class="fas fa-eye" id="toggleIcon1"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Input.ConfirmPassword" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Confirm Password *
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="Input.ConfirmPassword" type="password" class="form-control form-control-lg" 
+                                       placeholder="Confirm your password" required />
+                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('Input_ConfirmPassword')">
+                                    <i class="fas fa-eye" id="toggleIcon2"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+                        </div>
+
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Password Requirements:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>At least 6 characters long</li>
+                                <li>Remember this password for login</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="mb-2">Already have an account?</p>
+                            <a asp-page="/Account/Login" class="btn btn-outline-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            </a>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Your information is protected by our privacy policy
+                            </small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function togglePassword(inputId) {
+            const passwordInput = document.getElementById(inputId);
+            const icon = passwordInput.parentElement.querySelector('i');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Password confirmation validation
+        document.getElementById('Input_ConfirmPassword')?.addEventListener('input', function() {
+            const password = document.getElementById('Input_Password').value;
+            const confirmPassword = this.value;
+
+            if (password !== confirmPassword) {
+                this.setCustomValidity('Passwords do not match');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    </script>
+}

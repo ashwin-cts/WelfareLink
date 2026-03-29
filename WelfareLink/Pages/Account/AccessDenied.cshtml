@@ -1,0 +1,33 @@
+@page
+@{
+    ViewData["Title"] = "Access Denied - WelfareLink";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-ban fa-5x text-danger"></i>
+                    </div>
+                    <h2 class="card-title text-danger">Access Denied</h2>
+                    <p class="card-text text-muted mb-4">
+                        You don't have permission to access this resource.
+                        <br>
+                        Your current role may not have sufficient privileges.
+                    </p>
+                    <div class="d-grid gap-2 d-md-block">
+                        <a asp-page="/Dashboard" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Go to Dashboard
+                        </a>
+                        <a asp-page="/Account/Login" class="btn btn-outline-secondary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login with Different Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

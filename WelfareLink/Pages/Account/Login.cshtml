@@ -1,0 +1,115 @@
+@page
+@model WelfareLink.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Login - WelfareLink IAM";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row min-vh-100">
+        <!-- Left Side - Branding -->
+        <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center bg-primary text-white">
+            <div class="text-center">
+                <h1 class="display-4 fw-bold mb-3">WelfareLink</h1>
+                <p class="lead">Identity & Access Management System</p>
+                <p>Secure access to welfare services and administration</p>
+            </div>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="col-md-6 d-flex align-items-center justify-content-center">
+            <div class="card shadow-lg border-0" style="width: 100%; max-width: 400px;">
+                <div class="card-body p-5">
+                    <h2 class="card-title text-center mb-4">Sign In</h2>
+                    
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @Model.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @Model.SuccessMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form method="post">
+                        <div class="mb-3">
+                            <label asp-for="Input.Email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email Address
+                            </label>
+                            <input asp-for="Input.Email" class="form-control form-control-lg" 
+                                   placeholder="Enter your email" autocomplete="email" />
+                            <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Password
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="Input.Password" type="password" class="form-control form-control-lg" 
+                                       placeholder="Enter your password" autocomplete="current-password" />
+                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="Input.RememberMe" class="form-check-input" />
+                            <label asp-for="Input.RememberMe" class="form-check-label">
+                                Remember me
+                            </label>
+                        </div>
+
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            </button>
+                        </div>
+
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" asp-page-handler="Register" class="btn btn-outline-success">
+                                <i class="fas fa-user-plus me-2"></i>Register New Account
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <a asp-page="/Account/ForgotPassword" class="text-decoration-none">
+                                <i class="fas fa-key me-2"></i>Forgot your password?
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePassword() {
+            const passwordInput = document.querySelector('input[name="Input.Password"]');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
+}

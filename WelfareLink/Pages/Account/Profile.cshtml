@@ -1,0 +1,241 @@
+@page
+@model WelfareLink.Pages.Account.ProfileModel
+@{
+    ViewData["Title"] = "Profile Settings - WelfareLink";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- Profile Sidebar -->
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="avatar bg-primary text-white rounded-circle mx-auto mb-3" 
+                         style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        @(Model.CurrentUser?.Name.Substring(0, 1).ToUpper() ?? "U")
+                    </div>
+                    <h5 class="card-title">@Model.CurrentUser?.Name</h5>
+                    <p class="card-text text-muted">@Model.CurrentUser?.Role</p>
+                    <span class="badge bg-success">Active</span>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        Last login: @(Model.CurrentUser?.LastLogin?.ToString("MMM dd, yyyy") ?? "Never")
+                    </small>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="list-group mt-3">
+                <a href="#profile-info" class="list-group-item list-group-item-action active" data-bs-toggle="tab">
+                    <i class="fas fa-user me-2"></i>Profile Information
+                </a>
+                <a href="#password-change" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                    <i class="fas fa-lock me-2"></i>Change Password
+                </a>
+                <a href="#notification-settings" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                    <i class="fas fa-bell me-2"></i>Notifications
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    @Model.ErrorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    @Model.SuccessMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="tab-content">
+                <!-- Profile Information Tab -->
+                <div class="tab-pane fade show active" id="profile-info">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-user me-2"></i>Profile Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" asp-page-handler="UpdateProfile">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label asp-for="ProfileInput.Name" class="form-label">Full Name</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                            <input asp-for="ProfileInput.Name" class="form-control" required />
+                                        </div>
+                                        <span asp-validation-for="ProfileInput.Name" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label asp-for="ProfileInput.Email" class="form-label">Email Address</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                            <input asp-for="ProfileInput.Email" type="email" class="form-control" required />
+                                        </div>
+                                        <span asp-validation-for="ProfileInput.Email" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label asp-for="ProfileInput.Phone" class="form-label">Phone Number</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                            <input asp-for="ProfileInput.Phone" type="tel" class="form-control" />
+                                        </div>
+                                        <span asp-validation-for="ProfileInput.Phone" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Role</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-id-badge"></i></span>
+                                            <input type="text" class="form-control" value="@Model.CurrentUser?.Role" readonly />
+                                        </div>
+                                        <small class="form-text text-muted">Role cannot be changed by users</small>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Update Profile
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Password Tab -->
+                <div class="tab-pane fade" id="password-change">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-lock me-2"></i>Change Password</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Password Requirements:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>At least 8 characters long</li>
+                                    <li>Include uppercase and lowercase letters</li>
+                                    <li>Include at least one number</li>
+                                    <li>Include at least one special character</li>
+                                </ul>
+                            </div>
+
+                            <form method="post" asp-page-handler="ChangePassword">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label asp-for="PasswordInput.CurrentPassword" class="form-label">Current Password</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                            <input asp-for="PasswordInput.CurrentPassword" type="password" class="form-control" required />
+                                        </div>
+                                        <span asp-validation-for="PasswordInput.CurrentPassword" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label asp-for="PasswordInput.NewPassword" class="form-label">New Password</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                            <input asp-for="PasswordInput.NewPassword" type="password" class="form-control" required />
+                                        </div>
+                                        <span asp-validation-for="PasswordInput.NewPassword" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label asp-for="PasswordInput.ConfirmPassword" class="form-label">Confirm New Password</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                            <input asp-for="PasswordInput.ConfirmPassword" type="password" class="form-control" required />
+                                        </div>
+                                        <span asp-validation-for="PasswordInput.ConfirmPassword" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-shield-alt me-2"></i>Change Password
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notification Settings Tab -->
+                <div class="tab-pane fade" id="notification-settings">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Notification Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                <label class="form-check-label" for="emailNotifications">
+                                    <strong>Email Notifications</strong>
+                                    <br><small class="text-muted">Receive important updates via email</small>
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="securityAlerts" checked>
+                                <label class="form-check-label" for="securityAlerts">
+                                    <strong>Security Alerts</strong>
+                                    <br><small class="text-muted">Get notified about login attempts and security events</small>
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="systemUpdates">
+                                <label class="form-check-label" for="systemUpdates">
+                                    <strong>System Updates</strong>
+                                    <br><small class="text-muted">Receive notifications about system maintenance and updates</small>
+                                </label>
+                            </div>
+                            <button type="button" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Preferences
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Password strength checker
+        document.getElementById('PasswordInput_NewPassword')?.addEventListener('input', function() {
+            const password = this.value;
+            const strength = checkPasswordStrength(password);
+            // You can add visual feedback here
+        });
+
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+            return strength;
+        }
+
+        // Confirm password match validation
+        document.getElementById('PasswordInput_ConfirmPassword')?.addEventListener('input', function() {
+            const newPassword = document.getElementById('PasswordInput_NewPassword').value;
+            const confirmPassword = this.value;
+
+            if (newPassword !== confirmPassword) {
+                this.setCustomValidity('Passwords do not match');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    </script>
+}

@@ -1,0 +1,259 @@
+@page
+@model WelfareLink.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard - WelfareLink";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient-primary text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="card-title mb-1">Welcome back, @Model.UserName!</h3>
+                            <p class="card-text mb-0">Role: @Model.UserRole | Access Level: @GetAccessLevel(Model.UserRole)</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="d-flex justify-content-end align-items-center">
+                                @if (Model.UnreadNotifications > 0)
+                                {
+                                    <span class="badge bg-warning text-dark me-3">
+                                        <i class="fas fa-bell me-1"></i>@Model.UnreadNotifications notifications
+                                    </span>
+                                }
+                                <span class="text-white-50">@DateTime.Now.ToString("MMM dd, yyyy")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-rocket me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Common actions for all users -->
+                        <div class="col-md-3">
+                            <a asp-page="/Account/Profile" class="btn btn-outline-primary w-100 h-100 d-flex align-items-center justify-content-center">
+                                <div class="text-center">
+                                    <i class="fas fa-user fa-2x mb-2"></i>
+                                    <br>My Profile
+                                </div>
+                            </a>
+                        </div>
+
+                        @if (Model.UserRole == "Admin")
+                        {
+                            <div class="col-md-3">
+                                <a asp-page="/Admin/UserManagement" class="btn btn-outline-success w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-users fa-2x mb-2"></i>
+                                        <br>Manage Users
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a asp-page="/Admin/AuditLog" class="btn btn-outline-info w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                                        <br>Audit Logs
+                                    </div>
+                                </a>
+                            </div>
+                        }
+
+                        @if (Model.UserRole == "Compliance" || Model.UserRole == "Auditor")
+                        {
+                            <div class="col-md-3">
+                                <a asp-page="/Admin/AuditLog" class="btn btn-outline-info w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                                        <br>Audit Logs
+                                    </div>
+                                </a>
+                            </div>
+                        }
+
+                        <div class="col-md-3">
+                            <a asp-page="/Account/Logout" class="btn btn-outline-danger w-100 h-100 d-flex align-items-center justify-content-center">
+                                <div class="text-center">
+                                    <i class="fas fa-sign-out-alt fa-2x mb-2"></i>
+                                    <br>Logout
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.UserRole == "Admin" || Model.UserRole == "Manager")
+    {
+        <!-- Statistics Dashboard for Admin/Manager -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0">@Model.UserStats.GetValueOrDefault("Total_Users", 0)</h4>
+                                <p class="mb-0">Total Users</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0">@Model.UserStats.GetValueOrDefault("Recent_Logins", 0)</h4>
+                                <p class="mb-0">Active (7 days)</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-sign-in-alt fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0">@Model.UserStats.GetValueOrDefault("Role_Admin", 0)</h4>
+                                <p class="mb-0">Administrators</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-crown fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0">@Model.UserStats.GetValueOrDefault("Role_Citizen", 0)</h4>
+                                <p class="mb-0">Citizens</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-user fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Role-Specific Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>@Model.UserRole Dashboard</h5>
+                </div>
+                <div class="card-body">
+                    @switch (Model.UserRole)
+                    {
+                        case "Admin":
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-shield-alt me-2"></i>Administrator Access</h6>
+                                <p class="mb-0">You have full system access. Manage users, view audit logs, and configure system settings.</p>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>System Health</h6>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar bg-success" style="width: 95%">95% Uptime</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Security Status</h6>
+                                    <span class="badge bg-success me-2">All Systems Secure</span>
+                                    <span class="badge bg-warning">2 Pending Reviews</span>
+                                </div>
+                            </div>
+                            break;
+
+                        case "Manager":
+                            <div class="alert alert-primary">
+                                <h6><i class="fas fa-user-tie me-2"></i>Manager Access</h6>
+                                <p class="mb-0">Oversee operations and manage your team members.</p>
+                            </div>
+                            break;
+
+                        case "Officer":
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-id-badge me-2"></i>Officer Access</h6>
+                                <p class="mb-0">Process applications and manage citizen requests.</p>
+                            </div>
+                            break;
+
+                        case "Compliance":
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-balance-scale me-2"></i>Compliance Officer Access</h6>
+                                <p class="mb-0">Monitor compliance and review audit trails.</p>
+                            </div>
+                            break;
+
+                        case "Auditor":
+                            <div class="alert alert-secondary">
+                                <h6><i class="fas fa-search me-2"></i>Auditor Access</h6>
+                                <p class="mb-0">Review system activities and generate compliance reports.</p>
+                            </div>
+                            break;
+
+                        case "Citizen":
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-user me-2"></i>Citizen Portal</h6>
+                                <p class="mb-0">Access your services, submit applications, and track your requests.</p>
+                            </div>
+                            break;
+
+                        default:
+                            <div class="alert alert-light">
+                                <p class="mb-0">Welcome to WelfareLink Identity & Access Management System.</p>
+                            </div>
+                            break;
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetAccessLevel(string role)
+    {
+        return role switch
+        {
+            "Admin" => "Full Access",
+            "Manager" => "Management",
+            "Officer" => "Operational",
+            "Compliance" => "Compliance Review",
+            "Auditor" => "Audit Review",
+            "Citizen" => "Citizen Services",
+            _ => "Standard"
+        };
+    }
+}
