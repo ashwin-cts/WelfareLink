@@ -71,6 +71,54 @@ public class CitizenDocumentService : ICitizenDocumentService
         }
     }
 
+    public async Task<bool> UpdateVerificationStatusAsync(int documentId, string status)
+    {
+        try
+        {
+            var document = await _documentRepository.GetByIdAsync(documentId);
+            if (document == null) return false;
+
+            document.VerificationStatus = status;
+            await _documentRepository.UpdateAsync(document);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> ReuploadDocumentAsync(int documentId, IFormFile file)
+    {
+        try
+        {
+            var document = await _documentRepository.GetByIdAsync(documentId);
+            if (document == null) return false;
+
+            // Delete old file
+            if (!string.IsNullOrEmpty(document.FileURI))
+            {
+                var oldPath = Path.Combine(_environment.WebRootPath, document.FileURI.TrimStart('/'));
+                if (File.Exists(oldPath))
+                {
+                    File.Delete(oldPath);
+                }
+            }
+
+            // Save new file
+            document.FileURI = await SaveFileAsync(file, document.DocType);
+            document.UploadedDate = DateTime.UtcNow;
+            document.VerificationStatus = "Pending";
+
+            await _documentRepository.UpdateAsync(document);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public async Task<string> SaveFileAsync(IFormFile file, string docType)
     {
         var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "documents");

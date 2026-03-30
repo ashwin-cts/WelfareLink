@@ -89,13 +89,10 @@
                                     }
                                     else
                                     {
-                                        <form asp-action="ApplyForProgram" asp-controller="Citizen" method="post" style="display:inline;">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="programId" value="@program.ProgramID" />
-                                            <button type="submit" class="btn-modern btn-success-modern btn-sm" title="Apply for this program">
-                                                <i class="bi bi-send"></i> Apply
-                                            </button>
-                                        </form>
+                                        <a asp-action="SelectDocuments" asp-controller="Citizen" asp-route-programId="@program.ProgramID"
+                                           class="btn-modern btn-success-modern btn-sm" title="Apply for this program">
+                                            <i class="bi bi-send"></i> Apply
+                                        </a>
                                     }
                                 </div>
                             </td>
@@ -147,13 +144,10 @@
                                         </button>
                                         @if (!isApplied)
                                         {
-                                            <form asp-action="ApplyForProgram" asp-controller="Citizen" method="post" style="display:inline;">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="programId" value="@program.ProgramID" />
-                                                <button type="submit" class="btn-modern btn-success-modern">
-                                                    <i class="bi bi-send"></i> Apply Now
-                                                </button>
-                                            </form>
+                                            <a asp-action="SelectDocuments" asp-controller="Citizen" asp-route-programId="@program.ProgramID"
+                                               class="btn-modern btn-success-modern">
+                                                <i class="bi bi-send"></i> Apply Now
+                                            </a>
                                         }
                                         else
                                         {

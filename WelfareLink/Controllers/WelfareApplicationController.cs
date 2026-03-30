@@ -17,9 +17,17 @@ public class WelfareApplicationController : Controller
         _welfareProgramService = welfareProgramService;
     }
 
-    public async Task<IActionResult> HomeIndex()
+    public async Task<IActionResult> HomeIndex(string status = null)
     {
         var applications = await _welfareApplicationService.GetAllApplicationsAsync();
+
+        // Filter by status if provided
+        if (!string.IsNullOrEmpty(status))
+        {
+            applications = applications.Where(a => a.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
+            ViewBag.CurrentStatus = status;
+        }
+
         return View(applications);
     }
 
@@ -97,13 +105,19 @@ public class WelfareApplicationController : Controller
     // Filter applications by status
     public async Task<IActionResult> ByStatus(string status)
     {
+        IEnumerable<WelfareLink.Models.WelfareApplication> applications;
+
         if (string.IsNullOrEmpty(status))
         {
-            return RedirectToAction(nameof(Index));
+            applications = await _welfareApplicationService.GetAllApplicationsAsync();
+            ViewBag.SelectedStatus = "";
+        }
+        else
+        {
+            applications = await _welfareApplicationService.GetApplicationsByStatusAsync(status);
+            ViewBag.SelectedStatus = status;
         }
 
-        var applications = await _welfareApplicationService.GetApplicationsByStatusAsync(status);
-        ViewBag.Status = status;
         return View("Index", applications);
     }
     // GET: WelfareApplication/DateRange

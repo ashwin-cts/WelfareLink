@@ -37,11 +37,15 @@
                                 <span class="badge bg-info">
                                     <i class="bi bi-gift"></i> @item.Benefit.Type
                                 </span>
-                                <small class="text-muted d-block">ID: @item.BenefitID</small>
+                                <small class="text-muted d-block">Benefit ID: @item.BenefitID</small>
+                                @if (item.Benefit.WelfareApplication != null)
+                                {
+                                    <small class="text-muted d-block">App #@item.Benefit.WelfareApplication.ApplicationID</small>
+                                }
                             }
                             else
                             {
-                                <span>@item.BenefitID</span>
+                                <span>Benefit #@item.BenefitID</span>
                             }
                         </td>
                         <td>
@@ -54,7 +58,15 @@
                             }
                             else
                             {
-                                <i class="bi bi-person-circle text-primary"></i> @item.CitizenID
+                                if (item.Benefit?.WelfareApplication?.Citizen != null)
+                                {
+                                    <i class="bi bi-person-circle text-primary"></i> <strong>@item.Benefit.WelfareApplication.Citizen.Name</strong>
+                                    <br /><small class="text-muted">ID: #@item.CitizenID</small>
+                                }
+                                else
+                                {
+                                    <span><i class="bi bi-person-circle text-primary"></i> Citizen #@item.CitizenID</span>
+                                }
                             }
                         </td>
                         <td>

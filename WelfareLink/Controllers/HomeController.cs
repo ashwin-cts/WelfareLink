@@ -8,7 +8,8 @@ namespace WelfareLink.Controllers
     {
         public IActionResult Index()
         {
-            return View();
+            // Redirect to login instead of showing default home page
+            return RedirectToAction("Login", "Account");
         }
 
         public IActionResult Privacy()

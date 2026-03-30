@@ -9,14 +9,16 @@ namespace WelfareLink.Services
         private readonly IBenefitRepository _benefitRepository;
         private readonly IDisbursementRepository _disbursementRepository;
         private readonly IWelfareApplicationRepository _applicationRepository;
+        private readonly IEligibilityCheckRepository _eligibilityCheckRepository;
         private readonly string[] _validBenefitTypes = { "Cash", "Food", "Medical", "Education", "Housing" };
         private readonly string[] _validStatuses = { "Allocation Pending", "Allocated", "Partially Disbursed", "Fully Disbursed", "Failed" };
 
-        public BenefitService(IBenefitRepository benefitRepository, IDisbursementRepository disbursementRepository, IWelfareApplicationRepository applicationRepository)
+        public BenefitService(IBenefitRepository benefitRepository, IDisbursementRepository disbursementRepository, IWelfareApplicationRepository applicationRepository, IEligibilityCheckRepository eligibilityCheckRepository)
         {
             _benefitRepository = benefitRepository;
             _disbursementRepository = disbursementRepository;
             _applicationRepository = applicationRepository;
+            _eligibilityCheckRepository = eligibilityCheckRepository;
         }
 
         public async Task<IEnumerable<Benefit>> GetAllBenefitsAsync()
@@ -33,13 +35,35 @@ namespace WelfareLink.Services
             return await _benefitRepository.GetByIdAsync(id);
         }
 
-        public async Task<Benefit> CreateBenefitAsync(Benefit benefit)
+        public async Task<Benefit> CreateBenefitAsync(Benefit benefit, int officerId = 0)
         {
             ValidateBenefit(benefit);
-            return await _benefitRepository.AddAsync(benefit);
+
+            // Check if the application has a rejected eligibility check
+            await ValidateEligibilityCheckAsync(benefit.ApplicationID);
+
+            var createdBenefit = await _benefitRepository.AddAsync(benefit);
+
+            // When benefit is created with "Allocated" status, auto-create a disbursement
+            if (createdBenefit.Status.Equals("Allocated", StringComparison.OrdinalIgnoreCase))
+            {
+                var application = await _applicationRepository.GetByIdAsync(createdBenefit.ApplicationID);
+                var disbursement = new Disbursement
+                {
+                    BenefitID = createdBenefit.BenefitID,
+                    CitizenID = application?.CitizenID ?? 0,
+                    OfficerID = officerId,
+                    Amount = createdBenefit.Amount,
+                    Date = DateTime.Now,
+                    Status = "Disbursement Pending"
+                };
+                await _disbursementRepository.AddAsync(disbursement);
+            }
+
+            return createdBenefit;
         }
 
-        public async Task<Benefit> UpdateBenefitAsync(Benefit benefit)
+        public async Task<Benefit> UpdateBenefitAsync(Benefit benefit, int officerId = 0)
         {
             if (benefit.BenefitID <= 0)
             {
@@ -64,7 +88,7 @@ namespace WelfareLink.Services
                 {
                     BenefitID = updatedBenefit.BenefitID,
                     CitizenID = application?.CitizenID ?? 0,
-                    OfficerID = 0,
+                    OfficerID = officerId,
                     Amount = updatedBenefit.Amount,
                     Date = DateTime.Now,
                     Status = "Disbursement Pending"
@@ -204,6 +228,23 @@ namespace WelfareLink.Services
             if (!_validStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
             {
                 throw new ArgumentException($"Invalid status. Valid statuses are: {string.Join(", ", _validStatuses)}", nameof(status));
+            }
+        }
+
+        private async Task ValidateEligibilityCheckAsync(int applicationId)
+        {
+            // Get the latest eligibility check for this application
+            var latestCheck = await _eligibilityCheckRepository.GetLatestCheckForApplicationAsync(applicationId);
+
+            if (latestCheck != null)
+            {
+                // Check if the result is "Rejected" or result code indicates rejection
+                if (latestCheck.Result.Equals("Rejected", StringComparison.OrdinalIgnoreCase) ||
+                    latestCheck.ResultCode.Equals("Rejected", StringComparison.OrdinalIgnoreCase) ||
+                    latestCheck.ResultCode.Equals("REJECTED", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException($"Cannot create benefit for application #{applicationId}. The application has been rejected in the eligibility check.");
+                }
             }
         }
 

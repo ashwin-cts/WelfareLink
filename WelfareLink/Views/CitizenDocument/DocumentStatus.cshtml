@@ -45,6 +45,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Document ID</th>
+                                <th>Document Name</th>
                                 <th>Document Type</th>
                                 <th>Upload Date</th>
                                 <th>Verification Status</th>
@@ -56,6 +57,7 @@
                             {
                                 <tr>
                                     <td>@doc.DocumentID</td>
+                                    <td><strong>@(doc.DocumentName ?? "-")</strong></td>
                                     <td>@doc.DocType</td>
                                     <td>@doc.UploadedDate.ToString("MMM dd, yyyy")</td>
                                     <td>
@@ -87,6 +89,13 @@
                                         {
                                             <a href="@doc.FileURI" target="_blank" class="btn btn-sm btn-info" title="View Document">
                                                 <i class="bi bi-eye"></i> View
+                                            </a>
+                                        }
+                                        @if (doc.VerificationStatus == "Rejected")
+                                        {
+                                            <a asp-controller="CitizenDocument" asp-action="Reupload" asp-route-id="@doc.DocumentID"
+                                               class="btn btn-sm btn-warning" title="Re-upload Document">
+                                                <i class="bi bi-arrow-repeat"></i> Re-upload
                                             </a>
                                         }
                                         @if (doc.VerificationStatus == "Pending" || doc.VerificationStatus == "Rejected")

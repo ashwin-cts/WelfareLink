@@ -34,6 +34,12 @@ public class CitizenDocumentRepository : ICitizenDocumentRepository
             await _context.SaveChangesAsync();
         }
 
+        public async Task UpdateAsync(CitizenDocument document)
+        {
+            _context.CitizenDocuments.Update(document);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task DeleteAsync(int documentId)
         {
             var document = await _context.CitizenDocuments.FindAsync(documentId);

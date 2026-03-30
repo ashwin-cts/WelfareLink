@@ -19,7 +19,11 @@ namespace WelfareLink.Controllers
         private async Task PopulateApplicationDropdown(int? selectedId = null)
         {
             var applications = await _welfareApplicationService.GetAllApplicationsAsync();
-            var appList = applications.ToList();
+
+            // Filter to show only APPROVED applications
+            var appList = applications
+                .Where(a => a.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
             ViewBag.ApplicationList = new SelectList(
                 appList.Select(a => new {
@@ -81,7 +85,7 @@ namespace WelfareLink.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _benefitService.CreateBenefitAsync(benefit);
+                await _benefitService.CreateBenefitAsync(benefit, HttpContext.Session.GetInt32("UserId") ?? 0);
                 return RedirectToAction(nameof(Index));
             }
             await PopulateApplicationDropdown(benefit.ApplicationID);
@@ -123,7 +127,7 @@ namespace WelfareLink.Controllers
                     return NotFound();
                 }
 
-                await _benefitService.UpdateBenefitAsync(benefit);
+                await _benefitService.UpdateBenefitAsync(benefit, HttpContext.Session.GetInt32("UserId") ?? 0);
                 return RedirectToAction(nameof(Index));
             }
             await PopulateApplicationDropdown(benefit.ApplicationID);

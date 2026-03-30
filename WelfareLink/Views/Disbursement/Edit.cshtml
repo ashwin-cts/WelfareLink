@@ -72,7 +72,7 @@
                             <label asp-for="CitizenID" class="form-label-modern">
                                 <i class="bi bi-person-circle"></i> Citizen ID
                             </label>
-                            <input asp-for="CitizenID" id="CitizenID" class="form-control" readonly />
+                            <input asp-for="CitizenID" id="CitizenID" class="form-control" readonly style="background-color: #f8f9fa;" />
                             <input type="hidden" asp-for="CitizenID" />
                             <span asp-validation-for="CitizenID" class="text-danger"></span>
                         </div>
@@ -83,7 +83,10 @@
                             <label asp-for="OfficerID" class="form-label-modern">
                                 <i class="bi bi-person-badge"></i> Officer ID
                             </label>
-                            <input asp-for="OfficerID" class="form-control" />
+                            <input asp-for="OfficerID" class="form-control" value="@ViewBag.OfficerId"
+                                   readonly style="background-color: #f8f9fa;" />
+                            <input type="hidden" asp-for="OfficerID" value="@ViewBag.OfficerId" />
+                            <small class="form-text text-muted">Auto-populated from the officer who created this disbursement</small>
                             <span asp-validation-for="OfficerID" class="text-danger"></span>
                         </div>
                     </div>

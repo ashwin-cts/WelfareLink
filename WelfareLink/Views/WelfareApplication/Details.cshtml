@@ -4,90 +4,142 @@
     ViewData["Title"] = "Application Details";
 }
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h1 class="display-4">@ViewData["Title"]</h1>
-            <p class="lead">Application ID: @Model.ApplicationID</p>
-        </div>
+<div class="page-header">
+    <div>
+        <h1>
+            <i class="bi bi-file-earmark-text"></i>
+            Application Details
+        </h1>
+        <p class="mb-0">
+            <strong>Application #@Model.ApplicationID</strong>
+            @if (Model.Program != null)
+            {
+                <span> - @Model.Program.Title</span>
+            }
+        </p>
+        @if (Model.Citizen != null)
+        {
+            <small class="text-muted">Applicant: @Model.Citizen.Name</small>
+        }
     </div>
+    <div class="action-buttons">
+        <a asp-action="Index" class="btn btn-modern btn-secondary-modern">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+</div>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    <h5>Application Information</h5>
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+            <div class="col-md-8">
+                <div class="content-card mb-3">
+                    <h4 class="mb-3"><i class="bi bi-info-circle"></i> Application Information</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Application ID</label>
+                            <p><strong>#@Model.ApplicationID</strong></p>
+                        </div>
+
+                        <div class="detail-item">
+                            <label>Citizen Name</label>
+                            <p>
+                                @if (Model.Citizen != null)
+                                {
+                                    <i class="bi bi-person-fill text-primary"></i> @Model.Citizen.Name
+                                    <br />
+                                    <small class="text-muted">ID: #@Model.CitizenID</small>
+                                }
+                                else
+                                {
+                                    <span>Citizen ID: @Model.CitizenID</span>
+                                }
+                            </p>
+                        </div>
+
+                        <div class="detail-item">
+                            <label>Program Name</label>
+                            <p>
+                                @if (Model.Program != null)
+                                {
+                                    <i class="bi bi-diagram-3-fill text-info"></i> @Model.Program.Title
+                                    <br />
+                                    <small class="text-muted">ID: #@Model.ProgramID</small>
+                                }
+                                else
+                                {
+                                    <span>Program ID: @Model.ProgramID</span>
+                                }
+                            </p>
+                        </div>
+
+                        <div class="detail-item">
+                            <label>Submitted Date</label>
+                            <p><i class="bi bi-calendar-event"></i> @Model.SubmittedDate.ToString("dd MMMM yyyy")</p>
+                        </div>
+
+                        <div class="detail-item">
+                            <label>Current Status</label>
+                            <p>
+                                @if (Model.Status == "Pending")
+                                {
+                                    <span class="status-badge status-pending"><i class="bi bi-clock"></i> Pending</span>
+                                }
+                                else if (Model.Status == "Approved")
+                                {
+                                    <span class="status-badge status-fully-disbursed"><i class="bi bi-check-circle"></i> Approved</span>
+                                }
+                                else if (Model.Status == "Rejected")
+                                {
+                                    <span class="status-badge status-failed"><i class="bi bi-x-circle"></i> Rejected</span>
+                                }
+                                else if (Model.Status == "Fully Disbursed")
+                                {
+                                    <span class="status-badge status-fully-disbursed"><i class="bi bi-patch-check-fill"></i> Fully Disbursed</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-processing">@Model.Status</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-4">Application ID</dt>
-                        <dd class="col-sm-8">@Model.ApplicationID</dd>
 
-                        <dt class="col-sm-4">Citizen ID</dt>
-                        <dd class="col-sm-8">@Model.CitizenID</dd>
-
-                        <dt class="col-sm-4">Program ID</dt>
-                        <dd class="col-sm-8">@Model.ProgramID</dd>
-
-                        <dt class="col-sm-4">Submitted Date</dt>
-                        <dd class="col-sm-8">@Model.SubmittedDate.ToString("dd MMMM yyyy")</dd>
-
-                        <dt class="col-sm-4">Current Status</dt>
-                        <dd class="col-sm-8">
-                            @if (Model.Status == "Pending")
-                            {
-                                <span class="badge bg-warning text-dark fs-6">@Model.Status</span>
-                            }
-                            else if (Model.Status == "Approved")
-                            {
-                                <span class="badge bg-success fs-6">@Model.Status</span>
-                            }
-                            else if (Model.Status == "Rejected")
-                            {
-                                <span class="badge bg-danger fs-6">@Model.Status</span>
-                            }
-                            else if (Model.Status == "Fully Disbursed")
-                            {
-                                <span class="badge fs-6" style="background-color:#0d6efd"><i class="bi bi-patch-check-fill"></i> @Model.Status</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-info fs-6">@Model.Status</span>
-                            }
-                        </dd>
-                    </dl>
-                </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-clipboard-check"></i> Eligibility Check History</h5>
-                    <a asp-controller="EligibilityCheck" asp-action="Create" asp-route-applicationId="@Model.ApplicationID"
-                       class="btn btn-sm btn-primary">
-                        <i class="bi bi-plus-circle"></i> New Check
-                    </a>
-                </div>
-                <div class="card-body p-0">
+                <div class="content-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0"><i class="bi bi-clipboard-check"></i> Eligibility Check History</h4>
+                        <a asp-controller="EligibilityCheck" asp-action="Create" asp-route-applicationId="@Model.ApplicationID"
+                           class="btn btn-modern btn-primary-modern btn-sm">
+                            <i class="bi bi-plus-circle"></i> New Check
+                        </a>
+                    </div>
                     @if (Model.EligibilityChecks != null && Model.EligibilityChecks.Any())
                     {
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover mb-0">
-                                <thead class="table-dark">
+                            <table class="table table-modern">
+                                <thead>
                                     <tr>
-                                        <th><i class="bi bi-hash"></i> Check ID</th>
-                                        <th><i class="bi bi-calendar"></i> Date</th>
-                                        <th><i class="bi bi-person-badge"></i> Officer ID</th>
-                                        <th><i class="bi bi-flag"></i> Result</th>
-                                        <th><i class="bi bi-code-square"></i> Result Code</th>
-                                        <th><i class="bi bi-gear"></i> Action</th>
+                                        <th>Check ID</th>
+                                        <th>Date</th>
+                                        <th>Officer ID</th>
+                                        <th>Result</th>
+                                        <th>Result Code</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -100,18 +152,18 @@
                                             <td>
                                                 @if (check.Result.Equals("Eligible", StringComparison.OrdinalIgnoreCase))
                                                 {
-                                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> @check.Result</span>
+                                                    <span class="status-badge status-fully-disbursed"><i class="bi bi-check-circle"></i> Eligible</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-danger"><i class="bi bi-x-circle"></i> @check.Result</span>
+                                                    <span class="status-badge status-failed"><i class="bi bi-x-circle"></i> Ineligible</span>
                                                 }
                                             </td>
                                             <td><code>@check.ResultCode</code></td>
                                             <td>
                                                 <a asp-controller="EligibilityCheck" asp-action="Details" asp-route-id="@check.CheckID"
-                                                   class="btn btn-sm btn-outline-info" title="View Details">
-                                                    <i class="bi bi-eye"></i>
+                                                   class="btn btn-sm btn-modern btn-info-modern" title="View Details">
+                                                    <i class="bi bi-eye"></i> View
                                                 </a>
                                             </td>
                                         </tr>
@@ -122,55 +174,72 @@
                     }
                     else
                     {
-                        <div class="p-3">
-                            <p class="text-muted mb-3">
-                                <i class="bi bi-info-circle"></i>
-                                No eligibility checks have been performed for this application yet.
-                            </p>
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-info-circle"></i>
+                            No eligibility checks have been performed for this application yet.
+                            <br />
                             <a asp-controller="EligibilityCheck" asp-action="Create" asp-route-applicationId="@Model.ApplicationID"
-                               class="btn btn-primary">
+                               class="btn btn-modern btn-primary-modern btn-sm mt-2">
                                 <i class="bi bi-clipboard-check"></i> Perform Eligibility Check
                             </a>
                         </div>
                     }
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-4">
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h5>Actions</h5>
-                </div>
-                <div class="card-body d-grid gap-2">
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
-                        <i class="bi bi-arrow-repeat"></i> Update Status
-                    </button>
+            <div class="col-md-4">
+                <div class="content-card mb-3">
+                    <h5 class="mb-3"><i class="bi bi-gear"></i> Actions</h5>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-modern btn-success-modern" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
+                            <i class="bi bi-arrow-repeat"></i> Update Status
+                        </button>
 
-                    <a asp-action="Index" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> Back to List
-                    </a>
+                        <a asp-controller="EligibilityCheck" asp-action="Create" asp-route-applicationId="@Model.ApplicationID"
+                           class="btn btn-modern btn-primary-modern">
+                            <i class="bi bi-clipboard-check"></i> Eligibility Check
+                        </a>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h5>Application Timeline</h5>
-                </div>
-                <div class="card-body">
+                <div class="content-card">
+                    <h5 class="mb-3"><i class="bi bi-clock-history"></i> Application Timeline</h5>
                     <div class="timeline">
                         <div class="timeline-item">
-                            <i class="bi bi-check-circle-fill text-success"></i>
-                            <strong>Submitted</strong>
-                            <br />
-                            <small>@Model.SubmittedDate.ToString("dd MMM yyyy")</small>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle-fill text-success me-2" style="font-size: 1.2rem;"></i>
+                                <div>
+                                    <strong>Submitted</strong>
+                                    <br />
+                                    <small class="text-muted">@Model.SubmittedDate.ToString("dd MMM yyyy")</small>
+                                </div>
+                            </div>
                         </div>
+
+                        @if (Model.Status == "Approved" || Model.Status == "Rejected")
+                        {
+                            <div class="timeline-item mt-3">
+                                <div class="d-flex align-items-center">
+                                    @if (Model.Status == "Approved")
+                                    {
+                                        <i class="bi bi-check-circle-fill text-success me-2" style="font-size: 1.2rem;"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-x-circle-fill text-danger me-2" style="font-size: 1.2rem;"></i>
+                                    }
+                                    <div>
+                                        <strong>@Model.Status</strong>
+                                        <br />
+                                        <small class="text-muted">Status updated</small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
 <!-- Update Status Modal -->
 <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">

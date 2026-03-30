@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using WelfareLink.Data;
 using WelfareLink.Interfaces;
@@ -409,7 +410,7 @@ namespace WelfareLink.Controllers
             return View(programs);
         }
 
-        // POST: Citizen/ApplyForProgram
+        // POST: Citizen/ApplyForProgram (kept for legacy/direct use — now bypassed by SelectDocuments)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApplyForProgram(int programId)
@@ -439,6 +440,184 @@ namespace WelfareLink.Controllers
             var created = await _applicationService.CreateApplicationAsync(application);
             TempData["SuccessMessage"] = $"Application #{created.ApplicationID} submitted successfully!";
             return RedirectToAction(nameof(ProgramList));
+        }
+
+        // GET: Citizen/SelectDocuments?programId=5
+        public async Task<IActionResult> SelectDocuments(int programId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+                return RedirectToAction("Login", "Account");
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var program = await _programService.GetProgramByIdAsync(programId);
+            if (program == null)
+                return NotFound();
+
+            var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.Id);
+
+            ViewBag.Program = program;
+            ViewBag.Documents = documents;
+            ViewBag.ProgramId = programId;
+            return View();
+        }
+
+        // POST: Citizen/SelectDocuments
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SelectDocuments(int programId, int[] selectedDocumentIds)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+                return RedirectToAction("Login", "Account");
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            if (selectedDocumentIds == null || selectedDocumentIds.Length == 0)
+            {
+                var program = await _programService.GetProgramByIdAsync(programId);
+                var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.Id);
+                ViewBag.Program = program;
+                ViewBag.Documents = documents;
+                ViewBag.ProgramId = programId;
+                ViewBag.Error = "Please select at least one document before submitting.";
+                return View();
+            }
+
+            var application = new WelfareApplication
+            {
+                CitizenID = citizenProfile.Id,
+                ProgramID = programId,
+                SubmittedDate = DateOnly.FromDateTime(DateTime.Today),
+                Status = "Pending"
+            };
+
+            var created = await _applicationService.CreateApplicationAsync(application);
+
+            var appDocs = selectedDocumentIds.Select(docId => new WelfareApplicationDocument
+            {
+                ApplicationID = created.ApplicationID,
+                DocumentID = docId
+            });
+
+            _context.WelfareApplicationDocuments.AddRange(appDocs);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Application #{created.ApplicationID} submitted successfully with {selectedDocumentIds.Length} document(s)!";
+            return RedirectToAction(nameof(ProgramList));
+        }
+
+        // GET: Citizen/ReselectDocuments/5
+        public async Task<IActionResult> ReselectDocuments(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+                return RedirectToAction("Login", "Account");
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null || application.CitizenID != citizenProfile.Id)
+                return NotFound();
+
+            if (application.Status != "Rejected")
+            {
+                TempData["ErrorMessage"] = "Only rejected applications can be re-submitted with new documents.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.Id);
+
+            // Get previously selected document IDs for this application
+            var previousDocIds = await _context.WelfareApplicationDocuments
+                .Where(d => d.ApplicationID == id)
+                .Select(d => d.DocumentID)
+                .ToListAsync();
+
+            ViewBag.Application = application;
+            ViewBag.Program = application.Program;
+            ViewBag.Documents = documents;
+            ViewBag.PreviousDocIds = previousDocIds;
+            return View();
+        }
+
+        // POST: Citizen/ReselectDocuments/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReselectDocuments(int id, int[] selectedDocumentIds)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+                return RedirectToAction("Login", "Account");
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null || application.CitizenID != citizenProfile.Id)
+                return NotFound();
+
+            if (application.Status != "Rejected")
+            {
+                TempData["ErrorMessage"] = "Only rejected applications can be re-submitted.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            if (selectedDocumentIds == null || selectedDocumentIds.Length == 0)
+            {
+                var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.Id);
+                var previousDocIds = await _context.WelfareApplicationDocuments
+                    .Where(d => d.ApplicationID == id)
+                    .Select(d => d.DocumentID)
+                    .ToListAsync();
+
+                ViewBag.Application = application;
+                ViewBag.Program = application.Program;
+                ViewBag.Documents = documents;
+                ViewBag.PreviousDocIds = previousDocIds;
+                ViewBag.Error = "Please select at least one document before re-submitting.";
+                return View();
+            }
+
+            // Remove old document links
+            var oldDocs = await _context.WelfareApplicationDocuments
+                .Where(d => d.ApplicationID == id)
+                .ToListAsync();
+            _context.WelfareApplicationDocuments.RemoveRange(oldDocs);
+
+            // Add new document links
+            var newDocs = selectedDocumentIds.Select(docId => new WelfareApplicationDocument
+            {
+                ApplicationID = id,
+                DocumentID = docId
+            });
+            _context.WelfareApplicationDocuments.AddRange(newDocs);
+
+            // Reset application status to Pending and update submitted date
+            application.Status = "Pending";
+            application.SubmittedDate = DateOnly.FromDateTime(DateTime.Today);
+            await _applicationService.UpdateApplicationAsync(application);
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Application #{id} re-submitted successfully with {selectedDocumentIds.Length} document(s)!";
+            return RedirectToAction(nameof(ApplicationDetails), new { id });
         }
     }
 

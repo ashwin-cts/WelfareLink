@@ -20,6 +20,11 @@ namespace WelfareLink.Repositories
             return await _context.Disbursements
                 .AsNoTracking()
                 .Include(d => d.Benefit)
+                    .ThenInclude(b => b.WelfareApplication)
+                        .ThenInclude(a => a.Citizen)
+                .Include(d => d.Benefit)
+                    .ThenInclude(b => b.WelfareApplication)
+                        .ThenInclude(a => a.Program)
                 .ToListAsync();
         }
 
@@ -28,6 +33,11 @@ namespace WelfareLink.Repositories
             return await _context.Disbursements
                 .AsNoTracking()
                 .Include(d => d.Benefit)
+                    .ThenInclude(b => b.WelfareApplication)
+                        .ThenInclude(a => a.Citizen)
+                .Include(d => d.Benefit)
+                    .ThenInclude(b => b.WelfareApplication)
+                        .ThenInclude(a => a.Program)
                 .FirstOrDefaultAsync(d => d.DisbursementID == id);
         }
 

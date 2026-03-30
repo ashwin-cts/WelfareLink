@@ -8,13 +8,15 @@ namespace WelfareLink.Services
         private readonly IDisbursementRepository _disbursementRepository;
         private readonly IBenefitRepository _benefitRepository;
         private readonly IWelfareApplicationRepository _applicationRepository;
+        private readonly IEligibilityCheckRepository _eligibilityCheckRepository;
         private readonly string[] _validStatuses = { "Completed", "Pending", "Disbursement Pending", "Failed" };
 
-        public DisbursementService(IDisbursementRepository disbursementRepository, IBenefitRepository benefitRepository, IWelfareApplicationRepository applicationRepository)
+        public DisbursementService(IDisbursementRepository disbursementRepository, IBenefitRepository benefitRepository, IWelfareApplicationRepository applicationRepository, IEligibilityCheckRepository eligibilityCheckRepository)
         {
             _disbursementRepository = disbursementRepository;
             _benefitRepository = benefitRepository;
             _applicationRepository = applicationRepository;
+            _eligibilityCheckRepository = eligibilityCheckRepository;
         }
 
         public async Task<IEnumerable<Disbursement>> GetAllDisbursementsAsync()
@@ -40,6 +42,9 @@ namespace WelfareLink.Services
             if (benefit?.WelfareApplication != null)
             {
                 disbursement.CitizenID = benefit.WelfareApplication.CitizenID;
+
+                // Validate that the application's eligibility check is not rejected
+                await ValidateEligibilityCheckAsync(benefit.ApplicationID);
             }
 
             var createdDisbursement = await _disbursementRepository.AddAsync(disbursement);
@@ -64,7 +69,7 @@ namespace WelfareLink.Services
                         {
                             BenefitID = disbursement.BenefitID,
                             CitizenID = disbursement.CitizenID,
-                            OfficerID = 0,
+                            OfficerID = disbursement.OfficerID,
                             Amount = remainingBalance,
                             Date = DateTime.Now,
                             Status = "Pending"
@@ -119,7 +124,7 @@ namespace WelfareLink.Services
                 {
                     BenefitID = disbursement.BenefitID,
                     CitizenID = disbursement.CitizenID,
-                    OfficerID = 0,
+                    OfficerID = disbursement.OfficerID,
                     Amount = balanceAmount,
                     Date = DateTime.Now,
                     Status = "Pending"
@@ -362,6 +367,23 @@ namespace WelfareLink.Services
                 throw new ArgumentException($"Invalid status. Valid statuses are: {string.Join(", ", _validStatuses)}", nameof(status));
             }
 
+        }
+
+        private async Task ValidateEligibilityCheckAsync(int applicationId)
+        {
+            // Get the latest eligibility check for this application
+            var latestCheck = await _eligibilityCheckRepository.GetLatestCheckForApplicationAsync(applicationId);
+
+            if (latestCheck != null)
+            {
+                // Check if the result is "Rejected" or result code indicates rejection
+                if (latestCheck.Result.Equals("Rejected", StringComparison.OrdinalIgnoreCase) ||
+                    latestCheck.ResultCode.Equals("Rejected", StringComparison.OrdinalIgnoreCase) ||
+                    latestCheck.ResultCode.Equals("REJECTED", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException($"Cannot create disbursement for application #{applicationId}. The application has been rejected in the eligibility check.");
+                }
+            }
         }
 
         #endregion

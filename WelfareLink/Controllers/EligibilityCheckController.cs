@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WelfareLink.Data;
 using WelfareLink.Interfaces;
 using WelfareLink.Models;
 
@@ -8,18 +10,34 @@ public class EligibilityCheckController : Controller
 {
     private readonly IEligibilityCheckService _eligibilityCheckService;
     private readonly IWelfareApplicationService _applicationService;
+    private readonly ICitizenService _citizenService;
+    private readonly ICitizenDocumentService _documentService;
+    private readonly WelfareLinkDbContext _context;
 
     public EligibilityCheckController(
-        IEligibilityCheckService eligibilityCheckService, IWelfareApplicationService applicationService)
+        IEligibilityCheckService eligibilityCheckService, 
+        IWelfareApplicationService applicationService,
+        ICitizenService citizenService,
+        ICitizenDocumentService documentService,
+        WelfareLinkDbContext context)
     {
         _eligibilityCheckService = eligibilityCheckService;
         _applicationService = applicationService;
+        _citizenService = citizenService;
+        _documentService = documentService;
+        _context = context;
     }
 
     // GET: EligibilityCheck
     // List all eligibility checks
     public async Task<IActionResult> Index()
     {
+        var userRole = HttpContext.Session.GetString("UserRole");
+        if (userRole != "WelfareOfficer" && userRole != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
         var checks = await _eligibilityCheckService.GetAllChecksAsync();
         return View(checks);
     }
@@ -27,6 +45,12 @@ public class EligibilityCheckController : Controller
     // GET: EligibilityCheck/Details/5
     public async Task<IActionResult> Details(int id)
     {
+        var userRole = HttpContext.Session.GetString("UserRole");
+        if (userRole != "WelfareOfficer" && userRole != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
         var check = await _eligibilityCheckService.GetCheckByIdAsync(id);
         if (check == null)
         {
@@ -40,6 +64,14 @@ public class EligibilityCheckController : Controller
     // Must be accessed from an application details page with applicationId parameter
     public async Task<IActionResult> Create(int? applicationId)
     {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        var userRole = HttpContext.Session.GetString("UserRole");
+
+        if (userId == null || (userRole != "WelfareOfficer" && userRole != "Admin"))
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
         if (!applicationId.HasValue)
         {
             TempData["ErrorMessage"] = "Application ID is required. Please navigate from the Application Details page.";
@@ -52,7 +84,33 @@ public class EligibilityCheckController : Controller
             return NotFound();
         }
 
+        // Get citizen details
+        var citizen = await _citizenService.GetCitizenByIdAsync(application.CitizenID);
+
+        // Get documents submitted with this application
+        var applicationDocs = await _context.WelfareApplicationDocuments
+            .Where(d => d.ApplicationID == applicationId.Value)
+            .Include(d => d.CitizenDocument)
+            .ToListAsync();
+
+        // Fall back to all citizen documents if no application-specific docs exist (legacy)
+        IEnumerable<WelfareLink.Models.CitizenDocument> documents;
+        if (applicationDocs.Any())
+        {
+            documents = applicationDocs.Select(ad => ad.CitizenDocument!).Where(d => d != null);
+            ViewBag.HasApplicationDocs = true;
+        }
+        else
+        {
+            documents = await _documentService.GetDocumentsByCitizenIdAsync(application.CitizenID);
+            ViewBag.HasApplicationDocs = false;
+        }
+
         ViewBag.Application = application;
+        ViewBag.Citizen = citizen;
+        ViewBag.Documents = documents;
+        ViewBag.OfficerId = userId.Value;
+
         return View();
     }
 
@@ -62,11 +120,20 @@ public class EligibilityCheckController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(EligibilityCheck check, int? applicationId)
     {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        var userRole = HttpContext.Session.GetString("UserRole");
+
+        if (userId == null || (userRole != "WelfareOfficer" && userRole != "Admin"))
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
         if (!applicationId.HasValue)
         {
             TempData["ErrorMessage"] = "Application ID is required.";
             return RedirectToAction("Index", "WelfareApplication");
         }
+
         if (ModelState.IsValid)
         {
             await _eligibilityCheckService.CreateCheckAsync(check, applicationId);
@@ -88,7 +155,13 @@ public class EligibilityCheckController : Controller
         if (applicationId.HasValue)
         {
             var application = await _applicationService.GetApplicationByIdAsync(applicationId.Value);
+            var citizen = await _citizenService.GetCitizenByIdAsync(application.CitizenID);
+            var documents = await _documentService.GetDocumentsByCitizenIdAsync(application.CitizenID);
+
             ViewBag.Application = application;
+            ViewBag.Citizen = citizen;
+            ViewBag.Documents = documents;
+            ViewBag.OfficerId = userId.Value;
         }
         return View(check);
     }
@@ -199,5 +272,30 @@ public class EligibilityCheckController : Controller
         await _eligibilityCheckService.DeleteCheckAsync(id);
         TempData["SuccessMessage"] = "Eligibility check deleted successfully!";
         return RedirectToAction(nameof(Index));
+    }
+
+    // POST: EligibilityCheck/UpdateDocumentStatus
+    // AJAX endpoint for officer to approve/reject documents during eligibility check
+    [HttpPost]
+    public async Task<IActionResult> UpdateDocumentStatus(int documentId, string status)
+    {
+        var userRole = HttpContext.Session.GetString("UserRole");
+        if (userRole != "WelfareOfficer" && userRole != "Admin")
+        {
+            return Json(new { success = false, message = "Unauthorized" });
+        }
+
+        if (status != "Approved" && status != "Rejected")
+        {
+            return Json(new { success = false, message = "Invalid status. Must be 'Approved' or 'Rejected'." });
+        }
+
+        var result = await _documentService.UpdateVerificationStatusAsync(documentId, status);
+        if (result)
+        {
+            return Json(new { success = true, message = $"Document #{documentId} marked as {status}." });
+        }
+
+        return Json(new { success = false, message = "Failed to update document status." });
     }
 }

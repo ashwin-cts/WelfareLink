@@ -12,8 +12,8 @@ using WelfareLink.Data;
 namespace WelfareLink.Migrations
 {
     [DbContext(typeof(WelfareLinkDbContext))]
-    [Migration("20260329100743_table3")]
-    partial class table3
+    [Migration("20260330095937_AddApplicationDocuments")]
+    partial class AddApplicationDocuments
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -312,6 +312,29 @@ namespace WelfareLink.Migrations
                     b.ToTable("WelfareApplications");
                 });
 
+            modelBuilder.Entity("WelfareLink.Models.WelfareApplicationDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ApplicationID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DocumentID")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationID");
+
+                    b.HasIndex("DocumentID");
+
+                    b.ToTable("WelfareApplicationDocuments");
+                });
+
             modelBuilder.Entity("WelfareLink.Models.WelfareProgram", b =>
                 {
                     b.Property<int>("ProgramID")
@@ -430,6 +453,25 @@ namespace WelfareLink.Migrations
                     b.Navigation("Program");
                 });
 
+            modelBuilder.Entity("WelfareLink.Models.WelfareApplicationDocument", b =>
+                {
+                    b.HasOne("WelfareLink.Models.WelfareApplication", "WelfareApplication")
+                        .WithMany("ApplicationDocuments")
+                        .HasForeignKey("ApplicationID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WelfareLink.Models.CitizenDocument", "CitizenDocument")
+                        .WithMany()
+                        .HasForeignKey("DocumentID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CitizenDocument");
+
+                    b.Navigation("WelfareApplication");
+                });
+
             modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
                 {
                     b.Navigation("Disbursements");
@@ -442,6 +484,8 @@ namespace WelfareLink.Migrations
 
             modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
                 {
+                    b.Navigation("ApplicationDocuments");
+
                     b.Navigation("Benefits");
 
                     b.Navigation("EligibilityChecks");

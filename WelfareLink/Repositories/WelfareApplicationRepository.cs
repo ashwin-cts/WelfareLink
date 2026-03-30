@@ -27,6 +27,8 @@ public class WelfareApplicationRepository : Repository<WelfareApplication> ,IWel
             .Include(a => a.Program)
             .Include(a => a.Citizen)
             .Include(a => a.EligibilityChecks)
+            .Include(a => a.ApplicationDocuments)
+                .ThenInclude(ad => ad.CitizenDocument)
             .FirstOrDefaultAsync(a => a.ApplicationID == id);
     }
     public async Task<IEnumerable<WelfareApplication>> GetByStatusAsync(string status)
@@ -71,7 +73,8 @@ public class WelfareApplicationRepository : Repository<WelfareApplication> ,IWel
 
     public async Task<bool> UpdateStatusAsync(int applicationId, string status)
     {
-        var application = await GetByIdAsync(applicationId);
+        // Use AsNoTracking to avoid tracking conflicts
+        var application = await _dbSet.AsNoTracking().FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
         if (application == null)
             return false;
 

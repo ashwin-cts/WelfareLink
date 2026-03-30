@@ -1,0 +1,99 @@
+@model WelfareLink.Controllers.ReuploadDocumentViewModel
+
+@{
+    ViewData["Title"] = "Re-upload Document";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-arrow-repeat"></i> Re-upload Document</h1>
+    <a asp-action="DocumentStatus" class="btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> Back to Documents
+    </a>
+</div>
+
+<div class="content-card">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle-fill"></i>
+                <strong>Note:</strong> Re-uploading will replace the existing file and reset the verification status to <span class="badge bg-warning text-dark">Pending</span> for officer review.
+            </div>
+
+            <div class="detail-grid mb-4">
+                <div class="detail-item">
+                    <label>Document Name</label>
+                    <p>@Model.DocumentName</p>
+                </div>
+                <div class="detail-item">
+                    <label>Document Type</label>
+                    <p>@Model.DocType</p>
+                </div>
+                <div class="detail-item">
+                    <label>Current Status</label>
+                    <p>
+                        @if (Model.VerificationStatus == "Approved")
+                        {
+                            <span class="status-badge status-fully-disbursed"><i class="bi bi-check-circle"></i> Approved</span>
+                        }
+                        else if (Model.VerificationStatus == "Rejected")
+                        {
+                            <span class="status-badge status-failed"><i class="bi bi-x-circle"></i> Rejected</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-pending"><i class="bi bi-clock"></i> @Model.VerificationStatus</span>
+                        }
+                    </p>
+                </div>
+                <div class="detail-item">
+                    <label>Current File</label>
+                    <p>
+                        @if (!string.IsNullOrEmpty(Model.CurrentFileURI))
+                        {
+                            <a href="@Model.CurrentFileURI" target="_blank" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i> View Current
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">No file</span>
+                        }
+                    </p>
+                </div>
+            </div>
+
+            <form asp-action="Reupload" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                <input type="hidden" asp-for="DocumentID" />
+                <input type="hidden" asp-for="DocumentName" />
+                <input type="hidden" asp-for="DocType" />
+                <input type="hidden" asp-for="CurrentFileURI" />
+                <input type="hidden" asp-for="VerificationStatus" />
+
+                <div class="form-floating-modern mb-4">
+                    <label asp-for="FileUpload" class="form-label-modern">
+                        <i class="bi bi-upload"></i> Select New File
+                    </label>
+                    <input asp-for="FileUpload" type="file" class="form-control"
+                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                    <span asp-validation-for="FileUpload" class="text-danger"></span>
+                    <small class="form-text text-muted">Allowed: PDF, JPG, JPEG, PNG, DOC, DOCX (Max 10 MB)</small>
+                </div>
+
+                <div class="d-flex gap-3 justify-content-end">
+                    <a asp-action="DocumentStatus" class="btn-modern btn-secondary-modern">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn-modern btn-primary-modern">
+                        <i class="bi bi-upload"></i> Re-upload Document
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

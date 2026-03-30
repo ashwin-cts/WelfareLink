@@ -79,7 +79,9 @@
                             <label asp-for="OfficerID" class="form-label-modern">
                                 <i class="bi bi-person-badge"></i> Officer ID
                             </label>
-                            <input asp-for="OfficerID" class="form-control" placeholder="Enter Officer ID" />
+                            <input asp-for="OfficerID" class="form-control"
+                                   readonly style="background-color: #f8f9fa;" />
+                            <small class="form-text text-muted">Auto-populated from your login</small>
                             <span asp-validation-for="OfficerID" class="text-danger"></span>
                         </div>
                     </div>

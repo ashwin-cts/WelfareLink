@@ -21,10 +21,11 @@ namespace WelfareLink.Controllers
         // GET: CitizenDocument/UploadDocument
         public async Task<IActionResult> UploadDocument()
         {
-            // For demo purposes, using a hardcoded UserId = 1
-            int currentUserId = 1;
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
 
-            var citizen = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            var citizen = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
 
             if (citizen == null)
             {
@@ -40,6 +41,17 @@ namespace WelfareLink.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadDocument(DocumentUploadViewModel model)
         {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
+
+            // Re-resolve citizen from session to prevent CitizenId tampering via hidden field
+            var citizen = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizen == null)
+                return RedirectToAction("CreateProfile", "Citizen");
+
+            model.CitizenId = citizen.Id;
+
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -69,7 +81,8 @@ namespace WelfareLink.Controllers
             var document = new CitizenDocument
             {
                 CitizenId = model.CitizenId,
-                DocType = model.DocType
+                DocType = model.DocType,
+                DocumentName = model.DocumentName
             };
 
             var success = await _documentService.UploadDocumentAsync(document, model.FileUpload);
@@ -87,10 +100,11 @@ namespace WelfareLink.Controllers
         // GET: CitizenDocument/DocumentStatus
         public async Task<IActionResult> DocumentStatus(string status = "")
         {
-            // For demo purposes, using a hardcoded UserId = 1
-            int currentUserId = 1;
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
 
-            var citizen = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            var citizen = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
 
             if (citizen == null)
             {
@@ -138,6 +152,84 @@ namespace WelfareLink.Controllers
 
             return RedirectToAction(nameof(DocumentStatus));
         }
+
+        // GET: CitizenDocument/Reupload/5
+        public async Task<IActionResult> Reupload(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
+
+            var citizen = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizen == null)
+                return RedirectToAction("CreateProfile", "Citizen");
+
+            var document = await _documentService.GetDocumentByIdAsync(id);
+            if (document == null || document.CitizenId != citizen.Id)
+                return NotFound();
+
+            var model = new ReuploadDocumentViewModel
+            {
+                DocumentID = document.DocumentID,
+                DocumentName = document.DocumentName ?? document.DocType,
+                DocType = document.DocType,
+                CurrentFileURI = document.FileURI,
+                VerificationStatus = document.VerificationStatus
+            };
+            return View(model);
+        }
+
+        // POST: CitizenDocument/Reupload
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reupload(ReuploadDocumentViewModel model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
+
+            var citizen = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizen == null)
+                return RedirectToAction("CreateProfile", "Citizen");
+
+            // Verify the document belongs to this citizen
+            var document = await _documentService.GetDocumentByIdAsync(model.DocumentID);
+            if (document == null || document.CitizenId != citizen.Id)
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            if (model.FileUpload == null || model.FileUpload.Length == 0)
+            {
+                ModelState.AddModelError("FileUpload", "Please select a file to upload.");
+                return View(model);
+            }
+
+            var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx" };
+            var fileExtension = Path.GetExtension(model.FileUpload.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                ModelState.AddModelError("FileUpload", "Invalid file type. Allowed types: PDF, JPG, JPEG, PNG, DOC, DOCX");
+                return View(model);
+            }
+
+            if (model.FileUpload.Length > 10 * 1024 * 1024)
+            {
+                ModelState.AddModelError("FileUpload", "File size cannot exceed 10 MB.");
+                return View(model);
+            }
+
+            var success = await _documentService.ReuploadDocumentAsync(model.DocumentID, model.FileUpload);
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Document re-uploaded successfully! Status has been reset to Pending for re-verification.";
+                return RedirectToAction(nameof(DocumentStatus));
+            }
+
+            ModelState.AddModelError(string.Empty, "Failed to re-upload document.");
+            return View(model);
+        }
     }
 
     // View Models
@@ -150,6 +242,11 @@ namespace WelfareLink.Controllers
         public string DocType { get; set; }
 
         [Required]
+        [StringLength(100)]
+        [Display(Name = "Document Name")]
+        public string DocumentName { get; set; }
+
+        [Required]
         [Display(Name = "Select File")]
         public IFormFile FileUpload { get; set; }
     }
@@ -158,5 +255,22 @@ namespace WelfareLink.Controllers
     {
         public IEnumerable<CitizenDocument> Documents { get; set; }
         public string FilterStatus { get; set; }
+    }
+
+    public class ReuploadDocumentViewModel
+    {
+        public int DocumentID { get; set; }
+
+        public string DocumentName { get; set; } = string.Empty;
+
+        public string DocType { get; set; } = string.Empty;
+
+        public string? CurrentFileURI { get; set; }
+
+        public string? VerificationStatus { get; set; }
+
+        [Required]
+        [Display(Name = "Select New File")]
+        public IFormFile FileUpload { get; set; }
     }
 }

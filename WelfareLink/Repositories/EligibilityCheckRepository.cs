@@ -15,6 +15,8 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
         return await _dbSet
             .Include(e => e.WelfareApplication)
                 .ThenInclude(a => a.Program)
+            .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Citizen)
             .Where(e => e.ApplicationID == applicationId)
             .OrderByDescending(e => e.Date)
             .ToListAsync();
@@ -25,6 +27,8 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
         return await _dbSet
             .Include(e => e.WelfareApplication)
                 .ThenInclude(a => a.Program)
+            .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Citizen)
             .Where(e => e.OfficerID == officerId)
             .OrderByDescending(e => e.Date)
             .ToListAsync();
@@ -35,6 +39,8 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
         return await _dbSet
             .Include(e => e.WelfareApplication)
                 .ThenInclude(a => a.Program)
+            .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Citizen)
             .Where(e => e.Result == result)
             .OrderByDescending(e => e.Date)
             .ToListAsync();
@@ -45,6 +51,8 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
         return await _dbSet
             .Include(e => e.WelfareApplication)
                 .ThenInclude(a => a.Program)
+            .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Citizen)
             .Where(e => e.Date >= startDate && e.Date <= endDate)
             .OrderBy(e => e.Date)
             .ToListAsync();
@@ -55,6 +63,8 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
         return await _dbSet
             .Include(e => e.WelfareApplication)
                 .ThenInclude(a => a.Program)
+            .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Citizen)
             .Where(e => e.ApplicationID == applicationId)
             .OrderByDescending(e => e.Date)
             .FirstOrDefaultAsync();
@@ -65,6 +75,8 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
         return await _dbSet
             .Include(e => e.WelfareApplication)
                 .ThenInclude(a => a.Program)
+            .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Citizen)
             .ToListAsync();
     }
 
@@ -74,6 +86,8 @@ public class EligibilityCheckRepository : Repository<EligibilityCheck>, IEligibi
             .AsNoTracking()
             .Include(e => e.WelfareApplication)
                 .ThenInclude(a => a.Program)
+            .Include(e => e.WelfareApplication)
+                .ThenInclude(a => a.Citizen)
             .FirstOrDefaultAsync(e => e.CheckID == id);
     }
 }

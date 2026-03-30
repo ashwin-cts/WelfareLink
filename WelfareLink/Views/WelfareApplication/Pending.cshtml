@@ -24,15 +24,13 @@
             <table class="table table-modern">
                 <thead>
                     <tr>
-                        <th><i class="bi bi-hash"></i> App ID</th>
-                        <th><i class="bi bi-person-badge"></i> Citizen ID</th>
-                        <th><i class="bi bi-person"></i> Citizen Name</th>
-                        <th><i class="bi bi-clipboard"></i> Program ID</th>
-                        <th><i class="bi bi-diagram-3"></i> Program Details</th>
-                        <th><i class="bi bi-calendar"></i> Submitted Date</th>
-                        <th><i class="bi bi-hourglass-split"></i> Days Pending</th>
-                        <th><i class="bi bi-flag"></i> Status</th>
-                        <th><i class="bi bi-gear"></i> Actions</th>
+                        <th>App ID</th>
+                        <th>Citizen Name</th>
+                        <th>Program Name</th>
+                        <th>Submitted Date</th>
+                        <th>Days Pending</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -42,45 +40,35 @@
                         var urgencyClass = daysPending > 7 ? "bg-danger" : daysPending > 3 ? "bg-warning text-dark" : "bg-success";
                         <tr>
                             <td>
-                                <a asp-action="Details" asp-route-id="@item.ApplicationID"
-                                   class="text-decoration-none fw-bold">
-                                    <span class="badge bg-primary">#@item.ApplicationID</span>
-                                </a>
+                                <span class="badge bg-secondary">#@item.ApplicationID</span>
                             </td>
                             <td>
-                                <span class="badge bg-secondary">
-                                    <i class="bi bi-person-fill"></i> @item.CitizenID
-                                </span>
-                            </td>
-                            <td>
-                                <span class="text-muted fst-italic">
-                                    <i class="bi bi-person-circle"></i> CitizenName
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge bg-info text-dark">#@item.ProgramID</span>
+                                @if (item.Citizen != null)
+                                {
+                                    <i class="bi bi-person-fill text-primary"></i> <strong>@item.Citizen.Name</strong>
+                                    <br />
+                                    <small class="text-muted">ID: #@item.CitizenID</small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Citizen ID: @item.CitizenID</span>
+                                }
                             </td>
                             <td>
                                 @if (item.Program != null)
                                 {
-                                    <a asp-controller="WelfareProgram" asp-action="Details"
-                                       asp-route-id="@item.ProgramID" class="text-decoration-none">
-                                        <span class="badge bg-primary">
-                                            <i class="bi bi-clipboard-check"></i> @item.Program.Title
-                                        </span>
-                                    </a>
+                                    <i class="bi bi-diagram-3-fill text-info"></i> <strong>@item.Program.Title</strong>
                                     <br />
-                                    <small class="text-muted">
-                                        <i class="bi bi-circle-fill text-success" style="font-size:7px"></i>
-                                        @item.Program.Status
-                                    </small>
+                                    <small class="text-muted">ID: #@item.ProgramID | Status: @item.Program.Status</small>
                                 }
                                 else
                                 {
-                                    <span class="text-muted">—</span>
+                                    <span class="text-muted">Program ID: @item.ProgramID</span>
                                 }
                             </td>
-                            <td>@item.SubmittedDate.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <i class="bi bi-calendar-event"></i> @item.SubmittedDate.ToString("dd MMM yyyy")
+                            </td>
                             <td>
                                 <span class="badge @urgencyClass">
                                     <i class="bi bi-hourglass"></i> @daysPending day(s)
@@ -88,19 +76,19 @@
                             </td>
                             <td>
                                 <span class="status-badge status-pending">
-                                    <i class="bi bi-circle-fill" style="font-size:8px"></i> @item.Status
+                                    <i class="bi bi-clock"></i> Pending
                                 </span>
                             </td>
                             <td>
                                 <div class="action-buttons">
                                     <a asp-action="Details" asp-route-id="@item.ApplicationID"
-                                       class="btn-modern btn-info-modern btn-sm" title="Review">
-                                        <i class="bi bi-eye"></i> Review
+                                       class="btn btn-sm btn-modern btn-info-modern" title="Review">
+                                        <i class="bi bi-eye"></i> View
                                     </a>
                                     <a asp-controller="EligibilityCheck" asp-action="Create"
                                        asp-route-applicationId="@item.ApplicationID"
-                                       class="btn-modern btn-primary-modern btn-sm" title="Check Eligibility">
-                                        <i class="bi bi-clipboard-check"></i> Eligibility
+                                       class="btn btn-sm btn-modern btn-primary-modern" title="Check Eligibility">
+                                        <i class="bi bi-clipboard-check"></i>
                                     </a>
                                 </div>
                             </td>

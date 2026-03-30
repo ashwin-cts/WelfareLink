@@ -37,10 +37,12 @@
         <div class="detail-grid">
             <div>
                 <label class="form-label-modern"><i class="bi bi-diagram-3 me-1"></i> Welfare Program</label>
-                <select asp-for="ProgramID" asp-items="ViewBag.ProgramList" class="form-select" style="border-radius:12px;border:2px solid #e2e8f0;padding:.8rem;">
-                    <option value="">-- Select a Program --</option>
-                </select>
-                <span asp-validation-for="ProgramID" class="text-danger small"></span>
+                <input type="hidden" asp-for="ProgramID" />
+                <div class="form-control" style="border-radius:12px;border:2px solid #e2e8f0;padding:.8rem;background-color:#f8f9fa;cursor:not-allowed;">
+                    <i class="bi bi-lock-fill text-muted me-1"></i>
+                    @(Model.Program?.Title ?? $"Program #{Model.ProgramID}")
+                </div>
+                <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Program cannot be changed for an existing application.</small>
             </div>
         </div>
 

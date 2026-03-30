@@ -8,6 +8,7 @@ namespace WelfareLink.Models
         [Key]
         public int ApplicationID { get; set; }
 
+        [ForeignKey("Citizen")]
         [Required(ErrorMessage = "Citizen ID is required")]
         [Display(Name = "Citizen ID")]
         public int CitizenID { get; set; }
@@ -40,5 +41,8 @@ namespace WelfareLink.Models
         // Navigation property
         // One WelfareApplication belongs to one Citizen
         public virtual Citizen? Citizen { get; set; }
+
+        // Navigation property for attached documents
+        public virtual ICollection<WelfareApplicationDocument>? ApplicationDocuments { get; set; }
     }
 }

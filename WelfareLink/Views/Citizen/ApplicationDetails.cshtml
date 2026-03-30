@@ -87,11 +87,20 @@
     <div class="d-flex gap-3 flex-wrap">
         @if (canEdit)
         {
-            <a asp-controller="Citizen" asp-action="EditApplication" asp-route-id="@Model.ApplicationID"
-               class="btn-modern btn-warning-modern">
-                <i class="bi bi-pencil-square"></i>
-                @(Model.Status == "Rejected" ? "Edit & Re-submit" : "Edit Application")
-            </a>
+            @if (Model.Status == "Rejected")
+            {
+                <a asp-controller="Citizen" asp-action="ReselectDocuments" asp-route-id="@Model.ApplicationID"
+                   class="btn-modern btn-warning-modern">
+                    <i class="bi bi-arrow-repeat"></i> Re-submit with Documents
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Citizen" asp-action="EditApplication" asp-route-id="@Model.ApplicationID"
+                   class="btn-modern btn-warning-modern">
+                    <i class="bi bi-pencil-square"></i> Edit Application
+                </a>
+            }
         }
         else
         {

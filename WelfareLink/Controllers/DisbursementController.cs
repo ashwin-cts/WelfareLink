@@ -86,8 +86,9 @@ namespace WelfareLinkPRJ.Controllers
         // GET: Disbursement/Create
         public async Task<IActionResult> Create()
         {
+            var officerId = HttpContext.Session.GetInt32("UserId") ?? 0;
             await PopulateBenefitDropdown();
-            return View();
+            return View(new Disbursement { OfficerID = officerId });
         }
 
         // POST: Disbursement/Create
@@ -95,6 +96,11 @@ namespace WelfareLinkPRJ.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("DisbursementID,BenefitID,CitizenID,OfficerID,Amount,Date,Status")] Disbursement disbursement)
         {
+            // Always use the logged-in officer's ID
+            var sessionOfficerId = HttpContext.Session.GetInt32("UserId");
+            if (sessionOfficerId.HasValue)
+                disbursement.OfficerID = sessionOfficerId.Value;
+
             if (ModelState.IsValid)
             {
                 try
@@ -112,6 +118,7 @@ namespace WelfareLinkPRJ.Controllers
                 }
             }
             await PopulateBenefitDropdown(disbursement.BenefitID);
+            ViewBag.OfficerId = disbursement.OfficerID;
             return View(disbursement);
         }
 
@@ -130,6 +137,7 @@ namespace WelfareLinkPRJ.Controllers
             }
 
             await PopulateBenefitDropdown(disbursement.BenefitID);
+            ViewBag.OfficerId = disbursement.OfficerID;
             return View(disbursement);
         }
 
@@ -165,6 +173,7 @@ namespace WelfareLinkPRJ.Controllers
                 }
             }
             await PopulateBenefitDropdown(disbursement.BenefitID);
+            ViewBag.OfficerId = disbursement.OfficerID;
             return View(disbursement);
         }
 

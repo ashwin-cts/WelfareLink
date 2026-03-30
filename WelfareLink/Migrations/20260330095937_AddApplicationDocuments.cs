@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WelfareLink.Migrations
 {
     /// <inheritdoc />
-    public partial class table3 : Migration
+    public partial class AddApplicationDocuments : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -36,10 +36,46 @@ namespace WelfareLink.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "WelfareApplicationDocuments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ApplicationID = table.Column<int>(type: "int", nullable: false),
+                    DocumentID = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WelfareApplicationDocuments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WelfareApplicationDocuments_CitizenDocuments_DocumentID",
+                        column: x => x.DocumentID,
+                        principalTable: "CitizenDocuments",
+                        principalColumn: "DocumentID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_WelfareApplicationDocuments_WelfareApplications_ApplicationID",
+                        column: x => x.ApplicationID,
+                        principalTable: "WelfareApplications",
+                        principalColumn: "ApplicationID",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Users_CitizenId",
                 table: "Users",
                 column: "CitizenId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WelfareApplicationDocuments_ApplicationID",
+                table: "WelfareApplicationDocuments",
+                column: "ApplicationID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WelfareApplicationDocuments_DocumentID",
+                table: "WelfareApplicationDocuments",
+                column: "DocumentID");
         }
 
         /// <inheritdoc />
@@ -47,6 +83,9 @@ namespace WelfareLink.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "WelfareApplicationDocuments");
         }
     }
 }

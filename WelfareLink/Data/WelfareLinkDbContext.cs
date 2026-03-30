@@ -22,7 +22,29 @@ namespace WelfareLink.Data
 
         public DbSet<CitizenDocument> CitizenDocuments { get; set; }
 
+        public DbSet<WelfareApplicationDocument> WelfareApplicationDocuments { get; set; }
+
         public DbSet<User> Users { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Prevent cascade delete cycles on WelfareApplicationDocument
+            modelBuilder.Entity<WelfareApplicationDocument>()
+                .HasOne(d => d.WelfareApplication)
+                .WithMany(a => a.ApplicationDocuments)
+                .HasForeignKey(d => d.ApplicationID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<WelfareApplicationDocument>()
+                .HasOne(d => d.CitizenDocument)
+                .WithMany()
+                .HasForeignKey(d => d.DocumentID)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+
+        
 
 
     }

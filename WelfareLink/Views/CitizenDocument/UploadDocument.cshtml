@@ -34,6 +34,12 @@
                         </div>
 
                         <div class="mb-3">
+                            <label asp-for="DocumentName" class="form-label"></label>
+                            <input asp-for="DocumentName" class="form-control" placeholder="e.g. Aadhaar Card, Rent Agreement Jan 2025" />
+                            <span asp-validation-for="DocumentName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
                             <label asp-for="FileUpload" class="form-label"></label>
                             <input asp-for="FileUpload" class="form-control" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
                             <span asp-validation-for="FileUpload" class="text-danger"></span>

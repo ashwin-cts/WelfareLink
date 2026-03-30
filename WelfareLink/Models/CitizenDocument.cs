@@ -15,6 +15,10 @@ namespace WelfareLink.Models
         [StringLength(30)]
         public string DocType { get; set; } // e.g., "IDProof", "Residence"
 
+        [StringLength(100)]
+        [Display(Name = "Document Name")]
+        public string? DocumentName { get; set; }
+
         [StringLength(500)]
         public string FileURI { get; set; }
 
