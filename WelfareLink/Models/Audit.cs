@@ -4,8 +4,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace WelfareLink.Models
 {
     public class Audit
+<<<<<<< HEAD
     {
         [Key]
+=======
+    {[Key]
+>>>>>>> 67010b637ee5fae89ead73a246ac714beea4c426
         [Required]
         [StringLength(36)]
         public string AuditID { get; set; }

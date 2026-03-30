@@ -8,6 +8,7 @@ namespace WelfareLink.Data
         public WelfareLinkDbContext(DbContextOptions<WelfareLinkDbContext> options) : base(options) { }
 
         public WelfareLinkDbContext() { }
+<<<<<<< HEAD
 
         // DbSets for all entities
         public DbSet<User> Users { get; set; }
@@ -85,5 +86,9 @@ namespace WelfareLink.Data
                 .HasForeignKey(d => d.BenefitID)
                 .OnDelete(DeleteBehavior.Cascade);
         }
+=======
+         public DbSet<ComplainceRecord>ComplainceRecords{ get; set; }
+         public DbSet<Audit> Audits{ get; set; }
+>>>>>>> 67010b637ee5fae89ead73a246ac714beea4c426
     }
 }

@@ -28,7 +28,11 @@ namespace WelfareLink.Controllers
         public async Task<ActionResult<Audit>> GetAudit(string id)
         {
             var audit = await _auditService.GetAuditByIdAsync(id);
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 67010b637ee5fae89ead73a246ac714beea4c426
             if (audit == null)
             {
                 return NotFound($"Audit with ID {id} not found.");
@@ -47,7 +51,11 @@ namespace WelfareLink.Controllers
             }
 
             var success = await _auditService.CreateAuditAsync(audit);
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 67010b637ee5fae89ead73a246ac714beea4c426
             if (!success)
             {
                 return BadRequest("Unable to create the audit record.");
@@ -74,6 +82,16 @@ namespace WelfareLink.Controllers
 
             return NoContent();
         }
+<<<<<<< HEAD
+=======
+    }
+
+    // A lightweight Data Transfer Object (DTO) for cleaner PUT payloads
+    public class AuditUpdateDto
+    {
+        public string Status { get; set; }
+        public string Findings { get; set; }
+>>>>>>> 67010b637ee5fae89ead73a246ac714beea4c426
     }
 
     // A lightweight Data Transfer Object (DTO) for cleaner PUT payloads
