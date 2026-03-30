@@ -1,0 +1,104 @@
+@page
+@model WelfareLink.Pages.Audits.CreateModel
+@{
+    ViewData["Title"] = "Create Audit";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/"><i class="bi bi-heart-pulse"></i> WelfareLink</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/Audits/Index">Audits</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Compliance/Index">Compliance</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Users/Index">Users</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3><i class="bi bi-plus-circle"></i> Create New Audit</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                            <div class="mb-3">
+                                <label asp-for="OfficerID" class="form-label">Audit Officer</label>
+                                <select asp-for="OfficerID" class="form-select">
+                                    <option value="">-- Select Officer --</option>
+                                    @foreach (var officer in Model.AvailableOfficers)
+                                    {
+                                        <option value="@officer.UserID">@officer.Name - @officer.Role</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="OfficerID" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Scope" class="form-label">Audit Scope</label>
+                                <textarea asp-for="Scope" class="form-control" rows="3" placeholder="Enter the scope of the audit"></textarea>
+                                <span asp-validation-for="Scope" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Findings" class="form-label">Findings (Optional)</label>
+                                <textarea asp-for="Findings" class="form-control" rows="4" placeholder="Enter audit findings"></textarea>
+                                <span asp-validation-for="Findings" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Date" class="form-label">Audit Date</label>
+                                <input asp-for="Date" type="date" class="form-control" />
+                                <span asp-validation-for="Date" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Status" class="form-label">Status</label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="">-- Select Status --</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="/Audits/Index" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i> Back
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Create Audit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

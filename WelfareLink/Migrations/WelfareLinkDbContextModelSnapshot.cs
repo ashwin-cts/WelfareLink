@@ -22,68 +22,640 @@ namespace WelfareLink.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
+            modelBuilder.Entity("WelfareLink.Models.Audit", b =>
                 {
-                    b.Property<int>("BenefitID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BenefitID"));
-
-                    b.Property<double>("Amount")
-                        .HasColumnType("float");
-
-                    b.Property<int>("ApplicationID")
-                        .HasColumnType("int");
+                    b.Property<string>("AuditID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Findings")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("OfficerID")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
-                    b.Property<string>("Type")
+                    b.HasKey("AuditID");
+
+                    b.HasIndex("OfficerID");
+
+                    b.ToTable("Audits");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.AuditLog", b =>
+                {
+                    b.Property<string>("LogID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("Action")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("EntityID")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("IPAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserID")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.HasKey("LogID");
+
+                    b.ToTable("AuditLogs");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
+                {
+                    b.Property<string>("BenefitID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ApplicationID")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("BenefitType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProgramID")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("BenefitID");
+
+                    b.HasIndex("ApplicationID");
+
+                    b.HasIndex("ProgramID");
 
                     b.ToTable("Benefits");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.Disbursement", b =>
+            modelBuilder.Entity("WelfareLink.Models.Citizen", b =>
                 {
-                    b.Property<int>("DisbursementID")
-                        .ValueGeneratedOnAdd()
+                    b.Property<string>("CitizenID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("EmploymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("HouseholdSize")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DisbursementID"));
+                    b.Property<decimal>("MonthlyIncome")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("float");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("BenefitID")
-                        .HasColumnType("int");
+                    b.Property<string>("NationalID")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
-                    b.Property<int>("CitizenID")
-                        .HasColumnType("int");
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("CitizenID");
+
+                    b.ToTable("Citizens");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.CitizenDocument", b =>
+                {
+                    b.Property<string>("DocumentID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("CitizenID")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime>("UploadDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("DocumentID");
+
+                    b.HasIndex("CitizenID");
+
+                    b.ToTable("CitizenDocuments");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.ComplianceRecord", b =>
+                {
+                    b.Property<string>("ComplianceID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("OfficerID")
-                        .HasColumnType("int");
+                    b.Property<string>("EntityID")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("ComplianceID");
+
+                    b.ToTable("ComplianceRecords");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.Disbursement", b =>
+                {
+                    b.Property<string>("DisbursementID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("BenefitID")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<DateTime>("DisbursementDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TransactionReference")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("DisbursementID");
 
                     b.HasIndex("BenefitID");
 
                     b.ToTable("Disbursements");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.EligibilityCheck", b =>
+                {
+                    b.Property<string>("CheckID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("ApplicationID")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<DateTime>("CheckDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CheckedBy")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("CriteriaName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("CheckID");
+
+                    b.HasIndex("ApplicationID");
+
+                    b.ToTable("EligibilityChecks");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.Notification", b =>
+                {
+                    b.Property<string>("NotificationID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("RecipientID")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<DateTime>("SentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("NotificationID");
+
+                    b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.Report", b =>
+                {
+                    b.Property<string>("ReportID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GeneratedBy")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<DateTime>("GeneratedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Parameters")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ReportID");
+
+                    b.ToTable("Reports");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.Resource", b =>
+                {
+                    b.Property<string>("ResourceID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<decimal>("AllocatedBudget")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("RemainingBudget")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<decimal>("TotalBudget")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ResourceID");
+
+                    b.ToTable("Resources");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.User", b =>
+                {
+                    b.Property<string>("UserID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("UserID");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
+                {
+                    b.Property<string>("ApplicationID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<DateTime>("ApplicationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CitizenID")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("Comments")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("ProgramID")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<DateTime?>("ReviewDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReviewedBy")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("ApplicationID");
+
+                    b.HasIndex("CitizenID");
+
+                    b.HasIndex("ProgramID");
+
+                    b.ToTable("WelfareApplications");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.WelfareProgram", b =>
+                {
+                    b.Property<string>("ProgramID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<decimal>("BudgetAllocated")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("EligibilityCriteria")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("ProgramID");
+
+                    b.ToTable("WelfarePrograms");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.Audit", b =>
+                {
+                    b.HasOne("WelfareLink.Models.User", "Officer")
+                        .WithMany("ConductedAudits")
+                        .HasForeignKey("OfficerID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Officer");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
+                {
+                    b.HasOne("WelfareLink.Models.WelfareApplication", "WelfareApplication")
+                        .WithMany("Benefits")
+                        .HasForeignKey("ApplicationID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WelfareLink.Models.WelfareProgram", "WelfareProgram")
+                        .WithMany("Benefits")
+                        .HasForeignKey("ProgramID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("WelfareApplication");
+
+                    b.Navigation("WelfareProgram");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.CitizenDocument", b =>
+                {
+                    b.HasOne("WelfareLink.Models.Citizen", "Citizen")
+                        .WithMany("Documents")
+                        .HasForeignKey("CitizenID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Citizen");
                 });
 
             modelBuilder.Entity("WelfareLink.Models.Disbursement", b =>
@@ -97,9 +669,65 @@ namespace WelfareLink.Migrations
                     b.Navigation("Benefit");
                 });
 
+            modelBuilder.Entity("WelfareLink.Models.EligibilityCheck", b =>
+                {
+                    b.HasOne("WelfareLink.Models.WelfareApplication", "WelfareApplication")
+                        .WithMany("EligibilityChecks")
+                        .HasForeignKey("ApplicationID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WelfareApplication");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
+                {
+                    b.HasOne("WelfareLink.Models.Citizen", "Citizen")
+                        .WithMany("Applications")
+                        .HasForeignKey("CitizenID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WelfareLink.Models.WelfareProgram", "WelfareProgram")
+                        .WithMany("Applications")
+                        .HasForeignKey("ProgramID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Citizen");
+
+                    b.Navigation("WelfareProgram");
+                });
+
             modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
                 {
                     b.Navigation("Disbursements");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.Citizen", b =>
+                {
+                    b.Navigation("Applications");
+
+                    b.Navigation("Documents");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.User", b =>
+                {
+                    b.Navigation("ConductedAudits");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
+                {
+                    b.Navigation("Benefits");
+
+                    b.Navigation("EligibilityChecks");
+                });
+
+            modelBuilder.Entity("WelfareLink.Models.WelfareProgram", b =>
+                {
+                    b.Navigation("Applications");
+
+                    b.Navigation("Benefits");
                 });
 #pragma warning restore 612, 618
         }
