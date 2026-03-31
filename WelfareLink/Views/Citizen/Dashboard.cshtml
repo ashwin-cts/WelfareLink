@@ -50,6 +50,7 @@
                 <div class="card-body">
                     <p><strong>Name:</strong> @Model.CitizenProfile.Name</p>
                     <p><strong>Date of Birth:</strong> @Model.CitizenProfile.DateOfBirth.ToShortDateString()</p>
+                    <p><strong>Gender:</strong> @(Model.CitizenProfile.Gender ?? "Not specified")</p>
                     <p><strong>Address:</strong> @Model.CitizenProfile.Address</p>
                     <p><strong>Contact:</strong> @Model.CitizenProfile.ContactInfo</p>
                     <p><strong>Status:</strong> <span class="badge bg-info">@Model.CitizenProfile.Status</span></p>

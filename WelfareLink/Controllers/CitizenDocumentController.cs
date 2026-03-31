@@ -32,7 +32,7 @@ namespace WelfareLink.Controllers
                 return RedirectToAction("CreateProfile", "Citizen");
             }
 
-            var viewModel = new DocumentUploadViewModel { CitizenId = citizen.Id };
+            var viewModel = new DocumentUploadViewModel { CitizenId = citizen.CitizenId };
             return View(viewModel);
         }
 
@@ -50,7 +50,7 @@ namespace WelfareLink.Controllers
             if (citizen == null)
                 return RedirectToAction("CreateProfile", "Citizen");
 
-            model.CitizenId = citizen.Id;
+            model.CitizenId = citizen.CitizenId;
 
             if (!ModelState.IsValid)
             {
@@ -111,7 +111,7 @@ namespace WelfareLink.Controllers
                 return RedirectToAction("CreateProfile", "Citizen");
             }
 
-            var allDocuments = await _documentService.GetDocumentsByCitizenIdAsync(citizen.Id);
+            var allDocuments = await _documentService.GetDocumentsByCitizenIdAsync(citizen.CitizenId);
 
             IEnumerable<CitizenDocument> documents;
 
@@ -165,7 +165,7 @@ namespace WelfareLink.Controllers
                 return RedirectToAction("CreateProfile", "Citizen");
 
             var document = await _documentService.GetDocumentByIdAsync(id);
-            if (document == null || document.CitizenId != citizen.Id)
+            if (document == null || document.CitizenId != citizen.CitizenId)
                 return NotFound();
 
             var model = new ReuploadDocumentViewModel
@@ -194,7 +194,7 @@ namespace WelfareLink.Controllers
 
             // Verify the document belongs to this citizen
             var document = await _documentService.GetDocumentByIdAsync(model.DocumentID);
-            if (document == null || document.CitizenId != citizen.Id)
+            if (document == null || document.CitizenId != citizen.CitizenId)
                 return NotFound();
 
             if (!ModelState.IsValid)

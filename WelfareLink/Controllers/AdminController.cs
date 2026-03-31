@@ -22,7 +22,13 @@ namespace WelfareLink.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var users = await _context.Users.Include(u => u.Citizen).ToListAsync();
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+            var users = await _context.Users
+                .Include(u => u.Citizen)
+                .Where(u => u.UserId != currentUserId)
+                .ToListAsync();
+
+            ViewBag.AdminCount = await _context.Users.CountAsync(u => u.Role == "Admin" && u.IsActive);
             return View(users);
         }
 
@@ -116,9 +122,25 @@ namespace WelfareLink.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+            if (userId == currentUserId)
+            {
+                TempData["Error"] = "You cannot block your own account.";
+                return RedirectToAction("Index");
+            }
+
             var user = await _context.Users.FindAsync(userId);
             if (user != null)
             {
+                if (user.Role == "Admin")
+                {
+                    var adminCount = await _context.Users.CountAsync(u => u.Role == "Admin" && u.IsActive);
+                    if (adminCount <= 1)
+                    {
+                        TempData["Error"] = "Cannot block the last active admin account.";
+                        return RedirectToAction("Index");
+                    }
+                }
                 user.IsActive = false;
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "User blocked successfully";

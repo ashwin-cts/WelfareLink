@@ -31,6 +31,13 @@ namespace WelfareLink.Models
         [StringLength(50)]
         public string? Status { get; set; }
 
+        [StringLength(20)]
+        public string? EligibleGender { get; set; } = "Anyone";
+
+        // Comma-separated doc types e.g. "ID Proof,Residence Proof" or "None"
+        [StringLength(500)]
+        public string? RequiredDocuments { get; set; } = "None";
+
         public ICollection<Resource>? Resources { get; set; }
 
         //navigation property for one-to-many relationship

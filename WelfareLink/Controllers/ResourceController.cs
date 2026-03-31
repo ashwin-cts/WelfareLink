@@ -11,11 +11,13 @@ public class ResourceController : Controller
 {
     private readonly IResourceService _resourceService;
     private readonly IWelfareProgramService _programService;
+    private readonly IDisbursementService _disbursementService;
 
-    public ResourceController(IResourceService resourceService, IWelfareProgramService programService)
+    public ResourceController(IResourceService resourceService, IWelfareProgramService programService, IDisbursementService disbursementService)
     {
         _resourceService = resourceService;
         _programService = programService;
+        _disbursementService = disbursementService;
     }
 
     // GET: Resource
@@ -50,7 +52,7 @@ public class ResourceController : Controller
             }
         }
 
-        return View(new Resource());
+        return View(new Resource { ProgramID = programId ?? 0 });
     }
 
     // POST: Resource/AllocateForm
@@ -265,24 +267,41 @@ public class ResourceController : Controller
     public async Task<IActionResult> UtilisationReport()
     {
         var resources = await _resourceService.GetAllResourcesAsync();
+        var allDisbursements = await _disbursementService.GetAllDisbursementsAsync();
         var utilisationViewModels = new List<ResourceUtilisationViewModel>();
 
         foreach (var resource in resources)
         {
-            // Estimate used quantity based on status
-            // Since there's no actual usage tracking, we use status as a proxy
-            decimal usedQuantity = resource.Status switch
+            var programBudget = resource.Program?.Budget ?? 0m;
+            decimal usedQuantity;
+            decimal totalDisbursed = 0m;
+            decimal utilisationPercentage;
+
+            if (resource.Type.Equals("Funds", StringComparison.OrdinalIgnoreCase))
             {
-                "Depleted" => resource.Quantity,  // 100% used
-                "Reserved" => resource.Quantity * 0.5m,  // 50% used (estimated)
-                "Available" => 0m,  // 0% used
-                _ => 0m
-            };
+                totalDisbursed = allDisbursements
+                    .Where(d => d.Status == "Completed" && d.Benefit?.WelfareApplication?.ProgramID == resource.ProgramID)
+                    .Sum(d => (decimal)d.Amount);
+
+                usedQuantity = Math.Min(totalDisbursed, resource.Quantity);
+                utilisationPercentage = resource.Quantity > 0
+                    ? Math.Min((totalDisbursed / resource.Quantity) * 100, 100)
+                    : 0;
+            }
+            else
+            {
+                usedQuantity = resource.Status switch
+                {
+                    "Depleted" => resource.Quantity,
+                    "Reserved" => resource.Quantity * 0.5m,
+                    _ => 0m
+                };
+                utilisationPercentage = resource.Quantity > 0
+                    ? (usedQuantity / resource.Quantity) * 100
+                    : 0;
+            }
 
             var remainingQuantity = resource.Quantity - usedQuantity;
-            var utilisationPercentage = resource.Quantity > 0
-                ? (usedQuantity / resource.Quantity) * 100
-                : 0;
 
             utilisationViewModels.Add(new ResourceUtilisationViewModel
             {
@@ -291,6 +310,8 @@ public class ResourceController : Controller
                 InitialQuantity = resource.Quantity,
                 UsedQuantity = usedQuantity,
                 RemainingQuantity = remainingQuantity,
+                ProgramBudget = programBudget,
+                TotalDisbursed = totalDisbursed,
                 Status = resource.Status,
                 ProgramID = resource.ProgramID,
                 ProgramTitle = resource.Program?.Title ?? "Unknown",

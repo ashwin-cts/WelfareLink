@@ -3,6 +3,8 @@
     var program = ViewBag.Program as WelfareLink.Models.WelfareProgram;
     var documents = ViewBag.Documents as IEnumerable<WelfareLink.Models.CitizenDocument> ?? Enumerable.Empty<WelfareLink.Models.CitizenDocument>();
     int programId = ViewBag.ProgramId ?? 0;
+    var requiredDocTypes = ViewBag.RequiredDocTypes as List<string> ?? new List<string>();
+    bool noDocRequired = ViewBag.NoDocRequired ?? false;
 }
 
 <div class="page-header">
@@ -56,9 +58,32 @@
 
     <div class="content-card mb-3">
         <h4 class="mb-3"><i class="bi bi-files"></i> Your Uploaded Documents</h4>
-        <p class="text-muted mb-3">
-            <i class="bi bi-info-circle"></i> Tick the documents you want to submit with this application. You must select at least one document.
-        </p>
+
+        @if (noDocRequired)
+        {
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>No documents required</strong> for this program. You can submit your application directly.
+            </div>
+        }
+        else if (requiredDocTypes.Any())
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <strong>Required document types:</strong>
+                @foreach (var dt in requiredDocTypes)
+                {
+                    <span class="badge bg-primary me-1">@dt</span>
+                }
+                <br /><small>You must select at least one document of each required type.</small>
+            </div>
+        }
+        else
+        {
+            <p class="text-muted mb-3">
+                <i class="bi bi-info-circle"></i> Tick the documents you want to submit with this application. You must select at least one document.
+            </p>
+        }
 
         @if (!documents.Any())
         {
@@ -85,7 +110,8 @@
                     <tbody>
                         @foreach (var doc in documents)
                         {
-                            <tr class="doc-row" id="row-@doc.DocumentID" style="cursor:pointer;" onclick="toggleDoc(@doc.DocumentID)">
+                            var isRequired = requiredDocTypes.Contains(doc.DocType);
+                            <tr class="doc-row @(isRequired ? "table-warning" : "")" id="row-@doc.DocumentID" data-doctype="@doc.DocType" style="cursor:pointer;" onclick="toggleDoc(@doc.DocumentID)">
                                 <td class="text-center">
                                     <input type="checkbox"
                                            class="form-check-input doc-checkbox"
@@ -97,7 +123,10 @@
                                 </td>
                                 <td><span class="badge bg-secondary">#@doc.DocumentID</span></td>
                                 <td><strong>@(doc.DocumentName ?? "-")</strong></td>
-                                <td><strong>@doc.DocType</strong></td>
+                                <td>
+                                    <strong>@doc.DocType</strong>
+                                    @if (isRequired) { <span class="badge bg-danger ms-1">Required</span> }
+                                </td>
                                 <td>@doc.UploadedDate.ToString("dd/MM/yyyy")</td>
                                 <td>
                                     @if (doc.VerificationStatus == "Approved")
@@ -137,7 +166,13 @@
     </div>
 
     <div class="d-flex gap-2">
-        @if (documents.Any())
+        @if (noDocRequired)
+        {
+            <button type="submit" class="btn-modern btn-success-modern" id="submitBtn">
+                <i class="bi bi-send"></i> Submit Application
+            </button>
+        }
+        else if (documents.Any())
         {
             <button type="submit" class="btn-modern btn-success-modern" id="submitBtn" disabled>
                 <i class="bi bi-send"></i> Submit Application
@@ -151,6 +186,14 @@
 
 @section Scripts {
     <script>
+        var requiredDocTypes = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(requiredDocTypes));
+        var noDocRequired = @(noDocRequired ? "true" : "false");
+
+        function getDocTypeForRow(docId) {
+            var row = document.getElementById('row-' + docId);
+            return row ? row.getAttribute('data-doctype') : '';
+        }
+
         function toggleDoc(docId) {
             var cb = document.getElementById('doc-' + docId);
             cb.checked = !cb.checked;
@@ -164,13 +207,22 @@
             var summary = document.getElementById('selectionSummary');
             var countSpan = document.getElementById('selectedCount');
 
-            if (submitBtn) submitBtn.disabled = count === 0;
+            if (!noDocRequired && submitBtn) {
+                if (requiredDocTypes.length > 0) {
+                    // Enable submit only when all required types are covered
+                    var selectedTypes = Array.from(checked).map(cb => getDocTypeForRow(cb.value));
+                    var allCovered = requiredDocTypes.every(rt => selectedTypes.includes(rt));
+                    submitBtn.disabled = !allCovered;
+                } else {
+                    submitBtn.disabled = count === 0;
+                }
+            }
+
             if (summary && countSpan) {
                 countSpan.textContent = count;
                 summary.classList.toggle('d-none', count === 0);
             }
 
-            // Highlight selected rows
             document.querySelectorAll('.doc-checkbox').forEach(function (cb) {
                 var row = document.getElementById('row-' + cb.value);
                 if (row) {

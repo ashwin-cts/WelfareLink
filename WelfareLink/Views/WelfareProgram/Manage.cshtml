@@ -59,9 +59,51 @@
                     <span asp-validation-for="Budget" class="text-danger"></span>
                 </div>
             </div>
-        </div>
 
-        <div class="mt-4 pt-3" style="border-top: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <div class="col-md-6">
+                <div class="form-floating-modern">
+                    <label asp-for="EligibleGender" class="form-label-modern">Eligible Gender</label>
+                    <select asp-for="EligibleGender" class="form-select">
+                        <option value="Anyone">Anyone (No Restriction)</option>
+                        <option value="Male">Male Only</option>
+                        <option value="Female">Female Only</option>
+                        <option value="Other">Other Only</option>
+                    </select>
+                    <span asp-validation-for="EligibleGender" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="form-floating-modern">
+                    <label class="form-label-modern">Required Documents</label>
+                    <input type="hidden" id="RequiredDocuments" asp-for="RequiredDocuments" />
+                    <div class="d-flex flex-wrap gap-3 mt-2">
+                        <div class="form-check">
+                            <input class="form-check-input req-doc-cb" type="checkbox" value="None" id="rdNone" />
+                            <label class="form-check-label" for="rdNone"><i class="bi bi-x-circle text-secondary"></i> No Document Required</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input req-doc-cb" type="checkbox" value="ID Proof" id="rdId" />
+                            <label class="form-check-label" for="rdId"><i class="bi bi-person-vcard text-primary"></i> ID Proof</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input req-doc-cb" type="checkbox" value="Residence Proof" id="rdRes" />
+                            <label class="form-check-label" for="rdRes"><i class="bi bi-house text-success"></i> Residence Proof</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input req-doc-cb" type="checkbox" value="Income Certificate" id="rdInc" />
+                            <label class="form-check-label" for="rdInc"><i class="bi bi-currency-rupee text-warning"></i> Income Certificate</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input req-doc-cb" type="checkbox" value="Bank Statement" id="rdBank" />
+                            <label class="form-check-label" for="rdBank"><i class="bi bi-bank text-info"></i> Bank Statement</label>
+                        </div>
+                    </div>
+                    <small class="text-muted mt-1 d-block"><i class="bi bi-info-circle"></i> "No Document Required" cannot be combined with other selections.</small>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3"
             <div>
                 <i class="bi bi-info-circle text-primary"></i>
                 <span style="font-size: 0.9rem; color: #64748b; margin-left: 0.5rem;">Programme will be created with "Active" status.</span>
@@ -80,4 +122,41 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        var noneCheckbox = document.getElementById('rdNone');
+        var otherCheckboxes = document.querySelectorAll('.req-doc-cb:not(#rdNone)');
+
+        // "None" is mutually exclusive with other options
+        noneCheckbox.addEventListener('change', function () {
+            if (this.checked) otherCheckboxes.forEach(cb => cb.checked = false);
+            syncHidden();
+        });
+        otherCheckboxes.forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                if (this.checked) noneCheckbox.checked = false;
+                syncHidden();
+            });
+        });
+
+        function syncHidden() {
+            var checked = Array.from(document.querySelectorAll('.req-doc-cb:checked')).map(cb => cb.value);
+            document.getElementById('RequiredDocuments').value = checked.length > 0 ? checked.join(',') : 'None';
+        }
+
+        // Set default on load
+        document.getElementById('mainProgramForm').addEventListener('submit', function () {
+            syncHidden();
+            if (!document.getElementById('RequiredDocuments').value)
+                document.getElementById('RequiredDocuments').value = 'None';
+        });
+
+        // Pre-select checkboxes based on model value (for edit round-trips)
+        (function () {
+            var val = document.getElementById('RequiredDocuments').value || 'None';
+            var parts = val.split(',').map(s => s.trim());
+            document.querySelectorAll('.req-doc-cb').forEach(function (cb) {
+                cb.checked = parts.includes(cb.value);
+            });
+        })();
+    </script>
 }

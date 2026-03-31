@@ -31,9 +31,9 @@
                                     <th>Resource ID</th>
                                     <th>Programme</th>
                                     <th>Type</th>
-                                    <th>Initial Quantity</th>
-                                    <th>Used</th>
-                                    <th>Remaining</th>
+                                    <th>Program Budget</th>
+                                    <th>Resource Allocated</th>
+                                    <th>Total Disbursed</th>
                                     <th>Utilisation %</th>
                                     <th>Status</th>
                                 </tr>
@@ -60,6 +60,16 @@
                                         <td>
                                             @if (item.Type == "Funds")
                                             {
+                                                <strong>₹@item.ProgramBudget.ToString("N2")</strong>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">N/A</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.Type == "Funds")
+                                            {
                                                 <text>₹@item.InitialQuantity.ToString("N2")</text>
                                             }
                                             else
@@ -67,33 +77,25 @@
                                                 @item.InitialQuantity.ToString("N2")
                                             }
                                         </td>
-                                        <td class="text-warning">
+                                        <td class="text-warning fw-semibold">
                                             @if (item.Type == "Funds")
                                             {
-                                                <text>₹@item.UsedQuantity.ToString("N2")</text>
+                                                <text>₹@item.TotalDisbursed.ToString("N2")</text>
                                             }
                                             else
                                             {
-                                                @item.UsedQuantity.ToString("N2")
-                                            }
-                                        </td>
-                                        <td class="text-success">
-                                            @if (item.Type == "Funds")
-                                            {
-                                                <text>₹@item.RemainingQuantity.ToString("N2")</text>
-                                            }
-                                            else
-                                            {
-                                                @item.RemainingQuantity.ToString("N2")
+                                                <span class="text-muted">N/A</span>
                                             }
                                         </td>
                                         <td>
-                                            <div class="progress" style="width: 100px; height: 20px;">
-                                                <div class="progress-bar @(item.UtilisationPercentage >= 80 ? "bg-danger" : item.UtilisationPercentage >= 50 ? "bg-warning" : "bg-success")" 
-                                                     style="width: @Math.Min(item.UtilisationPercentage, 100)%">
-                                                    @item.UtilisationPercentage.ToString("F0")%
+                                            <div class="progress" style="width: 100px; height: 14px;">
+                                                <div class="progress-bar @(item.UtilisationPercentage >= 80 ? "bg-danger" : item.UtilisationPercentage >= 50 ? "bg-warning" : "bg-success")"
+                                                    style="width: @(Math.Min(item.UtilisationPercentage, 100).ToString("F0", System.Globalization.CultureInfo.InvariantCulture))%">
                                                 </div>
                                             </div>
+                                            <small class="fw-semibold @(item.UtilisationPercentage >= 80 ? "text-danger" : item.UtilisationPercentage >= 50 ? "text-warning" : "text-success")">
+                                                @item.UtilisationPercentage.ToString("F0")%
+                                            </small>
                                         </td>
                                         <td>
                                             @if (item.Status == "Available")
@@ -119,6 +121,13 @@
                     {
                         <div class="alert alert-info text-center">
                             <i class="bi bi-info-circle"></i> No resource utilisation data available.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mt-3 mb-0 py-2">
+                            <i class="bi bi-info-circle-fill me-1"></i>
+                            <small><strong>Note:</strong> Utilisation % is calculated as <em>Total Disbursed ÷ Resource Allocated × 100</em> — it reflects how much of the allocated fund resource has been disbursed to citizens under the welfare programme.</small>
                         </div>
                     }
                 </div>

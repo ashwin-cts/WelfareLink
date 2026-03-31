@@ -96,12 +96,21 @@
                             <div class="action-buttons">
                                 @if (user.IsActive)
                                 {
-                                    <form asp-action="BlockUser" asp-route-userId="@user.UserId" method="post" style="display:inline;">
-                                        <button type="submit" class="btn btn-sm btn-modern btn-danger-modern" 
-                                                onclick="return confirm('Are you sure you want to block this user?')">
+                                    @if (user.Role == "Admin" && (int)(ViewBag.AdminCount ?? 1) <= 1)
+                                    {
+                                        <button class="btn btn-sm btn-modern btn-secondary-modern" disabled title="Cannot block the last active admin">
                                             <i class="bi bi-slash-circle"></i> Block
                                         </button>
-                                    </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="BlockUser" asp-route-userId="@user.UserId" method="post" style="display:inline;">
+                                            <button type="submit" class="btn btn-sm btn-modern btn-danger-modern"
+                                                    onclick="return confirm('Are you sure you want to block this user?')">
+                                                <i class="bi bi-slash-circle"></i> Block
+                                            </button>
+                                        </form>
+                                    }
                                 }
                                 else
                                 {

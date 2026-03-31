@@ -4,7 +4,6 @@
     ViewData["Title"] = "Edit Profile";
     var userRole = Context.Session.GetString("UserRole");
     var userName = Context.Session.GetString("Username") ?? Context.Session.GetString("FullName");
-    var userId   = Context.Session.GetInt32("UserId");
 }
 
 <div class="page-header">
@@ -20,44 +19,8 @@
 }
 
 <div class="row g-4">
-    <!-- Left: Account Info Card -->
-    <div class="col-md-4">
-        <div class="content-card h-100">
-            <h5 class="mb-4"><i class="bi bi-person-badge text-primary"></i> Account Info</h5>
-
-            <div class="d-flex flex-column gap-3">
-                <div class="detail-item">
-                    <label>User ID</label>
-                    <p><span class="badge bg-secondary">#@userId</span></p>
-                </div>
-                <div class="detail-item">
-                    <label>Username</label>
-                    <p><strong>@userName</strong></p>
-                </div>
-                <div class="detail-item">
-                    <label>Role</label>
-                    <p>
-                        <span class="status-badge status-fully-disbursed">
-                            <i class="bi bi-shield-check"></i> @userRole
-                        </span>
-                    </p>
-                </div>
-                <div class="detail-item">
-                    <label>Officer ID (Disbursements)</label>
-                    <p><span class="badge bg-primary">#@userId</span></p>
-                </div>
-            </div>
-
-            <div class="mt-4">
-                <a asp-action="ChangePassword" class="btn-modern btn-warning-modern w-100 justify-content-center">
-                    <i class="bi bi-lock-fill"></i> Change Password
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Right: Edit Form -->
-    <div class="col-md-8">
+    <!-- Edit Form -->
+    <div class="col-md-12">
         <div class="content-card">
             <h5 class="mb-4"><i class="bi bi-pencil-square text-primary"></i> Update Profile Details</h5>
 
@@ -67,10 +30,6 @@
 
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label-modern">User ID</label>
-                        <input type="text" class="form-control" value="#@userId" readonly style="background:#f8f9fa;" />
-                    </div>
-                    <div class="col-md-6">
                         <label class="form-label-modern">Username</label>
                         <input type="text" class="form-control" value="@userName" readonly style="background:#f8f9fa;" />
                         <small class="text-muted">Cannot be changed.</small>
@@ -79,6 +38,15 @@
                         <label class="form-label-modern">Role</label>
                         <input type="text" class="form-control" value="@userRole" readonly style="background:#f8f9fa;" />
                     </div>
+                    @if (userRole == "Citizen")
+                    {
+                        var citizenGender = Context.Session.GetString("CitizenGender");
+                        <div class="col-md-6">
+                            <label class="form-label-modern">Gender</label>
+                            <input type="text" class="form-control" value="@(string.IsNullOrEmpty(citizenGender) ? "Not set" : citizenGender)" readonly style="background:#f8f9fa;" />
+                            <small class="text-muted">To update gender, <a asp-controller="Citizen" asp-action="EditProfile">edit your citizen profile</a>.</small>
+                        </div>
+                    }
                     <div class="col-md-6">
                         <label asp-for="Email" class="form-label-modern"></label>
                         <input asp-for="Email" class="form-control" type="email" placeholder="Enter email address" />

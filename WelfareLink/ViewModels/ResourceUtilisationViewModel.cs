@@ -7,6 +7,8 @@
         public decimal InitialQuantity { get; set; }
         public decimal UsedQuantity { get; set; }
         public decimal RemainingQuantity { get; set; }
+        public decimal ProgramBudget { get; set; }
+        public decimal TotalDisbursed { get; set; }
         public string Status { get; set; }
         public int ProgramID { get; set; }
         public string ProgramTitle { get; set; }

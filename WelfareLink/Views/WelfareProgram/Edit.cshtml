@@ -54,6 +54,30 @@
                 </select>
                 <span asp-validation-for="Status" class="text-danger"></span>
             </div>
+
+            <div class="form-group">
+                <label asp-for="EligibleGender">Eligible Gender</label>
+                <select asp-for="EligibleGender">
+                    <option value="Anyone">Anyone (No Restriction)</option>
+                    <option value="Male">Male Only</option>
+                    <option value="Female">Female Only</option>
+                    <option value="Other">Other Only</option>
+                </select>
+                <span asp-validation-for="EligibleGender" class="text-danger"></span>
+            </div>
+
+            <div class="form-group full-width">
+                <label>Required Documents</label>
+                <input type="hidden" id="RequiredDocuments" asp-for="RequiredDocuments" />
+                <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-top:0.5rem;">
+                    <label><input class="req-doc-cb" type="checkbox" value="None" id="rdNone" /> No Document Required</label>
+                    <label><input class="req-doc-cb" type="checkbox" value="ID Proof" id="rdId" /> ID Proof</label>
+                    <label><input class="req-doc-cb" type="checkbox" value="Residence Proof" id="rdRes" /> Residence Proof</label>
+                    <label><input class="req-doc-cb" type="checkbox" value="Income Certificate" id="rdInc" /> Income Certificate</label>
+                    <label><input class="req-doc-cb" type="checkbox" value="Bank Statement" id="rdBank" /> Bank Statement</label>
+                </div>
+                <small style="color:#666;">"No Document Required" cannot be combined with other selections.</small>
+            </div>
         </div>
 
         <div style="margin-top: 25px; padding-top: 15px; padding-bottom: 20px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
@@ -68,4 +92,28 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        var noneCheckbox = document.getElementById('rdNone');
+        var otherCheckboxes = document.querySelectorAll('.req-doc-cb:not(#rdNone)');
+        noneCheckbox.addEventListener('change', function () {
+            if (this.checked) otherCheckboxes.forEach(cb => cb.checked = false);
+            syncHidden();
+        });
+        otherCheckboxes.forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                if (this.checked) noneCheckbox.checked = false;
+                syncHidden();
+            });
+        });
+        function syncHidden() {
+            var checked = Array.from(document.querySelectorAll('.req-doc-cb:checked')).map(cb => cb.value);
+            document.getElementById('RequiredDocuments').value = checked.length > 0 ? checked.join(',') : 'None';
+        }
+        document.querySelector('form').addEventListener('submit', function () { syncHidden(); });
+        (function () {
+            var val = document.getElementById('RequiredDocuments').value || 'None';
+            var parts = val.split(',').map(s => s.trim());
+            document.querySelectorAll('.req-doc-cb').forEach(function (cb) { cb.checked = parts.includes(cb.value); });
+        })();
+    </script>
 }

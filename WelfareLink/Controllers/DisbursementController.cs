@@ -9,11 +9,13 @@ namespace WelfareLinkPRJ.Controllers
     {
         private readonly IDisbursementService _disbursementService;
         private readonly IBenefitService _benefitService;
+        private readonly IResourceService _resourceService;
 
-        public DisbursementController(IDisbursementService disbursementService, IBenefitService benefitService)
+        public DisbursementController(IDisbursementService disbursementService, IBenefitService benefitService, IResourceService resourceService)
         {
             _disbursementService = disbursementService;
             _benefitService = benefitService;
+            _resourceService = resourceService;
         }
 
         // GET: Disbursement
@@ -214,15 +216,34 @@ namespace WelfareLinkPRJ.Controllers
             if (benefit == null)
                 return Json(null);
 
+            var programId = benefit.WelfareApplication?.ProgramID ?? 0;
+
+            // Resource availability for the programme
+            var resources = programId > 0
+                ? await _resourceService.GetResourcesByProgramIdAsync(programId)
+                : Enumerable.Empty<WelfareLink.Models.Resource>();
+            var totalResource = (double)resources.Sum(r => r.Quantity);
+
+            var allDisbursements = await _disbursementService.GetAllDisbursementsAsync();
+            var totalDisbursedForProgram = allDisbursements
+                .Where(d => d.Status == "Completed" && d.Benefit?.WelfareApplication?.ProgramID == programId)
+                .Sum(d => d.Amount);
+
+            var availableResource = totalResource - totalDisbursedForProgram;
+
             return Json(new
             {
-                benefitType   = benefit.Type,
-                benefitAmount = benefit.Amount,
-                benefitStatus = benefit.Status,
-                programTitle  = benefit.WelfareApplication?.Program?.Title,
-                programBudget = benefit.WelfareApplication?.Program?.Budget,
-                citizenId     = benefit.WelfareApplication?.CitizenID,
-                citizenName   = benefit.WelfareApplication?.Citizen?.Name
+                benefitType              = benefit.Type,
+                benefitAmount            = benefit.Amount,
+                benefitStatus            = benefit.Status,
+                programTitle             = benefit.WelfareApplication?.Program?.Title,
+                programBudget            = benefit.WelfareApplication?.Program?.Budget,
+                citizenId                = benefit.WelfareApplication?.CitizenID,
+                citizenName              = benefit.WelfareApplication?.Citizen?.Name,
+                totalResource,
+                totalDisbursedForProgram,
+                availableResource,
+                isResourceExhausted      = totalResource > 0 && availableResource <= 0
             });
         }
 

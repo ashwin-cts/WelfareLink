@@ -4,6 +4,7 @@
     ViewData["Title"] = "Available Programs";
     var appliedProgramIds = ViewBag.AppliedProgramIds as HashSet<int> ?? new HashSet<int>();
     int citizenId = ViewBag.CitizenId ?? 0;
+    string citizenGender = ViewBag.CitizenGender ?? "";
 }
 
 <div class="page-header">
@@ -32,19 +33,24 @@
             <table class="table table-modern">
                 <thead>
                     <tr>
-                        <th><i class="bi bi-hash"></i> ID</th>
-                        <th><i class="bi bi-diagram-3"></i> Program Title</th>
-                        <th><i class="bi bi-calendar-range"></i> Duration</th>
-                        <th><i class="bi bi-currency-rupee"></i> Budget</th>
-                        <th><i class="bi bi-flag"></i> Status</th>
-                        <th><i class="bi bi-gear"></i> Actions</th>
-                    </tr>
+                            <th><i class="bi bi-hash"></i> ID</th>
+                            <th><i class="bi bi-diagram-3"></i> Program Title</th>
+                            <th><i class="bi bi-calendar-range"></i> Duration</th>
+                            <th><i class="bi bi-currency-rupee"></i> Budget</th>
+                            <th><i class="bi bi-gender-ambiguous"></i> Eligible Gender</th>
+                            <th><i class="bi bi-file-earmark-check"></i> Required Docs</th>
+                            <th><i class="bi bi-flag"></i> Status</th>
+                            <th><i class="bi bi-gear"></i> Actions</th>
+                        </tr>
                 </thead>
                 <tbody>
                     @foreach (var program in Model)
                     {
                         var isApplied = appliedProgramIds.Contains(program.ProgramID);
-                        <tr>
+                        var eligibleGender = program.EligibleGender ?? "Anyone";
+                        var isGenderBlocked = eligibleGender != "Anyone" && !string.IsNullOrEmpty(citizenGender) && citizenGender != eligibleGender;
+                        var requiredDocs = program.RequiredDocuments ?? "None";
+                        <tr class="@(isGenderBlocked ? "table-secondary" : "")">
                             <td><strong>#@program.ProgramID</strong></td>
                             <td>
                                 <strong>@program.Title</strong>
@@ -55,6 +61,31 @@
                                 <small><i class="bi bi-calendar-x text-danger"></i> @program.EndDate.ToString("dd MMM yyyy")</small>
                             </td>
                             <td><strong>₹@program.Budget.ToString("N2")</strong></td>
+                            <td>
+                                @if (eligibleGender == "Anyone")
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-people"></i> Anyone</span>
+                                }
+                                else
+                                {
+                                    <span class="badge @(isGenderBlocked ? "bg-danger" : "bg-primary")">
+                                        <i class="bi bi-person"></i> @eligibleGender Only
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                @if (requiredDocs == "None")
+                                {
+                                    <span class="badge bg-secondary"><i class="bi bi-x-circle"></i> None</span>
+                                }
+                                else
+                                {
+                                    @foreach (var doc in requiredDocs.Split(','))
+                                    {
+                                        <span class="badge bg-info text-dark me-1">@doc.Trim()</span>
+                                    }
+                                }
+                            </td>
                             <td>
                                 @{
                                     var statusClass = program.Status?.ToLower() switch
@@ -71,7 +102,6 @@
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <!-- Eye: view details modal -->
                                     <button type="button"
                                             class="btn-modern btn-info-modern btn-sm"
                                             data-bs-toggle="modal"
@@ -80,11 +110,16 @@
                                         <i class="bi bi-eye"></i>
                                     </button>
 
-                                    <!-- Apply / Applied -->
                                     @if (isApplied)
                                     {
                                         <button class="btn-modern btn-secondary-modern btn-sm" disabled title="Already applied">
                                             <i class="bi bi-check-circle-fill"></i> Applied
+                                        </button>
+                                    }
+                                    else if (isGenderBlocked)
+                                    {
+                                        <button class="btn-modern btn-secondary-modern btn-sm" disabled title="Not eligible: @eligibleGender only">
+                                            <i class="bi bi-slash-circle"></i> Not Eligible
                                         </button>
                                     }
                                     else
@@ -130,6 +165,26 @@
                                                 <label><i class="bi bi-currency-rupee"></i> Budget</label>
                                                 <p><strong style="color:#10b981;">₹@program.Budget.ToString("N2")</strong></p>
                                             </div>
+                                            <div class="detail-item">
+                                                <label><i class="bi bi-gender-ambiguous"></i> Eligible Gender</label>
+                                                <p>@(eligibleGender == "Anyone" ? "Anyone (No Restriction)" : eligibleGender + " Only")</p>
+                                            </div>
+                                            <div class="detail-item" style="grid-column: span 2;">
+                                                <label><i class="bi bi-file-earmark-check"></i> Required Documents</label>
+                                                <p>
+                                                    @if (requiredDocs == "None")
+                                                    {
+                                                        <span class="badge bg-secondary">No Document Required</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @foreach (var doc in requiredDocs.Split(','))
+                                                        {
+                                                            <span class="badge bg-info text-dark me-1">@doc.Trim()</span>
+                                                        }
+                                                    }
+                                                </p>
+                                            </div>
                                         </div>
                                         <div class="mt-3">
                                             <label class="form-label-modern"><i class="bi bi-card-text me-1"></i> Description</label>
@@ -137,19 +192,26 @@
                                                 <p>@program.Description</p>
                                             </div>
                                         </div>
+                                        @if (isGenderBlocked)
+                                        {
+                                            <div class="alert alert-warning mt-3">
+                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                                This program is only open to <strong>@eligibleGender</strong> applicants. You are not eligible to apply.
+                                            </div>
+                                        }
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
                                             <i class="bi bi-x-circle"></i> Close
                                         </button>
-                                        @if (!isApplied)
+                                        @if (!isApplied && !isGenderBlocked)
                                         {
                                             <a asp-action="SelectDocuments" asp-controller="Citizen" asp-route-programId="@program.ProgramID"
                                                class="btn-modern btn-success-modern">
                                                 <i class="bi bi-send"></i> Apply Now
                                             </a>
                                         }
-                                        else
+                                        else if (isApplied)
                                         {
                                             <span class="btn-modern btn-secondary-modern" style="opacity:.7;">
                                                 <i class="bi bi-check-circle-fill"></i> Already Applied

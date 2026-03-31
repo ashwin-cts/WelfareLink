@@ -18,7 +18,7 @@ public class CitizenRepository : ICitizenRepository
     {
         return await _context.Citizens
             .Include(c => c.CitizenDocuments)
-            .FirstOrDefaultAsync(c => c.Id == id); // Matches your "Id" property
+            .FirstOrDefaultAsync(c => c.CitizenId == id); // Matches your "CitizenId" property
     }
 
     public async Task<Citizen> GetByUserIdAsync(int userId)

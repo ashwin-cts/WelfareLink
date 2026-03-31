@@ -7,8 +7,9 @@ namespace WelfareLink.Models
     public class Citizen
     {
        
+        [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public int CitizenId { get; set; }
 
         public int UserId { get; set; }
         [Required]
@@ -22,6 +23,8 @@ namespace WelfareLink.Models
         public string ContactInfo { get; set; }
         [StringLength(50)]
         public string Status { get; set; }
+        [StringLength(20)]
+        public string? Gender { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         //Navigation Property one to many for CitizenDocument

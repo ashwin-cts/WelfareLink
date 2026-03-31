@@ -10,11 +10,17 @@ namespace WelfareLink.Controllers
     {
         private readonly IWelfareProgramService _programService;
         private readonly IResourceService _resourceService;
+        private readonly IDisbursementService _disbursementService;
+        private readonly IWelfareApplicationService _applicationService;
+        private readonly IBenefitService _benefitService;
 
-        public WelfareProgramController(IWelfareProgramService programService, IResourceService resourceService)
+        public WelfareProgramController(IWelfareProgramService programService, IResourceService resourceService, IDisbursementService disbursementService, IWelfareApplicationService applicationService, IBenefitService benefitService)
         {
             _programService = programService;
             _resourceService = resourceService;
+            _disbursementService = disbursementService;
+            _applicationService = applicationService;
+            _benefitService = benefitService;
         }
 
         // GET: Program
@@ -51,7 +57,7 @@ namespace WelfareLink.Controllers
         // POST: Program/Manage
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Manage([Bind("ProgramID,Title,Description,StartDate,EndDate,Budget,Status")] WelfareProgram program)
+        public async Task<IActionResult> Manage([Bind("ProgramID,Title,Description,StartDate,EndDate,Budget,Status,EligibleGender,RequiredDocuments")] WelfareProgram program)
         {
             // Remove Status validation for new programmes (Status is set by service layer)
             if (program.ProgramID == 0)
@@ -201,7 +207,7 @@ namespace WelfareLink.Controllers
         // POST: Program/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ProgramID,Title,Description,StartDate,EndDate,Budget,Status")] WelfareProgram program)
+        public async Task<IActionResult> Edit(int id, [Bind("ProgramID,Title,Description,StartDate,EndDate,Budget,Status,EligibleGender,RequiredDocuments")] WelfareProgram program)
         {
             if (id != program.ProgramID)
             {
@@ -280,6 +286,7 @@ namespace WelfareLink.Controllers
         {
             var programs = await _programService.GetAllProgramsAsync();
             var budgetViewModels = new List<BudgetMonitoringViewModel>();
+            var allDisbursements = await _disbursementService.GetAllDisbursementsAsync();
 
             foreach (var program in programs)
             {
@@ -287,6 +294,10 @@ namespace WelfareLink.Controllers
                 var allocatedFunds = resources
                     .Where(r => r.Type.Equals("Funds", StringComparison.OrdinalIgnoreCase))
                     .Sum(r => r.Quantity);
+
+                var disbursedFunds = (decimal)allDisbursements
+                    .Where(d => d.Status == "Completed" && d.Benefit?.WelfareApplication?.ProgramID == program.ProgramID)
+                    .Sum(d => d.Amount);
 
                 var utilisationPercentage = program.Budget > 0
                     ? (allocatedFunds / program.Budget) * 100
@@ -298,7 +309,7 @@ namespace WelfareLink.Controllers
                     ProgramTitle = program.Title,
                     TotalBudget = program.Budget,
                     AllocatedFunds = allocatedFunds,
-                    DisbursedFunds = 0,
+                    DisbursedFunds = disbursedFunds,
                     RemainingBudget = program.Budget - allocatedFunds,
                     UtilisationPercentage = utilisationPercentage,
                     Status = program.Status,
@@ -322,30 +333,61 @@ namespace WelfareLink.Controllers
         public async Task<IActionResult> Performance()
         {
             var programs = await _programService.GetAllProgramsAsync();
+            var allApplications = await _applicationService.GetAllApplicationsAsync();
+            var allBenefits = await _benefitService.GetAllBenefitsAsync();
+            var allDisbursements = await _disbursementService.GetAllDisbursementsAsync();
             var performanceViewModels = new List<ProgramPerformanceViewModel>();
 
             foreach (var program in programs)
             {
-                var resources = await _resourceService.GetResourcesByProgramIdAsync(program.ProgramID);
-                var allocatedFunds = resources
-                    .Where(r => r.Type.Equals("Funds", StringComparison.OrdinalIgnoreCase))
-                    .Sum(r => r.Quantity);
+                var programApplications = allApplications
+                    .Where(a => a.ProgramID == program.ProgramID)
+                    .ToList();
+
+                var totalApplications = programApplications.Count;
+                var approvedApplications = programApplications.Count(a =>
+                    a.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase) ||
+                    a.Status.Equals("Fully Disbursed", StringComparison.OrdinalIgnoreCase));
+                var rejectedApplications = programApplications.Count(a =>
+                    a.Status.Equals("Rejected", StringComparison.OrdinalIgnoreCase));
+                var pendingApplications = programApplications.Count(a =>
+                    a.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase));
+
+                var approvalRate = totalApplications > 0
+                    ? Math.Round((decimal)approvedApplications / totalApplications * 100, 1)
+                    : 0;
+
+                var applicationIds = programApplications.Select(a => a.ApplicationID).ToHashSet();
+
+                var benefitsDisbursed = allBenefits
+                    .Count(b => applicationIds.Contains(b.ApplicationID) &&
+                                b.Status.Equals("Fully Disbursed", StringComparison.OrdinalIgnoreCase));
+
+                var citizenCount = programApplications
+                    .Select(a => a.CitizenID)
+                    .Distinct()
+                    .Count();
+
+                var totalDisbursed = allDisbursements
+                    .Where(d => d.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) &&
+                                d.Benefit?.WelfareApplication?.ProgramID == program.ProgramID)
+                    .Sum(d => (decimal)d.Amount);
 
                 var budgetUtilisation = program.Budget > 0
-                    ? (allocatedFunds / program.Budget) * 100
+                    ? Math.Min(Math.Round(totalDisbursed / program.Budget * 100, 1), 100)
                     : 0;
 
                 performanceViewModels.Add(new ProgramPerformanceViewModel
                 {
                     ProgramID = program.ProgramID,
                     ProgramTitle = program.Title,
-                    TotalApplications = 0,
-                    ApprovedApplications = 0,
-                    RejectedApplications = 0,
-                    PendingApplications = 0,
-                    ApprovalRate = 0,
-                    BenefitsDisbursed = 0,
-                    CitizenCount = 0,
+                    TotalApplications = totalApplications,
+                    ApprovedApplications = approvedApplications,
+                    RejectedApplications = rejectedApplications,
+                    PendingApplications = pendingApplications,
+                    ApprovalRate = approvalRate,
+                    BenefitsDisbursed = benefitsDisbursed,
+                    CitizenCount = citizenCount,
                     BudgetUtilisation = budgetUtilisation,
                     Status = program.Status
                 });

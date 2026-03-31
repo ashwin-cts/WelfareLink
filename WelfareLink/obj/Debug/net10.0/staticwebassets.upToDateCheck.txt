@@ -65,6 +65,10 @@ wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\documents\ID Proof_20260330091226_709c518b-73dc-4f7d-80f9-d205d6a42df1_Your practice assessment results _ Microsoft Learn.pdf
 wwwroot\uploads\documents\ID Proof_20260330101928_73666bbe-f3b7-4e28-a2ab-c9e2bff504f5_Security Incident Action Card.pdf
 wwwroot\uploads\documents\ID Proof_20260330110823_0a5ebf95-c3ac-4b68-a62f-97d4608c3b40_Security Incident Action Card.pdf
+wwwroot\uploads\documents\ID Proof_20260331050017_b89a9f3e-8ce4-4c29-ba12-2ae4c81e3adb_GIT assessment.pdf
+wwwroot\uploads\documents\ID Proof_20260331135724_5f6b185b-bcc8-46f4-abc4-9b06bcd00d66_ER_Diagram (1).png
+wwwroot\uploads\documents\Residence Proof_20260330123113_353981f6-0448-4868-a2f6-80de541d8908_Your practice assessment results _ Microsoft Learn.pdf
+wwwroot\uploads\documents\Residence Proof_20260331135802_40f0d964-2f67-49a7-86a4-c15755f34ff9_Welfare Application Benefit-2026-03-05-094800.png
 C:\Users\2481427\OneDrive - Cognizant\Documents\project semi\WelfareLink\WelfareLink\wwwroot\lib\jquery\LICENSE.txt
 C:\Users\2481427\OneDrive - Cognizant\Documents\project semi\WelfareLink\WelfareLink\wwwroot\lib\jquery\dist\jquery.slim.min.map
 C:\Users\2481427\OneDrive - Cognizant\Documents\project semi\WelfareLink\WelfareLink\wwwroot\lib\jquery\dist\jquery.slim.min.js

@@ -694,12 +694,6 @@
                             </a>
                         </li>
                         <li>
-                            <a asp-controller="Citizen" asp-action="CreateProfile"
-                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" && ViewContext.RouteData.Values["action"]?.ToString() == "CreateProfile" ? "active" : "")">
-                                <i class="bi bi-person-plus"></i> Create Profile
-                            </a>
-                        </li>
-                        <li>
                             <a asp-controller="Citizen" asp-action="EditProfile"
                                class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" && ViewContext.RouteData.Values["action"]?.ToString() == "EditProfile" ? "active" : "")">
                                 <i class="bi bi-pencil-square"></i> Edit Profile

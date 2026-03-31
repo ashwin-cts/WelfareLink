@@ -48,7 +48,7 @@ namespace WelfareLink.Controllers
                 return RedirectToAction(nameof(CreateProfile));
             }
 
-            var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.Id);
+            var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.CitizenId);
 
             var viewModel = new CitizenDashboardViewModel
             {
@@ -109,6 +109,7 @@ namespace WelfareLink.Controllers
                 DateOfBirth = model.DateOfBirth,
                 Address = model.Address,
                 ContactInfo = model.ContactInfo,
+                Gender = model.Gender,
                 Status = "Active",
                 CreatedAt = DateTime.UtcNow
             };
@@ -118,7 +119,7 @@ namespace WelfareLink.Controllers
             if (success)
             {
                 // Update user with CitizenId
-                user.CitizenId = citizen.Id;
+                user.CitizenId = citizen.CitizenId;
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Profile created successfully! Please login.";
@@ -149,12 +150,13 @@ namespace WelfareLink.Controllers
 
             var viewModel = new EditCitizenViewModel
             {
-                Id = citizen.Id,
+                CitizenId = citizen.CitizenId,
                 Name = citizen.Name,
                 DateOfBirth = citizen.DateOfBirth,
                 Address = citizen.Address,
                 ContactInfo = citizen.ContactInfo,
-                Status = citizen.Status
+                Status = citizen.Status,
+                Gender = citizen.Gender
             };
 
             return View(viewModel);
@@ -170,7 +172,7 @@ namespace WelfareLink.Controllers
                 return View(model);
             }
 
-            var citizen = await _citizenService.GetCitizenByIdAsync(model.Id);
+            var citizen = await _citizenService.GetCitizenByIdAsync(model.CitizenId);
 
             if (citizen == null)
             {
@@ -183,11 +185,16 @@ namespace WelfareLink.Controllers
             citizen.Address = model.Address;
             citizen.ContactInfo = model.ContactInfo;
             citizen.Status = model.Status;
+            citizen.Gender = model.Gender;
 
             var success = await _citizenService.UpdateCitizenProfileAsync(citizen);
 
             if (success)
             {
+                // Keep session Gender in sync
+                if (!string.IsNullOrEmpty(model.Gender))
+                    HttpContext.Session.SetString("CitizenGender", model.Gender);
+
                 TempData["SuccessMessage"] = "Profile updated successfully!";
                 return RedirectToAction(nameof(Dashboard));
             }
@@ -212,7 +219,7 @@ namespace WelfareLink.Controllers
                 return RedirectToAction(nameof(CreateProfile));
 
             var application = await _applicationService.GetApplicationByIdAsync(id);
-            if (application == null || application.CitizenID != citizenProfile.Id)
+            if (application == null || application.CitizenID != citizenProfile.CitizenId)
                 return NotFound();
 
             return View(application);
@@ -234,7 +241,7 @@ namespace WelfareLink.Controllers
                 return RedirectToAction(nameof(CreateProfile));
 
             var application = await _applicationService.GetApplicationByIdAsync(id);
-            if (application == null || application.CitizenID != citizenProfile.Id)
+            if (application == null || application.CitizenID != citizenProfile.CitizenId)
                 return NotFound();
 
             if (application.Status != "Pending" && application.Status != "Rejected")
@@ -269,7 +276,7 @@ namespace WelfareLink.Controllers
                 return RedirectToAction(nameof(CreateProfile));
 
             var original = await _applicationService.GetApplicationByIdAsync(id);
-            if (original == null || original.CitizenID != citizenProfile.Id)
+            if (original == null || original.CitizenID != citizenProfile.CitizenId)
                 return NotFound();
 
             if (original.Status != "Pending" && original.Status != "Rejected")
@@ -281,7 +288,7 @@ namespace WelfareLink.Controllers
             if (ModelState.IsValid)
             {
                 // If was Rejected, re-submitting resets status to Pending
-                application.CitizenID = citizenProfile.Id;
+                application.CitizenID = citizenProfile.CitizenId;
                 application.Status = original.Status == "Rejected" ? "Pending" : original.Status;
                 application.SubmittedDate = original.Status == "Rejected"
                     ? DateOnly.FromDateTime(DateTime.Today)
@@ -315,7 +322,7 @@ namespace WelfareLink.Controllers
                 return RedirectToAction(nameof(CreateProfile));
 
             var application = await _applicationService.GetApplicationByIdAsync(id);
-            if (application == null || application.CitizenID != citizenProfile.Id)
+            if (application == null || application.CitizenID != citizenProfile.CitizenId)
                 return NotFound();
 
             if (application.Status != "Pending")
@@ -345,7 +352,7 @@ namespace WelfareLink.Controllers
                 return RedirectToAction(nameof(CreateProfile));
 
             var application = await _applicationService.GetApplicationByIdAsync(id);
-            if (application == null || application.CitizenID != citizenProfile.Id)
+            if (application == null || application.CitizenID != citizenProfile.CitizenId)
                 return NotFound();
 
             if (application.Status != "Pending")
@@ -377,7 +384,7 @@ namespace WelfareLink.Controllers
             }
 
             var all = await _applicationService.GetAllApplicationsAsync();
-            var myApplications = all.Where(a => a.CitizenID == citizenProfile.Id).OrderByDescending(a => a.SubmittedDate);
+            var myApplications = all.Where(a => a.CitizenID == citizenProfile.CitizenId).OrderByDescending(a => a.SubmittedDate);
             return View(myApplications);
         }
 
@@ -401,11 +408,12 @@ namespace WelfareLink.Controllers
             var programs = await _programService.GetAllProgramsAsync();
             var applications = await _applicationService.GetAllApplicationsAsync();
             var appliedProgramIds = applications
-                .Where(a => a.CitizenID == citizenProfile.Id)
+                .Where(a => a.CitizenID == citizenProfile.CitizenId)
                 .Select(a => a.ProgramID)
                 .ToHashSet();
 
-            ViewBag.CitizenId = citizenProfile.Id;
+            ViewBag.CitizenId = citizenProfile.CitizenId;
+            ViewBag.CitizenGender = citizenProfile.Gender ?? "";
             ViewBag.AppliedProgramIds = appliedProgramIds;
             return View(programs);
         }
@@ -431,7 +439,7 @@ namespace WelfareLink.Controllers
 
             var application = new WelfareApplication
             {
-                CitizenID = citizenProfile.Id,
+                CitizenID = citizenProfile.CitizenId,
                 ProgramID = programId,
                 SubmittedDate = DateOnly.FromDateTime(DateTime.Today),
                 Status = "Pending"
@@ -459,11 +467,33 @@ namespace WelfareLink.Controllers
             if (program == null)
                 return NotFound();
 
-            var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.Id);
+            // Gender eligibility check
+            var eligibleGender = program.EligibleGender ?? "Anyone";
+            if (eligibleGender != "Anyone")
+            {
+                if (string.IsNullOrEmpty(citizenProfile.Gender))
+                {
+                    TempData["ErrorMessage"] = "Please update your profile with your gender before applying for this program.";
+                    return RedirectToAction(nameof(EditProfile));
+                }
+                if (citizenProfile.Gender != eligibleGender)
+                {
+                    TempData["ErrorMessage"] = $"This program is only open to {eligibleGender} applicants.";
+                    return RedirectToAction(nameof(ProgramList));
+                }
+            }
+
+            var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.CitizenId);
+            var requiredDocs = program.RequiredDocuments ?? "None";
+            var requiredDocTypes = requiredDocs == "None"
+                ? new List<string>()
+                : requiredDocs.Split(',').Select(d => d.Trim()).ToList();
 
             ViewBag.Program = program;
             ViewBag.Documents = documents;
             ViewBag.ProgramId = programId;
+            ViewBag.RequiredDocTypes = requiredDocTypes;
+            ViewBag.NoDocRequired = requiredDocs == "None";
             return View();
         }
 
@@ -482,20 +512,63 @@ namespace WelfareLink.Controllers
             if (citizenProfile == null)
                 return RedirectToAction(nameof(CreateProfile));
 
-            if (selectedDocumentIds == null || selectedDocumentIds.Length == 0)
+            var program = await _programService.GetProgramByIdAsync(programId);
+            if (program == null)
+                return NotFound();
+
+            // Gender eligibility check (re-validate on POST)
+            var eligibleGender = program.EligibleGender ?? "Anyone";
+            if (eligibleGender != "Anyone")
             {
-                var program = await _programService.GetProgramByIdAsync(programId);
-                var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.Id);
-                ViewBag.Program = program;
-                ViewBag.Documents = documents;
-                ViewBag.ProgramId = programId;
-                ViewBag.Error = "Please select at least one document before submitting.";
-                return View();
+                if (string.IsNullOrEmpty(citizenProfile.Gender) || citizenProfile.Gender != eligibleGender)
+                {
+                    TempData["ErrorMessage"] = $"This program is only open to {eligibleGender} applicants.";
+                    return RedirectToAction(nameof(ProgramList));
+                }
+            }
+
+            var requiredDocs = program.RequiredDocuments ?? "None";
+            var requiredDocTypes = requiredDocs == "None"
+                ? new List<string>()
+                : requiredDocs.Split(',').Select(d => d.Trim()).ToList();
+
+            if (requiredDocTypes.Any())
+            {
+                // Documents are required — validate selection
+                if (selectedDocumentIds == null || selectedDocumentIds.Length == 0)
+                {
+                    var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.CitizenId);
+                    ViewBag.Program = program;
+                    ViewBag.Documents = documents;
+                    ViewBag.ProgramId = programId;
+                    ViewBag.RequiredDocTypes = requiredDocTypes;
+                    ViewBag.NoDocRequired = false;
+                    ViewBag.Error = "Please select the required documents before submitting.";
+                    return View();
+                }
+
+                // Check that selected docs cover each required type
+                var citizenDocs = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.CitizenId);
+                var selectedDocList = citizenDocs.Where(d => selectedDocumentIds.Contains(d.DocumentID)).ToList();
+                var missingTypes = requiredDocTypes
+                    .Where(req => !selectedDocList.Any(d => d.DocType == req))
+                    .ToList();
+
+                if (missingTypes.Any())
+                {
+                    ViewBag.Program = program;
+                    ViewBag.Documents = citizenDocs;
+                    ViewBag.ProgramId = programId;
+                    ViewBag.RequiredDocTypes = requiredDocTypes;
+                    ViewBag.NoDocRequired = false;
+                    ViewBag.Error = $"Missing required document type(s): {string.Join(", ", missingTypes)}. Please upload and select the required documents.";
+                    return View();
+                }
             }
 
             var application = new WelfareApplication
             {
-                CitizenID = citizenProfile.Id,
+                CitizenID = citizenProfile.CitizenId,
                 ProgramID = programId,
                 SubmittedDate = DateOnly.FromDateTime(DateTime.Today),
                 Status = "Pending"
@@ -503,16 +576,20 @@ namespace WelfareLink.Controllers
 
             var created = await _applicationService.CreateApplicationAsync(application);
 
-            var appDocs = selectedDocumentIds.Select(docId => new WelfareApplicationDocument
+            if (selectedDocumentIds != null && selectedDocumentIds.Length > 0)
             {
-                ApplicationID = created.ApplicationID,
-                DocumentID = docId
-            });
+                var appDocs = selectedDocumentIds.Select(docId => new WelfareApplicationDocument
+                {
+                    ApplicationID = created.ApplicationID,
+                    DocumentID = docId
+                });
+                _context.WelfareApplicationDocuments.AddRange(appDocs);
+                await _context.SaveChangesAsync();
+            }
 
-            _context.WelfareApplicationDocuments.AddRange(appDocs);
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = $"Application #{created.ApplicationID} submitted successfully with {selectedDocumentIds.Length} document(s)!";
+            TempData["SuccessMessage"] = requiredDocs == "None"
+                ? $"Application #{created.ApplicationID} submitted successfully!"
+                : $"Application #{created.ApplicationID} submitted successfully with {selectedDocumentIds!.Length} document(s)!";
             return RedirectToAction(nameof(ProgramList));
         }
 
@@ -530,7 +607,7 @@ namespace WelfareLink.Controllers
                 return RedirectToAction(nameof(CreateProfile));
 
             var application = await _applicationService.GetApplicationByIdAsync(id);
-            if (application == null || application.CitizenID != citizenProfile.Id)
+            if (application == null || application.CitizenID != citizenProfile.CitizenId)
                 return NotFound();
 
             if (application.Status != "Rejected")
@@ -539,7 +616,7 @@ namespace WelfareLink.Controllers
                 return RedirectToAction(nameof(ApplicationDetails), new { id });
             }
 
-            var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.Id);
+            var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.CitizenId);
 
             // Get previously selected document IDs for this application
             var previousDocIds = await _context.WelfareApplicationDocuments
@@ -570,7 +647,7 @@ namespace WelfareLink.Controllers
                 return RedirectToAction(nameof(CreateProfile));
 
             var application = await _applicationService.GetApplicationByIdAsync(id);
-            if (application == null || application.CitizenID != citizenProfile.Id)
+            if (application == null || application.CitizenID != citizenProfile.CitizenId)
                 return NotFound();
 
             if (application.Status != "Rejected")
@@ -581,7 +658,7 @@ namespace WelfareLink.Controllers
 
             if (selectedDocumentIds == null || selectedDocumentIds.Length == 0)
             {
-                var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.Id);
+                var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.CitizenId);
                 var previousDocIds = await _context.WelfareApplicationDocuments
                     .Where(d => d.ApplicationID == id)
                     .Select(d => d.DocumentID)
@@ -663,6 +740,10 @@ namespace WelfareLink.Controllers
         [StringLength(100)]
         [EmailAddress]
         public string? Email { get; set; }
+
+        [Required(ErrorMessage = "Please select your gender")]
+        [StringLength(20)]
+        public string Gender { get; set; }
     }
 
     public class CreateCitizenViewModel
@@ -688,7 +769,7 @@ namespace WelfareLink.Controllers
 
     public class EditCitizenViewModel
     {
-        public int Id { get; set; }
+        public int CitizenId { get; set; }
 
         [Required]
         [StringLength(50)]
@@ -708,5 +789,9 @@ namespace WelfareLink.Controllers
 
         [StringLength(50)]
         public string Status { get; set; }
+
+        [StringLength(20)]
+        [Display(Name = "Gender")]
+        public string? Gender { get; set; }
     }
 }

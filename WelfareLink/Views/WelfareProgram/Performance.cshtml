@@ -70,7 +70,6 @@
                                     <th>Approval Rate</th>
                                     <th>Benefits Disbursed</th>
                                     <th>Citizen Reach</th>
-                                    <th>Budget Used</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
@@ -105,14 +104,6 @@
                                         <td>@performance.BenefitsDisbursed</td>
                                         <td>
                                             <i class="bi bi-people"></i> @performance.CitizenCount
-                                        </td>
-                                        <td>
-                                            <div class="progress" style="width: 100px; height: 20px;">
-                                                <div class="progress-bar @(performance.BudgetUtilisation >= 80 ? "bg-danger" : "bg-success")" 
-                                                     style="width: @Math.Min(performance.BudgetUtilisation, 100)%">
-                                                    @performance.BudgetUtilisation.ToString("F0")%
-                                                </div>
-                                            </div>
                                         </td>
                                         <td>
                                             @if (performance.Status == "Active")

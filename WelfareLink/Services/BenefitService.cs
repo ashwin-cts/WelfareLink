@@ -142,7 +142,7 @@ namespace WelfareLink.Services
             {
                 ApplicationID = applicationId,
                 Type = "Cash",
-                Amount = (double)(application.Program?.Budget ?? 0),
+                Amount = 0,
                 Date = DateTime.Now,
                 Status = "Allocation Pending"
             };

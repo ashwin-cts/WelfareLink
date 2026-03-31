@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WelfareLink.Data;
 
@@ -11,9 +12,11 @@ using WelfareLink.Data;
 namespace WelfareLink.Migrations
 {
     [DbContext(typeof(WelfareLinkDbContext))]
-    partial class WelfareLinkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260331114147_RenameCitizenIdToCitizenId")]
+    partial class RenameCitizenIdToCitizenId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,10 +80,6 @@ namespace WelfareLink.Migrations
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Gender")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -355,16 +354,8 @@ namespace WelfareLink.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("EligibleGender")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("RequiredDocuments")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");

@@ -53,6 +53,28 @@
                                     <span id="detail-citizen" class="fw-semibold">-</span>
                                 </div>
                             </div>
+                            <div class="row g-2 mt-2 pt-2 border-top">
+                                <div class="col-md-4">
+                                    <small class="text-muted d-block">Programme Resource</small>
+                                    <span id="detail-total-resource" class="fw-semibold">-</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-muted d-block">Total Disbursed (Programme)</small>
+                                    <span id="detail-disbursed" class="fw-semibold text-warning">-</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-muted d-block">Available Resource</small>
+                                    <span id="detail-available" class="fw-semibold">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12" id="resource-alert" style="display:none;">
+                        <div class="alert alert-danger mb-0" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Resource Insufficient:</strong> The programme resource allocation has been fully exhausted.
+                            Disbursement is not allowed. Please contact the Programme Manager to allocate additional resources.
                         </div>
                     </div>
 
@@ -123,7 +145,7 @@
                     <a asp-action="Index" class="btn-modern btn-secondary-modern">
                         <i class="bi bi-x-circle"></i> Cancel
                     </a>
-                    <button type="submit" class="btn-modern btn-primary-modern">
+                    <button type="submit" id="submit-btn" class="btn-modern btn-primary-modern">
                         <i class="bi bi-save"></i> Save Changes
                     </button>
                 </div>
@@ -137,6 +159,8 @@
     <script>
         function loadBenefitDetails(benefitId) {
             const panel = document.getElementById('benefit-details');
+            const resourceAlert = document.getElementById('resource-alert');
+            const submitBtn = document.getElementById('submit-btn');
             if (!benefitId) { panel.style.display = 'none'; return; }
             fetch(`/Disbursement/GetBenefitDetails?benefitId=${benefitId}`)
                 .then(r => r.json())
@@ -146,6 +170,34 @@
                     document.getElementById('detail-amount').textContent  = data.benefitAmount != null ? '\u20B9' + data.benefitAmount.toLocaleString('en-IN') : '-';
                     document.getElementById('detail-program').textContent = data.programTitle  ?? '-';
                     document.getElementById('detail-citizen').textContent = data.citizenName   ?? '-';
+
+                    // Resource availability
+                    const hasResource = data.totalResource > 0;
+                    document.getElementById('detail-total-resource').textContent =
+                        hasResource ? '\u20B9' + data.totalResource.toLocaleString('en-IN') : 'N/A';
+                    document.getElementById('detail-disbursed').textContent =
+                        hasResource ? '\u20B9' + data.totalDisbursedForProgram.toLocaleString('en-IN') : 'N/A';
+
+                    const availEl = document.getElementById('detail-available');
+                    if (!hasResource) {
+                        availEl.textContent = 'N/A';
+                        availEl.className = 'fw-semibold text-muted';
+                    } else if (data.isResourceExhausted) {
+                        availEl.textContent = '\u20B90 (Exhausted)';
+                        availEl.className = 'fw-semibold text-danger';
+                    } else {
+                        availEl.textContent = '\u20B9' + data.availableResource.toLocaleString('en-IN');
+                        availEl.className = 'fw-semibold text-success';
+                    }
+
+                    if (data.isResourceExhausted) {
+                        resourceAlert.style.display = '';
+                        submitBtn.disabled = true;
+                    } else {
+                        resourceAlert.style.display = 'none';
+                        submitBtn.disabled = false;
+                    }
+
                     panel.style.display = '';
                 })
                 .catch(() => panel.style.display = 'none');

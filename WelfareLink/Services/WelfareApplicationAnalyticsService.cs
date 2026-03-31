@@ -22,7 +22,7 @@ namespace WelfareLink.Services
 
             var totalApplications = allApplications.Count();
             var pendingApplications = allApplications.Count(a => a.Status == "Pending");
-            var approvedApplications = allApplications.Count(a => a.Status == "Approved");
+            var approvedApplications = allApplications.Count(a => a.Status == "Approved" || a.Status == "Fully Disbursed");
             var rejectedApplications = allApplications.Count(a => a.Status == "Rejected");
             var underReviewApplications = allApplications.Count(a => a.Status == "Under Review");
 
@@ -81,7 +81,7 @@ namespace WelfareLink.Services
                     Month = new DateTime(year, g.Key, 1).ToString("MMMM"),
                     Total = g.Count(),
                     Pending = g.Count(a => a.Status == "Pending"),
-                    Approved = g.Count(a => a.Status == "Approved"),
+                    Approved = g.Count(a => a.Status == "Approved" || a.Status == "Fully Disbursed"),
                     Rejected = g.Count(a => a.Status == "Rejected"),
                     UnderReview = g.Count(a => a.Status == "Under Review")
                 })

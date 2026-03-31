@@ -126,7 +126,7 @@ namespace WelfareLink.Services
 
         private double CalculateDisbursementEfficiency(List<Benefit> benefits, List<Disbursement> disbursements)
         {
-            var totalAllocated = benefits.Sum(b => b.Amount);
+            var totalAllocated = benefits.Where(b => b.Amount > 0).Sum(b => b.Amount);
             if (totalAllocated == 0)
                 return 0;
 
@@ -143,7 +143,7 @@ namespace WelfareLink.Services
             if (benefits.Count == 0)
                 return 0;
 
-            var allocatedCount = benefits.Count(b => b.Status == "Allocated");
+            var allocatedCount = benefits.Count(b => b.Status == "Allocated" || b.Status == "Partially Disbursed" || b.Status == "Fully Disbursed");
             return Math.Round((double)allocatedCount / benefits.Count * 100, 1);
         }
 

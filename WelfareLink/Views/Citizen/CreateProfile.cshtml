@@ -154,6 +154,25 @@
                 </div>
 
                 <div class="mb-3">
+                    <label class="form-label">Gender <span class="text-danger">*</span></label>
+                    <div class="d-flex gap-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" asp-for="Gender" value="Male" id="genderMale" />
+                            <label class="form-check-label" for="genderMale"><i class="bi bi-gender-male"></i> Male</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" asp-for="Gender" value="Female" id="genderFemale" />
+                            <label class="form-check-label" for="genderFemale"><i class="bi bi-gender-female"></i> Female</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" asp-for="Gender" value="Other" id="genderOther" />
+                            <label class="form-check-label" for="genderOther"><i class="bi bi-gender-ambiguous"></i> Other</label>
+                        </div>
+                    </div>
+                    <span asp-validation-for="Gender" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
                     <label asp-for="Address" class="form-label">Address</label>
                     <textarea asp-for="Address" class="form-control" rows="3" placeholder="Enter your complete address"></textarea>
                     <span asp-validation-for="Address" class="text-danger"></span>

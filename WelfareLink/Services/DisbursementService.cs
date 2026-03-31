@@ -9,14 +9,16 @@ namespace WelfareLink.Services
         private readonly IBenefitRepository _benefitRepository;
         private readonly IWelfareApplicationRepository _applicationRepository;
         private readonly IEligibilityCheckRepository _eligibilityCheckRepository;
+        private readonly IResourceRepository _resourceRepository;
         private readonly string[] _validStatuses = { "Completed", "Pending", "Disbursement Pending", "Failed" };
 
-        public DisbursementService(IDisbursementRepository disbursementRepository, IBenefitRepository benefitRepository, IWelfareApplicationRepository applicationRepository, IEligibilityCheckRepository eligibilityCheckRepository)
+        public DisbursementService(IDisbursementRepository disbursementRepository, IBenefitRepository benefitRepository, IWelfareApplicationRepository applicationRepository, IEligibilityCheckRepository eligibilityCheckRepository, IResourceRepository resourceRepository)
         {
             _disbursementRepository = disbursementRepository;
             _benefitRepository = benefitRepository;
             _applicationRepository = applicationRepository;
             _eligibilityCheckRepository = eligibilityCheckRepository;
+            _resourceRepository = resourceRepository;
         }
 
         public async Task<IEnumerable<Disbursement>> GetAllDisbursementsAsync()
@@ -36,6 +38,7 @@ namespace WelfareLink.Services
         public async Task<Disbursement> CreateDisbursementAsync(Disbursement disbursement)
         {
             await ValidateDisbursementAsync(disbursement);
+            await ValidateResourceAvailabilityAsync(disbursement);
 
             // Resolve CitizenID from the WelfareApplication linked to this Benefit
             var benefit = await _benefitRepository.GetByIdAsync(disbursement.BenefitID);
@@ -98,6 +101,7 @@ namespace WelfareLink.Services
             }
 
             await ValidateDisbursementAsync(disbursement);
+            await ValidateResourceAvailabilityAsync(disbursement);
 
             // Get existing disbursement to check if amount changed and create balance record if needed
             var existingDisbursement = await _disbursementRepository.GetByIdAsync(disbursement.DisbursementID);
@@ -229,6 +233,44 @@ namespace WelfareLink.Services
         #endregion
 
         #region Private Validation Methods
+
+        private async Task ValidateResourceAvailabilityAsync(Disbursement disbursement)
+        {
+            // Only completed disbursements consume the resource allocation
+            if (disbursement.Status != "Completed") return;
+
+            var benefit = await _benefitRepository.GetByIdAsync(disbursement.BenefitID);
+            if (benefit?.WelfareApplication == null) return;
+
+            var programId = benefit.WelfareApplication.ProgramID;
+
+            var resources = await _resourceRepository.GetResourcesByProgramIdAsync(programId);
+            var totalResourceQuantity = (double)resources.Sum(r => r.Quantity);
+
+            if (totalResourceQuantity == 0) return; // No resource defined; skip check
+
+            // Sum completed disbursements across ALL benefits for this program (excluding current record when updating)
+            var allDisbursements = await _disbursementRepository.GetAllAsync();
+            var totalCompletedForProgram = allDisbursements
+                .Where(d => d.Status == "Completed"
+                         && d.DisbursementID != disbursement.DisbursementID
+                         && d.Benefit?.WelfareApplication?.ProgramID == programId)
+                .Sum(d => d.Amount);
+
+            var available = totalResourceQuantity - totalCompletedForProgram;
+
+            if (disbursement.Amount > available)
+            {
+                if (available <= 0)
+                    throw new InvalidOperationException(
+                        $"Resource Insufficient: The programme resource allocation of ₹{totalResourceQuantity:N2} has been fully exhausted. " +
+                        $"Please contact the Programme Manager to allocate additional resources.");
+                else
+                    throw new InvalidOperationException(
+                        $"Resource Insufficient: Only ₹{available:N2} remains from the programme allocation of ₹{totalResourceQuantity:N2}. " +
+                        $"Reduce the disbursement amount or contact the Programme Manager.");
+            }
+        }
 
         private async Task ValidateDisbursementAsync(Disbursement disbursement)
         {

@@ -37,6 +37,7 @@ namespace WelfareLink.Controllers
 
             if (user != null)
             {
+                HttpContext.Session.Clear();
                 HttpContext.Session.SetInt32("UserId", user.UserId);
                 HttpContext.Session.SetString("Username", user.Username);
                 HttpContext.Session.SetString("UserRole", user.Role);
@@ -45,6 +46,9 @@ namespace WelfareLink.Controllers
                 if (user.CitizenId.HasValue)
                 {
                     HttpContext.Session.SetInt32("CitizenId", user.CitizenId.Value);
+                    var citizen = _context.Citizens.FirstOrDefault(c => c.CitizenId == user.CitizenId.Value);
+                    if (!string.IsNullOrEmpty(citizen?.Gender))
+                        HttpContext.Session.SetString("CitizenGender", citizen.Gender);
                 }
 
                 return RedirectBasedOnRole(user.Role);
