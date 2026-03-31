@@ -1,0 +1,108 @@
+﻿@model IEnumerable<WelfareLink.Models.WelfareApplication>
+
+@{
+    ViewData["Title"] = "Pending Applications";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-clock-history"></i> Pending Applications</h1>
+    <a asp-action="Index" class="btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> All Applications
+    </a>
+</div>
+
+<div class="content-card">
+
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <span><strong>@Model.Count()</strong> pending application(s) require officer review</span>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-modern">
+                <thead>
+                    <tr>
+                        <th>App ID</th>
+                        <th>Citizen Name</th>
+                        <th>Program Name</th>
+                        <th>Submitted Date</th>
+                        <th>Days Pending</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var daysPending = DateTime.Now.Subtract(item.SubmittedDate.ToDateTime(TimeOnly.MinValue)).Days;
+                        var urgencyClass = daysPending > 7 ? "bg-danger" : daysPending > 3 ? "bg-warning text-dark" : "bg-success";
+                        <tr>
+                            <td>
+                                <span class="badge bg-secondary">#@item.ApplicationID</span>
+                            </td>
+                            <td>
+                                @if (item.Citizen != null)
+                                {
+                                    <i class="bi bi-person-fill text-primary"></i> <strong>@item.Citizen.Name</strong>
+                                    <br />
+                                    <small class="text-muted">ID: #@item.CitizenID</small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Citizen ID: @item.CitizenID</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.Program != null)
+                                {
+                                    <i class="bi bi-diagram-3-fill text-info"></i> <strong>@item.Program.Title</strong>
+                                    <br />
+                                    <small class="text-muted">ID: #@item.ProgramID | Status: @item.Program.Status</small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Program ID: @item.ProgramID</span>
+                                }
+                            </td>
+                            <td>
+                                <i class="bi bi-calendar-event"></i> @item.SubmittedDate.ToString("dd MMM yyyy")
+                            </td>
+                            <td>
+                                <span class="badge @urgencyClass">
+                                    <i class="bi bi-hourglass"></i> @daysPending day(s)
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge status-pending">
+                                    <i class="bi bi-clock"></i> Pending
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a asp-action="Details" asp-route-id="@item.ApplicationID"
+                                       class="btn btn-sm btn-modern btn-info-modern" title="Review">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <a asp-controller="EligibilityCheck" asp-action="Create"
+                                       asp-route-applicationId="@item.ApplicationID"
+                                       class="btn btn-sm btn-modern btn-primary-modern" title="Check Eligibility">
+                                        <i class="bi bi-clipboard-check"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success text-center">
+            <i class="bi bi-check-circle-fill fs-4"></i>
+            <strong class="ms-2">All clear!</strong> No pending applications. All applications have been reviewed.
+        </div>
+    }
+</div>

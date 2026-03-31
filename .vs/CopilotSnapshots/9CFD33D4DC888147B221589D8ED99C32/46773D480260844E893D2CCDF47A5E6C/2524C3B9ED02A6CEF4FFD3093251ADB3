@@ -1,0 +1,55 @@
+﻿@model WelfareLink.Controllers.DocumentUploadViewModel
+@{
+    ViewData["Title"] = "Upload Document";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Upload Document</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> Allowed file types: PDF, JPG, JPEG, PNG, DOC, DOCX. Maximum file size: 10 MB.
+                    </div>
+
+                    <form asp-controller="CitizenDocument" asp-action="UploadDocument" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="CitizenId" />
+                        
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="DocType" class="form-label"></label>
+                            <select asp-for="DocType" class="form-select">
+                                <option value="">Select Document Type</option>
+                                <option value="ID Proof">ID Proof (Aadhaar/PAN/Voter ID)</option>
+                                <option value="Residence Proof">Residence Proof (Electricity Bill/Rent Agreement)</option>
+                                <option value="Income Certificate">Income Certificate</option>
+                                <option value="Bank Statement">Bank Statement</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="DocType" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="FileUpload" class="form-label"></label>
+                            <input asp-for="FileUpload" class="form-control" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                            <span asp-validation-for="FileUpload" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-controller="Citizen" asp-action="Dashboard" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Upload Document</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,132 @@
+﻿@model IEnumerable<WelfareLink.Models.Disbursement>
+
+@{
+    ViewData["Title"] = "Disbursements";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-cash-stack"></i> Disbursement Records</h1>
+    <a asp-action="Create" class="btn-modern btn-success-modern">
+        <i class="bi bi-plus-circle"></i> Record New Disbursement
+    </a>
+</div>
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table table-modern">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-hash"></i> ID</th>
+                    <th><i class="bi bi-gift"></i> Benefit</th>
+                    <th><i class="bi bi-currency-rupee"></i> Amount</th>
+                    <th><i class="bi bi-person"></i> Citizen ID</th>
+                    <th><i class="bi bi-person-badge"></i> Officer ID</th>
+                    <th><i class="bi bi-calendar"></i> Date</th>
+                    <th><i class="bi bi-flag"></i> Status</th>
+                    <th><i class="bi bi-gear"></i> Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>#@item.DisbursementID</strong></td>
+                        <td>
+                            @if (item.Benefit != null)
+                            {
+                                <span class="badge bg-info">
+                                    <i class="bi bi-gift"></i> @item.Benefit.Type
+                                </span>
+                                <small class="text-muted d-block">Benefit ID: @item.BenefitID</small>
+                                @if (item.Benefit.WelfareApplication != null)
+                                {
+                                    <small class="text-muted d-block">App #@item.Benefit.WelfareApplication.ApplicationID</small>
+                                }
+                            }
+                            else
+                            {
+                                <span>Benefit #@item.BenefitID</span>
+                            }
+                        </td>
+                        <td>
+                            <strong>₹@item.Amount.ToString("N2")</strong>
+                        </td>
+                        <td>
+                            @if (item.CitizenID == 0)
+                            {
+                                <span class="text-muted">Not assigned</span>
+                            }
+                            else
+                            {
+                                if (item.Benefit?.WelfareApplication?.Citizen != null)
+                                {
+                                    <i class="bi bi-person-circle text-primary"></i> <strong>@item.Benefit.WelfareApplication.Citizen.Name</strong>
+                                    <br /><small class="text-muted">ID: #@item.CitizenID</small>
+                                }
+                                else
+                                {
+                                    <span><i class="bi bi-person-circle text-primary"></i> Citizen #@item.CitizenID</span>
+                                }
+                            }
+                        </td>
+                        <td>
+                            @if (item.OfficerID == 0)
+                            {
+                                <span class="text-muted">Not assigned</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-person-badge text-secondary"></i> @item.OfficerID
+                            }
+                        </td>
+                        <td>@item.Date.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            @{
+                                var statusLower = item.Status?.ToLower()?.Trim() ?? "";
+                                var statusClass = statusLower switch
+                                {
+                                    var s when s.Contains("fully") && s.Contains("disbursed") => "status-fully-disbursed",
+                                    var s when s.Contains("100") || s == "disbursed" || s == "completed" => "status-fully-disbursed",
+                                    var s when s.Contains("partially") && s.Contains("disbursed") => "status-processing",
+                                    var s when s.Contains("partial") => "status-processing",
+                                    var s when s.Contains("allocated") => "status-allocated",
+                                    var s when s.Contains("failed") => "status-failed",
+                                    var s when s.Contains("pending") => "status-pending",
+                                    _ => "status-pending"
+                                };
+                            }
+                            <span class="status-badge @statusClass">
+                                <i class="bi bi-circle-fill" style="font-size: 8px;"></i> @item.Status
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a asp-action="Details" asp-route-id="@item.DisbursementID" class="btn-modern btn-info-modern btn-sm">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.DisbursementID" class="btn-modern btn-warning-modern btn-sm">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.DisbursementID" class="btn-modern btn-danger-modern btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 4rem; color: #cbd5e1;"></i>
+            <h4 class="mt-3 text-muted">No disbursements found</h4>
+            <p class="text-muted">Start by recording a new disbursement.</p>
+            <a asp-action="Create" class="btn-modern btn-primary-modern">
+                <i class="bi bi-plus-circle"></i> Record First Disbursement
+            </a>
+        </div>
+    }
+</div>

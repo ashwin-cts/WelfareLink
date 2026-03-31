@@ -1,0 +1,119 @@
+﻿@model WelfareLink.Models.WelfareProgram
+
+@{
+    ViewData["Title"] = "Edit Programme";
+}
+
+<header>
+    <h1>Edit Programme</h1>
+    <p>Update programme details, budget allocation, and status.</p>
+</header>
+
+<div class="form-container" style="margin-bottom: 40px;">
+    <form asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ProgramID" />
+
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label asp-for="Title">Programme Title</label>
+                <input asp-for="Title" type="text" placeholder="e.g., Housing Support" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="form-group full-width">
+                <label asp-for="Description">Description & Objectives</label>
+                <textarea asp-for="Description" placeholder="Enter objectives and eligibility details..."></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="StartDate">Start Date</label>
+                <input asp-for="StartDate" type="date" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EndDate">End Date</label>
+                <input asp-for="EndDate" type="date" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Budget">Budget Allocation (₹)</label>
+                <input asp-for="Budget" type="number" step="0.01" placeholder="0.00" />
+                <span asp-validation-for="Budget" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Status">Programme Status</label>
+                <select asp-for="Status">
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Suspended">Suspended</option>
+                </select>
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EligibleGender">Eligible Gender</label>
+                <select asp-for="EligibleGender">
+                    <option value="Anyone">Anyone (No Restriction)</option>
+                    <option value="Male">Male Only</option>
+                    <option value="Female">Female Only</option>
+                    <option value="Other">Other Only</option>
+                </select>
+                <span asp-validation-for="EligibleGender" class="text-danger"></span>
+            </div>
+
+            <div class="form-group full-width">
+                <label>Required Documents</label>
+                <input type="hidden" id="RequiredDocuments" asp-for="RequiredDocuments" />
+                <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-top:0.5rem;">
+                    <label><input class="req-doc-cb" type="checkbox" value="None" id="rdNone" /> No Document Required</label>
+                    <label><input class="req-doc-cb" type="checkbox" value="ID Proof" id="rdId" /> ID Proof</label>
+                    <label><input class="req-doc-cb" type="checkbox" value="Residence Proof" id="rdRes" /> Residence Proof</label>
+                    <label><input class="req-doc-cb" type="checkbox" value="Income Certificate" id="rdInc" /> Income Certificate</label>
+                    <label><input class="req-doc-cb" type="checkbox" value="Bank Statement" id="rdBank" /> Bank Statement</label>
+                </div>
+                <small style="color:#666;">"No Document Required" cannot be combined with other selections.</small>
+            </div>
+        </div>
+
+        <div style="margin-top: 25px; padding-top: 15px; padding-bottom: 20px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            <div>
+                <a asp-action="Details" asp-route-id="@Model.ProgramID" class="btn btn-info" style="margin-right: 10px;">View Details</a>
+                <button type="submit" class="btn btn-primary">Update Programme</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        var noneCheckbox = document.getElementById('rdNone');
+        var otherCheckboxes = document.querySelectorAll('.req-doc-cb:not(#rdNone)');
+        noneCheckbox.addEventListener('change', function () {
+            if (this.checked) otherCheckboxes.forEach(cb => cb.checked = false);
+            syncHidden();
+        });
+        otherCheckboxes.forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                if (this.checked) noneCheckbox.checked = false;
+                syncHidden();
+            });
+        });
+        function syncHidden() {
+            var checked = Array.from(document.querySelectorAll('.req-doc-cb:checked')).map(cb => cb.value);
+            document.getElementById('RequiredDocuments').value = checked.length > 0 ? checked.join(',') : 'None';
+        }
+        document.querySelector('form').addEventListener('submit', function () { syncHidden(); });
+        (function () {
+            var val = document.getElementById('RequiredDocuments').value || 'None';
+            var parts = val.split(',').map(s => s.trim());
+            document.querySelectorAll('.req-doc-cb').forEach(function (cb) { cb.checked = parts.includes(cb.value); });
+        })();
+    </script>
+}

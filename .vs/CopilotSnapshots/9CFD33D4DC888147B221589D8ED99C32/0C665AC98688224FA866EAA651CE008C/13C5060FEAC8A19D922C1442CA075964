@@ -1,0 +1,207 @@
+﻿@{
+    ViewData["Title"] = "Select Documents to Submit";
+    var program = ViewBag.Program as WelfareLink.Models.WelfareProgram;
+    var documents = ViewBag.Documents as IEnumerable<WelfareLink.Models.CitizenDocument> ?? Enumerable.Empty<WelfareLink.Models.CitizenDocument>();
+    int programId = ViewBag.ProgramId ?? 0;
+    var requiredDocTypes = ViewBag.RequiredDocTypes as List<string> ?? new List<string>();
+    bool noDocRequired = ViewBag.NoDocRequired ?? false;
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-file-earmark-check"></i> Select Documents to Submit</h1>
+    <p class="mb-0">Choose the documents you want to submit with your application</p>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.Error
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (program != null)
+{
+    <div class="content-card mb-3">
+        <h4 class="mb-3"><i class="bi bi-diagram-3"></i> Applying for Program</h4>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <label>Program ID</label>
+                <p><strong>#@program.ProgramID</strong></p>
+            </div>
+            <div class="detail-item">
+                <label>Program Title</label>
+                <p><strong>@program.Title</strong></p>
+            </div>
+            <div class="detail-item">
+                <label>Start Date</label>
+                <p>@program.StartDate.ToString("dd MMM yyyy")</p>
+            </div>
+            <div class="detail-item">
+                <label>End Date</label>
+                <p>@program.EndDate.ToString("dd MMM yyyy")</p>
+            </div>
+            @if (!string.IsNullOrEmpty(program.Description))
+            {
+                <div class="detail-item" style="grid-column: span 2;">
+                    <label>Description</label>
+                    <p>@program.Description</p>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<form asp-action="SelectDocuments" asp-controller="Citizen" method="post" id="docSelectForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="programId" value="@programId" />
+
+    <div class="content-card mb-3">
+        <h4 class="mb-3"><i class="bi bi-files"></i> Your Uploaded Documents</h4>
+
+        @if (noDocRequired)
+        {
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>No documents required</strong> for this program. You can submit your application directly.
+            </div>
+        }
+        else if (requiredDocTypes.Any())
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <strong>Required document types:</strong>
+                @foreach (var dt in requiredDocTypes)
+                {
+                    <span class="badge bg-primary me-1">@dt</span>
+                }
+                <br /><small>You must select at least one document of each required type.</small>
+            </div>
+        }
+        else
+        {
+            <p class="text-muted mb-3">
+                <i class="bi bi-info-circle"></i> Tick the documents you want to submit with this application. You must select at least one document.
+            </p>
+        }
+
+        @if (!documents.Any())
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>No documents found.</strong> You have not uploaded any documents to your profile yet.
+                Please <a asp-controller="Citizen" asp-action="Dashboard" class="alert-link">go to your Dashboard</a> to upload documents before applying.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-modern">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">Select</th>
+                            <th>Document ID</th>
+                            <th>Document Name</th>
+                            <th>Document Type</th>
+                            <th>Uploaded Date</th>
+                            <th>Verification Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doc in documents)
+                        {
+                            <tr class="doc-row" id="row-@doc.DocumentID" style="cursor:pointer;" onclick="toggleDoc(@doc.DocumentID)">
+                                <td class="text-center">
+                                    <input type="checkbox"
+                                           class="form-check-input doc-checkbox"
+                                           name="selectedDocumentIds"
+                                           value="@doc.DocumentID"
+                                           id="doc-@doc.DocumentID"
+                                           onclick="event.stopPropagation();"
+                                           onchange="onCheckboxChange()" />
+                                </td>
+                                <td><span class="badge bg-secondary">#@doc.DocumentID</span></td>
+                                <td><strong>@(doc.DocumentName ?? "-")</strong></td>
+                                <td><strong>@doc.DocType</strong></td>
+                                <td>@doc.UploadedDate.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    @if (doc.VerificationStatus == "Approved")
+                                    {
+                                        <span class="status-badge status-fully-disbursed">
+                                            <i class="bi bi-check-circle"></i> Approved
+                                        </span>
+                                    }
+                                    else if (doc.VerificationStatus == "Pending")
+                                    {
+                                        <span class="status-badge status-pending">
+                                            <i class="bi bi-clock"></i> Pending
+                                        </span>
+                                    }
+                                    else if (doc.VerificationStatus == "Rejected")
+                                    {
+                                        <span class="status-badge status-failed">
+                                            <i class="bi bi-x-circle"></i> Rejected
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-processing">@doc.VerificationStatus</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="selectionSummary" class="alert alert-info mt-2 d-none">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <span id="selectedCount">0</span> document(s) selected.
+            </div>
+        }
+    </div>
+
+    <div class="d-flex gap-2">
+        @if (documents.Any())
+        {
+            <button type="submit" class="btn-modern btn-success-modern" id="submitBtn" disabled>
+                <i class="bi bi-send"></i> Submit Application
+            </button>
+        }
+        <a asp-action="ProgramList" asp-controller="Citizen" class="btn-modern btn-secondary-modern">
+            <i class="bi bi-arrow-left"></i> Cancel
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        function toggleDoc(docId) {
+            var cb = document.getElementById('doc-' + docId);
+            cb.checked = !cb.checked;
+            onCheckboxChange();
+        }
+
+        function onCheckboxChange() {
+            var checked = document.querySelectorAll('.doc-checkbox:checked');
+            var count = checked.length;
+            var submitBtn = document.getElementById('submitBtn');
+            var summary = document.getElementById('selectionSummary');
+            var countSpan = document.getElementById('selectedCount');
+
+            if (submitBtn) submitBtn.disabled = count === 0;
+            if (summary && countSpan) {
+                countSpan.textContent = count;
+                summary.classList.toggle('d-none', count === 0);
+            }
+
+            // Highlight selected rows
+            document.querySelectorAll('.doc-checkbox').forEach(function (cb) {
+                var row = document.getElementById('row-' + cb.value);
+                if (row) {
+                    row.style.background = cb.checked ? 'rgba(16,185,129,0.08)' : '';
+                }
+            });
+        }
+    </script>
+}

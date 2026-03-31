@@ -1,0 +1,207 @@
+﻿@model IEnumerable<WelfareLink.Models.WelfareApplication>
+
+@{
+    ViewData["Title"] = "WelfareLink - Home";
+    var currentStatus = ViewBag.CurrentStatus as string;
+    var allApplications = Model;
+}
+
+<div class="page-header">
+    <div>
+        <h1>
+            <i class="bi bi-house-heart"></i>
+            Welfare Application Dashboard
+        </h1>
+        <p class="mb-0">Manage and track welfare applications</p>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Filter Bar -->
+<div class="mb-3">
+    <div class="btn-group" role="group">
+        <a asp-action="HomeIndex" class="btn @(string.IsNullOrEmpty(currentStatus) ? "btn-primary" : "btn-outline-primary")">
+            <i class="bi bi-list"></i> All Applications
+        </a>
+        <a asp-action="HomeIndex" asp-route-status="Pending" class="btn @(currentStatus == "Pending" ? "btn-warning" : "btn-outline-warning")">
+            <i class="bi bi-clock"></i> Pending
+        </a>
+        <a asp-action="HomeIndex" asp-route-status="Approved" class="btn @(currentStatus == "Approved" ? "btn-success" : "btn-outline-success")">
+            <i class="bi bi-check-circle"></i> Approved
+        </a>
+        <a asp-action="HomeIndex" asp-route-status="Rejected" class="btn @(currentStatus == "Rejected" ? "btn-danger" : "btn-outline-danger")">
+            <i class="bi bi-x-circle"></i> Rejected
+        </a>
+        <a asp-action="HomeIndex" asp-route-status="Under Review" class="btn @(currentStatus == "Under Review" ? "btn-info" : "btn-outline-info")">
+            <i class="bi bi-hourglass-split"></i> Under Review
+        </a>
+    </div>
+    @if (!string.IsNullOrEmpty(currentStatus))
+    {
+        <span class="ms-3 text-muted">
+            <i class="bi bi-filter"></i> Showing: <strong>@currentStatus</strong> applications
+        </span>
+    }
+</div>
+
+<!-- Statistics Cards (All stats still visible, but now they're links) -->
+<div class="row mb-3">
+    <div class="col-md-3">
+        <a asp-action="HomeIndex" style="text-decoration: none;">
+            <div class="content-card" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; cursor: pointer;">
+                <h6 class="mb-2" style="opacity: 0.9;">Total Applications</h6>
+                <h2 class="mb-0"><i class="bi bi-file-earmark-text"></i> @allApplications.Count()</h2>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a asp-action="HomeIndex" asp-route-status="Pending" style="text-decoration: none;">
+            <div class="content-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; cursor: pointer;">
+                <h6 class="mb-2" style="opacity: 0.9;">Pending</h6>
+                <h2 class="mb-0"><i class="bi bi-clock"></i> @allApplications.Count(a => a.Status == "Pending")</h2>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a asp-action="HomeIndex" asp-route-status="Approved" style="text-decoration: none;">
+            <div class="content-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; cursor: pointer;">
+                <h6 class="mb-2" style="opacity: 0.9;">Approved</h6>
+                <h2 class="mb-0"><i class="bi bi-check-circle"></i> @allApplications.Count(a => a.Status == "Approved")</h2>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a asp-action="HomeIndex" asp-route-status="Rejected" style="text-decoration: none;">
+            <div class="content-card" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; cursor: pointer;">
+                <h6 class="mb-2" style="opacity: 0.9;">Rejected</h6>
+                <h2 class="mb-0"><i class="bi bi-x-circle"></i> @allApplications.Count(a => a.Status == "Rejected")</h2>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Applications Table -->
+<div class="content-card">
+    <h4 class="mb-3">
+        <i class="bi bi-list-ul"></i> 
+        @if (!string.IsNullOrEmpty(currentStatus))
+        {
+            <text>@currentStatus Applications</text>
+        }
+        else
+        {
+            <text>All Welfare Applications</text>
+        }
+    </h4>
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-modern">
+                <thead>
+                    <tr>
+                        <th>Application ID</th>
+                        <th>Citizen Name</th>
+                        <th>Program Name</th>
+                        <th>Submitted Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="badge bg-secondary">#@item.ApplicationID</span></td>
+                            <td>
+                                @if (item.Citizen != null)
+                                {
+                                    <i class="bi bi-person-fill text-primary"></i> <strong>@item.Citizen.Name</strong>
+                                    <br />
+                                    <small class="text-muted">ID: #@item.CitizenID</small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Citizen ID: @item.CitizenID</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.Program != null)
+                                {
+                                    <i class="bi bi-diagram-3-fill text-info"></i> <strong>@item.Program.Title</strong>
+                                    <br />
+                                    <small class="text-muted">ID: #@item.ProgramID</small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Program ID: @item.ProgramID</span>
+                                }
+                            </td>
+                            <td>
+                                <i class="bi bi-calendar-event"></i> @item.SubmittedDate.ToString("dd MMM yyyy")
+                            </td>
+                            <td>
+                                @if (item.Status == "Pending")
+                                {
+                                    <span class="status-badge status-pending"><i class="bi bi-clock"></i> Pending</span>
+                                }
+                                else if (item.Status == "Approved")
+                                {
+                                    <span class="status-badge status-fully-disbursed"><i class="bi bi-check-circle"></i> Approved</span>
+                                }
+                                else if (item.Status == "Rejected")
+                                {
+                                    <span class="status-badge status-failed"><i class="bi bi-x-circle"></i> Rejected</span>
+                                }
+                                else if (item.Status == "Under Review")
+                                {
+                                    <span class="status-badge status-processing"><i class="bi bi-hourglass-split"></i> Under Review</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-processing">@item.Status</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a asp-controller="WelfareApplication" asp-action="Details" asp-route-id="@item.ApplicationID"
+                                       class="btn btn-sm btn-modern btn-info-modern" title="View Details">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <a asp-controller="EligibilityCheck" asp-action="Create" asp-route-applicationId="@item.ApplicationID"
+                                       class="btn btn-sm btn-modern btn-primary-modern" title="Eligibility Check">
+                                        <i class="bi bi-clipboard-check"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info mb-0">
+            <i class="bi bi-info-circle"></i>
+            <strong>No applications found.</strong> Submit your first application to get started.
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}

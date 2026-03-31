@@ -1,0 +1,153 @@
+﻿@model IEnumerable<WelfareLink.Models.EligibilityCheck>
+
+@{
+    ViewData["Title"] = "Eligibility Checks";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-4">@ViewData["Title"]</h1>
+            <p class="lead">Manage eligibility assessments</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="btn-group" role="group">
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> New Eligibility Check
+                </a>
+                <a asp-action="MyChecks" class="btn btn-info">
+                    <i class="bi bi-person-check"></i> My Checks
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Filter Eligibility Checks</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="ByResult" method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Result</label>
+                            <select name="result" class="form-select">
+                                <option value="">All Results</option>
+                                <option value="Eligible">Eligible</option>
+                                <option value="Ineligible">Ineligible</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-secondary">Filter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Eligibility Checks List</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Check ID</th>
+                                        <th>Application</th>
+                                        <th>Officer ID</th>
+                                        <th>Date</th>
+                                        <th>Result</th>
+                                        <th>Result Code</th>
+                                        <th>Notes</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@item.CheckID</td>
+                                            <td>
+                                                <a asp-controller="WelfareApplication" asp-action="Details" asp-route-id="@item.ApplicationID"
+                                                   class="badge bg-primary text-decoration-none mb-1 d-inline-block">#@item.ApplicationID</a>
+                                                @if (item.WelfareApplication != null)
+                                                {
+                                                    <div class="small">
+                                                        <span class="text-muted">Citizen ID:</span> @item.WelfareApplication.CitizenID
+                                                    </div>
+                                                    @if (item.WelfareApplication.Citizen != null)
+                                                    {
+                                                        <div class="small">
+                                                            <span class="text-muted">Citizen Name:</span> <strong>@item.WelfareApplication.Citizen.Name</strong>
+                                                        </div>
+                                                    }
+                                                    <div class="small"><span class="text-muted">Program:</span> @(item.WelfareApplication.Program?.Title ?? $"#{item.WelfareApplication.ProgramID}")</div>
+                                                    <div class="small"><span class="text-muted">Submitted:</span> @item.WelfareApplication.SubmittedDate.ToString("dd MMM yyyy")</div>
+                                                    <div class="small"><span class="badge bg-light text-dark border">@item.WelfareApplication.Status</span></div>
+                                                }
+                                            </td>
+                                            <td>@item.OfficerID</td>
+                                            <td>@item.Date.ToString("dd MMM yyyy")</td>
+                                            <td>
+                                                @if (item.Result.ToLower() == "eligible")
+                                                {
+                                                    <span class="badge bg-success">@item.Result</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">@item.Result</span>
+                                                }
+                                            </td>
+                                            <td><span class="badge bg-secondary">@item.ResultCode</span></td>
+                                            <td>@(item.Notes.Length > 50 ? item.Notes.Substring(0, 50) + "..." : item.Notes)</td>
+                                            <td>
+                                                <a asp-action="Details" asp-route-id="@item.CheckID" class="btn btn-sm btn-info">
+                                                    <i class="bi bi-eye"></i> Details
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@item.CheckID" class="btn btn-sm btn-warning">
+                                                    <i class="bi bi-pencil"></i> Edit
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@item.CheckID" class="btn btn-sm btn-danger">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> No eligibility checks found.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}

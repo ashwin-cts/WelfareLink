@@ -1,0 +1,405 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using WelfareLink.Interfaces;
+using WelfareLink.Models;
+using WelfareLink.Services;
+
+namespace WelfareLink.Controllers
+{
+    public class CitizenController : Controller
+    {
+        private readonly ICitizenService _citizenService;
+        private readonly ICitizenDocumentService _documentService;
+        private readonly IWelfareProgramService _programService;
+        private readonly IWelfareApplicationService _applicationService;
+
+        public CitizenController(
+            ICitizenService citizenService,
+            ICitizenDocumentService documentService,
+            IWelfareProgramService programService,
+            IWelfareApplicationService applicationService)
+        {
+            _citizenService = citizenService;
+            _documentService = documentService;
+            _programService = programService;
+            _applicationService = applicationService;
+        }
+
+        // GET: Citizen/Dashboard
+        public async Task<IActionResult> Dashboard()
+        {
+            // For demo purposes, using a hardcoded UserId = 1
+            // In production, get this from authenticated user claims
+            int currentUserId = 1;
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+
+            if (citizenProfile == null)
+            {
+                return RedirectToAction(nameof(CreateProfile));
+            }
+
+            var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.Id);
+
+            var viewModel = new CitizenDashboardViewModel
+            {
+                CitizenProfile = citizenProfile,
+                Documents = documents,
+                PendingDocuments = documents.Count(d => d.VerificationStatus == "Pending"),
+                ApprovedDocuments = documents.Count(d => d.VerificationStatus == "Approved"),
+                RejectedDocuments = documents.Count(d => d.VerificationStatus == "Rejected")
+            };
+
+            return View(viewModel);
+        }
+
+        // GET: Citizen/CreateProfile
+        public IActionResult CreateProfile()
+        {
+            return View();
+        }
+
+        // POST: Citizen/CreateProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateProfile(CreateCitizenViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // For demo purposes, using a hardcoded UserId = 1
+            int currentUserId = 1;
+
+            var citizen = new Citizen
+            {
+                UserId = currentUserId,
+                Name = model.Name,
+                DateOfBirth = model.DateOfBirth,
+                Address = model.Address,
+                ContactInfo = model.ContactInfo,
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var success = await _citizenService.CreateCitizenProfileAsync(citizen);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Profile created successfully!";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            ModelState.AddModelError(string.Empty, "Failed to create profile.");
+            return View(model);
+        }
+
+        // GET: Citizen/EditProfile
+        public async Task<IActionResult> EditProfile()
+        {
+            // For demo purposes, using a hardcoded UserId = 1
+            int currentUserId = 1;
+
+            var citizen = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+
+            if (citizen == null)
+            {
+                return RedirectToAction(nameof(CreateProfile));
+            }
+
+            var viewModel = new EditCitizenViewModel
+            {
+                Id = citizen.Id,
+                Name = citizen.Name,
+                DateOfBirth = citizen.DateOfBirth,
+                Address = citizen.Address,
+                ContactInfo = citizen.ContactInfo,
+                Status = citizen.Status
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Citizen/EditProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(EditCitizenViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var citizen = await _citizenService.GetCitizenByIdAsync(model.Id);
+
+            if (citizen == null)
+            {
+                ModelState.AddModelError(string.Empty, "Citizen profile not found.");
+                return View(model);
+            }
+
+            citizen.Name = model.Name;
+            citizen.DateOfBirth = model.DateOfBirth;
+            citizen.Address = model.Address;
+            citizen.ContactInfo = model.ContactInfo;
+            citizen.Status = model.Status;
+
+            var success = await _citizenService.UpdateCitizenProfileAsync(citizen);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Profile updated successfully!";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            ModelState.AddModelError(string.Empty, "Failed to update profile.");
+            return View(model);
+        }
+
+        // GET: Citizen/ApplicationDetails/5
+        public async Task<IActionResult> ApplicationDetails(int id)
+        {
+            int currentUserId = 1;
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null || application.CitizenID != citizenProfile.Id)
+                return NotFound();
+
+            return View(application);
+        }
+
+        // GET: Citizen/EditApplication/5
+        public async Task<IActionResult> EditApplication(int id)
+        {
+            int currentUserId = 1;
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null || application.CitizenID != citizenProfile.Id)
+                return NotFound();
+
+            if (application.Status != "Pending" && application.Status != "Rejected")
+            {
+                TempData["ErrorMessage"] = "This application cannot be edited in its current status.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            var programs = await _programService.GetAllProgramsAsync();
+            ViewBag.ProgramList = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(programs, "ProgramID", "Title", application.ProgramID);
+            return View(application);
+        }
+
+        // POST: Citizen/EditApplication/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditApplication(int id, [Bind("ApplicationID,CitizenID,ProgramID,SubmittedDate,Status")] WelfareApplication application)
+        {
+            if (id != application.ApplicationID)
+                return NotFound();
+
+            int currentUserId = 1;
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var original = await _applicationService.GetApplicationByIdAsync(id);
+            if (original == null || original.CitizenID != citizenProfile.Id)
+                return NotFound();
+
+            if (original.Status != "Pending" && original.Status != "Rejected")
+            {
+                TempData["ErrorMessage"] = "This application cannot be edited in its current status.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            if (ModelState.IsValid)
+            {
+                // If was Rejected, re-submitting resets status to Pending
+                application.CitizenID = citizenProfile.Id;
+                application.Status = original.Status == "Rejected" ? "Pending" : original.Status;
+                application.SubmittedDate = original.Status == "Rejected"
+                    ? DateOnly.FromDateTime(DateTime.Today)
+                    : original.SubmittedDate;
+
+                await _applicationService.UpdateApplicationAsync(application);
+                TempData["SuccessMessage"] = original.Status == "Rejected"
+                    ? "Application re-submitted successfully. Status reset to Pending."
+                    : "Application updated successfully.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            var programs = await _programService.GetAllProgramsAsync();
+            ViewBag.ProgramList = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(programs, "ProgramID", "Title", application.ProgramID);
+            return View(application);
+        }
+
+        // GET: Citizen/DeleteApplication/5
+        public async Task<IActionResult> DeleteApplication(int id)
+        {
+            int currentUserId = 1;
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null || application.CitizenID != citizenProfile.Id)
+                return NotFound();
+
+            if (application.Status != "Pending")
+            {
+                TempData["ErrorMessage"] = "Only pending applications can be deleted.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            return View(application);
+        }
+
+        // POST: Citizen/DeleteApplication/5
+        [HttpPost, ActionName("DeleteApplication")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteApplicationConfirmed(int id)
+        {
+            int currentUserId = 1;
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null || application.CitizenID != citizenProfile.Id)
+                return NotFound();
+
+            if (application.Status != "Pending")
+            {
+                TempData["ErrorMessage"] = "Only pending applications can be deleted.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            await _applicationService.DeleteApplicationAsync(id);
+            TempData["SuccessMessage"] = $"Application #{id} deleted successfully.";
+            return RedirectToAction(nameof(MyApplications));
+        }
+
+        // GET: Citizen/MyApplications
+        public async Task<IActionResult> MyApplications()
+        {
+            int currentUserId = 1;
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            if (citizenProfile == null)
+            {
+                return RedirectToAction(nameof(CreateProfile));
+            }
+
+            var all = await _applicationService.GetAllApplicationsAsync();
+            var myApplications = all.Where(a => a.CitizenID == citizenProfile.Id).OrderByDescending(a => a.SubmittedDate);
+            return View(myApplications);
+        }
+
+        // GET: Citizen/ProgramList
+        public async Task<IActionResult> ProgramList()
+        {
+            int currentUserId = 1;
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            if (citizenProfile == null)
+            {
+                return RedirectToAction(nameof(CreateProfile));
+            }
+
+            var programs = await _programService.GetAllProgramsAsync();
+            var applications = await _applicationService.GetAllApplicationsAsync();
+            var appliedProgramIds = applications
+                .Where(a => a.CitizenID == citizenProfile.Id)
+                .Select(a => a.ProgramID)
+                .ToHashSet();
+
+            ViewBag.CitizenId = citizenProfile.Id;
+            ViewBag.AppliedProgramIds = appliedProgramIds;
+            return View(programs);
+        }
+
+        // POST: Citizen/ApplyForProgram
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplyForProgram(int programId)
+        {
+            int currentUserId = 1;
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(currentUserId);
+            if (citizenProfile == null)
+            {
+                return RedirectToAction(nameof(CreateProfile));
+            }
+
+            var application = new WelfareApplication
+            {
+                CitizenID = citizenProfile.Id,
+                ProgramID = programId,
+                SubmittedDate = DateOnly.FromDateTime(DateTime.Today),
+                Status = "Pending"
+            };
+
+            var created = await _applicationService.CreateApplicationAsync(application);
+            TempData["SuccessMessage"] = $"Application #{created.ApplicationID} submitted successfully!";
+            return RedirectToAction(nameof(ProgramList));
+        }
+    }
+
+    // View Models
+    public class CitizenDashboardViewModel
+    {
+        public Citizen CitizenProfile { get; set; }
+        public IEnumerable<CitizenDocument> Documents { get; set; }
+        public int PendingDocuments { get; set; }
+        public int ApprovedDocuments { get; set; }
+        public int RejectedDocuments { get; set; }
+    }
+
+    public class CreateCitizenViewModel
+    {
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; }
+
+        [Required]
+        [DataType(DataType.Date)]
+        [Display(Name = "Date of Birth")]
+        public DateTime DateOfBirth { get; set; }
+
+        [Required]
+        [StringLength(300)]
+        public string Address { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        [Display(Name = "Contact Information (Phone/Email)")]
+        public string ContactInfo { get; set; }
+    }
+
+    public class EditCitizenViewModel
+    {
+        public int Id { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; }
+
+        [Required]
+        [DataType(DataType.Date)]
+        [Display(Name = "Date of Birth")]
+        public DateTime DateOfBirth { get; set; }
+
+        [StringLength(300)]
+        public string Address { get; set; }
+
+        [StringLength(50)]
+        [Display(Name = "Contact Information")]
+        public string ContactInfo { get; set; }
+
+        [StringLength(50)]
+        public string Status { get; set; }
+    }
+}

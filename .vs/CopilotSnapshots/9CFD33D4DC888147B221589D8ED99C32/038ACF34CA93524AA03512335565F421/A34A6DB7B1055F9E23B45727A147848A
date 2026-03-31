@@ -1,0 +1,167 @@
+﻿@model IEnumerable<WelfareLink.Models.WelfareApplication>
+
+@{
+    ViewData["Title"] = "Application Review Dashboard";
+    var selectedStatus = ViewBag.SelectedStatus as string ?? "";
+}
+
+<div class="page-header">
+    <div>
+        <h1>
+            <i class="bi bi-file-earmark-text"></i>
+            Applications Dashboard
+        </h1>
+        <p class="mb-0">Review and manage welfare applications</p>
+    </div>
+
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="content-card mb-3">
+    <h5 class="mb-3"><i class="bi bi-funnel"></i> Filter Applications</h5>
+    <form asp-action="ByStatus" method="get" class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label-modern">Status</label>
+            <select name="status" class="form-select">
+                <option value="" selected="@(string.IsNullOrEmpty(selectedStatus))">All Status</option>
+                <option value="Pending" selected="@(selectedStatus == "Pending")">Pending</option>
+                <option value="Under Review" selected="@(selectedStatus == "Under Review")">Under Review</option>
+                <option value="Approved" selected="@(selectedStatus == "Approved")">Approved</option>
+                <option value="Rejected" selected="@(selectedStatus == "Rejected")">Rejected</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-modern btn-secondary-modern">
+                <i class="bi bi-search"></i> Filter
+            </button>
+        </div>
+        @if (!string.IsNullOrEmpty(selectedStatus))
+        {
+            <div class="col-md-2 d-flex align-items-end">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i> Clear Filter
+                </a>
+            </div>
+        }
+    </form>
+    @if (!string.IsNullOrEmpty(selectedStatus))
+    {
+        <div class="mt-2">
+            <span class="badge bg-primary">
+                <i class="bi bi-filter"></i> Filtered by: <strong>@selectedStatus</strong>
+            </span>
+        </div>
+    }
+</div>
+
+<div class="content-card">
+    <h4 class="mb-3"><i class="bi bi-list-ul"></i> Applications List</h4>
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-modern">
+                <thead>
+                    <tr>
+                        <th>Application ID</th>
+                        <th>Citizen Name</th>
+                        <th>Program Name</th>
+                        <th>Submitted Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="badge bg-secondary">#@item.ApplicationID</span></td>
+                            <td>
+                                @if (item.Citizen != null)
+                                {
+                                    <i class="bi bi-person-fill text-primary"></i> <strong>@item.Citizen.Name</strong>
+                                    <br />
+                                    <small class="text-muted">ID: #@item.CitizenID</small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Citizen ID: @item.CitizenID</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.Program != null)
+                                {
+                                    <i class="bi bi-diagram-3-fill text-info"></i> <strong>@item.Program.Title</strong>
+                                    <br />
+                                    <small class="text-muted">ID: #@item.ProgramID</small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Program ID: @item.ProgramID</span>
+                                }
+                            </td>
+                            <td>
+                                <i class="bi bi-calendar-event"></i> @item.SubmittedDate.ToString("dd MMM yyyy")
+                            </td>
+                            <td>
+                                @if (item.Status == "Pending")
+                                {
+                                    <span class="status-badge status-pending"><i class="bi bi-clock"></i> Pending</span>
+                                }
+                                else if (item.Status == "Approved")
+                                {
+                                    <span class="status-badge status-fully-disbursed"><i class="bi bi-check-circle"></i> Approved</span>
+                                }
+                                else if (item.Status == "Rejected")
+                                {
+                                    <span class="status-badge status-failed"><i class="bi bi-x-circle"></i> Rejected</span>
+                                }
+                                else if (item.Status == "Under Review")
+                                {
+                                    <span class="status-badge status-processing"><i class="bi bi-hourglass-split"></i> Under Review</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-processing">@item.Status</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a asp-action="Details" asp-route-id="@item.ApplicationID" class="btn btn-sm btn-modern btn-info-modern" title="View Details">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <a asp-controller="EligibilityCheck" asp-action="Create" asp-route-applicationId="@item.ApplicationID" class="btn btn-sm btn-modern btn-primary-modern" title="Eligibility Check">
+                                        <i class="bi bi-clipboard-check"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info mb-0">
+            <i class="bi bi-info-circle"></i> No applications found.
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}

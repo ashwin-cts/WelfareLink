@@ -1,0 +1,120 @@
+﻿@model IEnumerable<WelfareLink.Models.WelfareApplication>
+
+@{
+    ViewData["Title"] = "Pending Applications";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-clock-history"></i> Pending Applications</h1>
+    <a asp-action="Index" class="btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> All Applications
+    </a>
+</div>
+
+<div class="content-card">
+
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <span><strong>@Model.Count()</strong> pending application(s) require officer review</span>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-modern">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-hash"></i> App ID</th>
+                        <th><i class="bi bi-person-badge"></i> Citizen ID</th>
+                        <th><i class="bi bi-person"></i> Citizen Name</th>
+                        <th><i class="bi bi-clipboard"></i> Program ID</th>
+                        <th><i class="bi bi-diagram-3"></i> Program Details</th>
+                        <th><i class="bi bi-calendar"></i> Submitted Date</th>
+                        <th><i class="bi bi-hourglass-split"></i> Days Pending</th>
+                        <th><i class="bi bi-flag"></i> Status</th>
+                        <th><i class="bi bi-gear"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var daysPending = DateTime.Now.Subtract(item.SubmittedDate.ToDateTime(TimeOnly.MinValue)).Days;
+                        var urgencyClass = daysPending > 7 ? "bg-danger" : daysPending > 3 ? "bg-warning text-dark" : "bg-success";
+                        <tr>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.ApplicationID"
+                                   class="text-decoration-none fw-bold">
+                                    <span class="badge bg-primary">#@item.ApplicationID</span>
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-person-fill"></i> @item.CitizenID
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-muted fst-italic">
+                                    <i class="bi bi-person-circle"></i> CitizenName
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info text-dark">#@item.ProgramID</span>
+                            </td>
+                            <td>
+                                @if (item.Program != null)
+                                {
+                                    <a asp-controller="WelfareProgram" asp-action="Details"
+                                       asp-route-id="@item.ProgramID" class="text-decoration-none">
+                                        <span class="badge bg-primary">
+                                            <i class="bi bi-clipboard-check"></i> @item.Program.Title
+                                        </span>
+                                    </a>
+                                    <br />
+                                    <small class="text-muted">
+                                        <i class="bi bi-circle-fill text-success" style="font-size:7px"></i>
+                                        @item.Program.Status
+                                    </small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>@item.SubmittedDate.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <span class="badge @urgencyClass">
+                                    <i class="bi bi-hourglass"></i> @daysPending day(s)
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge status-pending">
+                                    <i class="bi bi-circle-fill" style="font-size:8px"></i> @item.Status
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a asp-action="Details" asp-route-id="@item.ApplicationID"
+                                       class="btn-modern btn-info-modern btn-sm" title="Review">
+                                        <i class="bi bi-eye"></i> Review
+                                    </a>
+                                    <a asp-controller="EligibilityCheck" asp-action="Create"
+                                       asp-route-applicationId="@item.ApplicationID"
+                                       class="btn-modern btn-primary-modern btn-sm" title="Check Eligibility">
+                                        <i class="bi bi-clipboard-check"></i> Eligibility
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success text-center">
+            <i class="bi bi-check-circle-fill fs-4"></i>
+            <strong class="ms-2">All clear!</strong> No pending applications. All applications have been reviewed.
+        </div>
+    }
+</div>

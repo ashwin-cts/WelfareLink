@@ -1,0 +1,686 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WelfareLinkApplication_Project</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --accent-color: #00b4d8;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --card-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .navbar-custom {
+            background: var(--primary-gradient) !important;
+            padding: 1rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-brand i {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin: 0 4px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.15);
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .nav-link i {
+            margin-right: 6px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            color: #1e3c72;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header h1 i {
+            color: var(--accent-color);
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @@keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .table-modern {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table-modern thead th {
+            background: var(--primary-gradient);
+            color: white;
+            font-weight: 600;
+            padding: 1rem;
+            border: none;
+        }
+
+        .table-modern thead th:first-child {
+            border-radius: 12px 0 0 0;
+        }
+
+        .table-modern thead th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+
+        .table-modern tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table-modern tbody tr:hover {
+            background: #f8fafc;
+            transform: scale(1.01);
+        }
+
+        .table-modern td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .btn-modern {
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary-modern {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-success-modern {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-warning-modern {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .btn-danger-modern {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-info-modern {
+            background: linear-gradient(135deg, #00b4d8 0%, #0096c7 100%);
+            color: white;
+        }
+
+        .btn-secondary-modern {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            color: white;
+        }
+
+        .status-badge {
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-allocated {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+
+        .status-fully-disbursed, .status-completed, .status-disbursed {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+
+        .status-partial {
+            background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+            color: #9a3412;
+        }
+
+        .status-processing {
+            background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+            color: #92400e;
+        }
+
+        .status-partial-fail {
+            background: linear-gradient(135deg, #fecaca 0%, #f87171 100%);
+            color: #7f1d1d;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+
+        .status-failed, .status-rejected {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+
+        .form-floating-modern .form-control, .form-floating-modern .form-select {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-floating-modern .form-control:focus, .form-floating-modern .form-select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.1);
+        }
+
+        .form-label-modern {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .detail-item {
+            background: #f8fafc;
+            padding: 1.2rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .detail-item label {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-item p {
+            font-size: 1.1rem;
+            color: #1e293b;
+            margin: 0.3rem 0 0 0;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        footer {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: auto;
+        }
+
+        footer a {
+            color: var(--accent-color);
+        }
+
+        .alert-delete {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 2px solid #fecaca;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-delete h4 {
+            color: #991b1b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Sub-Navigation Styles */
+        .sub-navbar {
+            background: linear-gradient(135deg, #0f2557 0%, #1e3c72 100%);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-bottom: 3px solid var(--accent-color);
+        }
+
+        .sub-nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .sub-nav-list li {
+            margin: 0;
+        }
+
+        .sub-nav-list a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.8rem 1.2rem;
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .sub-nav-list a i {
+            font-size: 1rem;
+            color: var(--accent-color);
+        }
+
+        .sub-nav-list a:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .sub-nav-list a.active {
+            background: rgba(0, 180, 216, 0.2);
+            color: white;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .sub-nav-list a.active::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-color);
+            border-radius: 2px 2px 0 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <!-- Main Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-custom">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                    WelfareLink
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")" 
+                               asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door"></i> Home
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" || ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck" ? "active" : "")"
+                               asp-area="" asp-controller="WelfareApplication" asp-action="HomeIndex">
+                                <i class="bi bi-file-earmark-text"></i> Applications
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Benefit" || ViewContext.RouteData.Values["controller"]?.ToString() == "BenefitAnalytics" ? "active" : "")" 
+                               asp-area="" asp-controller="Benefit" asp-action="Index">
+                                <i class="bi bi-gift"></i> Benefit
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Disbursement" ? "active" : "")" 
+                               asp-area="" asp-controller="Disbursement" asp-action="Index">
+                                <i class="bi bi-cash-stack"></i> Disbursement
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareProgram" ? "active" : "")" 
+                               asp-area="" asp-controller="WelfareProgram" asp-action="Dashboard">
+                                <i class="bi bi-diagram-3"></i> Program
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Resource" ? "active" : "")" 
+                               asp-area="" asp-controller="Resource" asp-action="Index">
+                                <i class="bi bi-box-seam"></i> Resource
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" || ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument" ? "active" : "")" 
+                               asp-area="" asp-controller="Citizen" asp-action="Dashboard">
+                                <i class="bi bi-person-badge"></i> Citizen
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">
+                                <i class="bi bi-shield-check"></i> Privacy
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sub-Navigation for WelfareApplication -->
+        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" || ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck" || ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplicationAnalytics")
+        {
+            <nav class="sub-navbar">
+                <div class="container">
+                    <ul class="sub-nav-list">
+                        <li>
+                            <a asp-controller="WelfareApplication" asp-action="HomeIndex"
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "HomeIndex" ? "active" : "")">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="WelfareApplication" asp-action="Index"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplication" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                <i class="bi bi-list-ul"></i> All Applications
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="WelfareApplication" asp-action="Pending"
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Pending" ? "active" : "")">
+                                <i class="bi bi-clock-history"></i> Pending Review
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="EligibilityCheck" asp-action="Index"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "EligibilityCheck" ? "active" : "")">
+                                <i class="bi bi-clipboard-check"></i> Eligibility Checks
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="WelfareApplicationAnalytics" asp-action="Index"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareApplicationAnalytics" ? "active" : "")">
+                                <i class="bi bi-graph-up"></i> Analytics
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        }
+
+        <!-- Sub-Navigation for Benefit -->
+        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Benefit" || ViewContext.RouteData.Values["controller"]?.ToString() == "BenefitAnalytics")
+        {
+            <nav class="sub-navbar">
+                <div class="container">
+                    <ul class="sub-nav-list">
+                        <li>
+                            <a asp-controller="Benefit" asp-action="Index" 
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Benefit" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                <i class="bi bi-list-ul"></i> All Benefits
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Benefit" asp-action="Create" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
+                                <i class="bi bi-plus-circle"></i> Create Benefit
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="BenefitAnalytics" asp-action="Dashboard" 
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "BenefitAnalytics" ? "active" : "")">
+                                <i class="bi bi-graph-up-arrow"></i> Analytics
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        }
+
+        <!-- Sub-Navigation for Disbursement -->
+        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Disbursement")
+        {
+            <nav class="sub-navbar">
+                <div class="container">
+                    <ul class="sub-nav-list">
+                        <li>
+                            <a asp-controller="Disbursement" asp-action="Index" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                <i class="bi bi-cash-coin"></i> All Disbursements
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Disbursement" asp-action="Create" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
+                                <i class="bi bi-plus-circle"></i> Create Disbursement
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Disbursement" asp-action="History" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "History" ? "active" : "")">
+                                <i class="bi bi-clock-history"></i> History
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        }
+
+        <!-- Sub-Navigation for Program -->
+        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "WelfareProgram")
+        {
+            <nav class="sub-navbar">
+                <div class="container">
+                    <ul class="sub-nav-list">
+                        <li>
+                            <a asp-controller="WelfareProgram" asp-action="Dashboard" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="WelfareProgram" asp-action="Index" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                <i class="bi bi-list-ul"></i> All Programs
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="WelfareProgram" asp-action="Manage" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Manage" || ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
+                                <i class="bi bi-plus-circle"></i> Add Program
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="WelfareProgram" asp-action="BudgetMonitoring" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "BudgetMonitoring" ? "active" : "")">
+                                <i class="bi bi-currency-dollar"></i> Budget
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="WelfareProgram" asp-action="Performance" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Performance" ? "active" : "")">
+                                <i class="bi bi-bar-chart-line"></i> Performance
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        }
+
+        <!-- Sub-Navigation for Resource -->
+        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Resource")
+        {
+            <nav class="sub-navbar">
+                <div class="container">
+                    <ul class="sub-nav-list">
+                        <li>
+                            <a asp-controller="Resource" asp-action="Index" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                <i class="bi bi-list-ul"></i> All Resources
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Resource" asp-action="AllocateForm" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "AllocateForm" ? "active" : "")">
+                                <i class="bi bi-distribute-vertical"></i> Allocation
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Resource" asp-action="UtilisationReport" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "UtilisationReport" ? "active" : "")">
+                                <i class="bi bi-pie-chart"></i> Utilization
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        }
+        <!-- Sub-Navigation for Citizen -->
+        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" || ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument")
+        {
+            <nav class="sub-navbar">
+                <div class="container">
+                    <ul class="sub-nav-list">
+                        <li>
+                            <a asp-controller="Citizen" asp-action="Dashboard"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" && ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Citizen" asp-action="CreateProfile"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" && ViewContext.RouteData.Values["action"]?.ToString() == "CreateProfile" ? "active" : "")">
+                                <i class="bi bi-person-plus"></i> Create Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Citizen" asp-action="EditProfile"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" && ViewContext.RouteData.Values["action"]?.ToString() == "EditProfile" ? "active" : "")">
+                                <i class="bi bi-pencil-square"></i> Edit Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="CitizenDocument" asp-action="UploadDocument"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument" && ViewContext.RouteData.Values["action"]?.ToString() == "UploadDocument" ? "active" : "")">
+                                <i class="bi bi-upload"></i> Upload Document
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="CitizenDocument" asp-action="DocumentStatus"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument" && ViewContext.RouteData.Values["action"]?.ToString() == "DocumentStatus" ? "active" : "")">
+                                <i class="bi bi-file-earmark-check"></i> Document Status
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Citizen" asp-action="MyApplications"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" && ViewContext.RouteData.Values["action"]?.ToString() == "MyApplications" ? "active" : "")">
+                                <i class="bi bi-person-lines-fill"></i> My Applications
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Citizen" asp-action="ProgramList"
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" && ViewContext.RouteData.Values["action"]?.ToString() == "ProgramList" ? "active" : "")">
+                                <i class="bi bi-grid-3x3-gap"></i> Program List
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        }
+    </header>
+
+    <div class="main-container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 WelfareLink - Empowering Communities <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a></p>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

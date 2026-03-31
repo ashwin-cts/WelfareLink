@@ -1,0 +1,132 @@
+﻿@model WelfareLink.ViewModels.BudgetDashboardViewModel
+
+@{
+    ViewData["Title"] = "Budget Monitoring Dashboard";
+}
+
+<div class="container-fluid mt-4" style="padding-bottom: 40px;">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="bi bi-cash-stack"></i> Budget Monitoring Dashboard</h2>
+            <p class="text-muted">Track budget utilisation and resource allocation across all programmes</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <h6 class="text-muted mb-3">Total Budget</h6>
+                    <h3 class="text-primary mb-0">₹@Model.TotalBudgetAllPrograms.ToString("N2")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <h6 class="text-muted mb-3">Total Allocated</h6>
+                    <h3 class="text-success mb-0">₹@Model.TotalAllocated.ToString("N2")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <h6 class="text-muted mb-3">Total Remaining</h6>
+                    <h3 class="text-info mb-0">₹@Model.TotalRemaining.ToString("N2")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <h6 class="text-muted mb-3">Critical Programmes</h6>
+                    <h3 class="text-danger mb-0">@Model.CriticalProgramsCount</h3>
+                    <small class="text-muted mt-2">(≥80% utilised)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5>Programme Budget Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Programme</th>
+                                    <th>Total Budget</th>
+                                    <th>Allocated</th>
+                                    <th>Disbursed</th>
+                                    <th>Remaining</th>
+                                    <th>Resource Allocated %</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var budget in Model.ProgramBudgets)
+                                {
+                                    <tr class="@(budget.IsCritical ? "table-danger" : "")">
+                                        <td><strong>@budget.ProgramTitle</strong></td>
+                                        <td>₹@budget.TotalBudget.ToString("N2")</td>
+                                        <td>₹@budget.AllocatedFunds.ToString("N2")</td>
+                                        <td>₹@budget.DisbursedFunds.ToString("N2")</td>
+                                        <td class="@(budget.RemainingBudget < 0 ? "text-danger" : "text-success")">
+                                            ₹@budget.RemainingBudget.ToString("N2")
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 25px;">
+                                                <div class="progress-bar @(budget.IsCritical ? "bg-danger" : budget.UtilisationPercentage >= 50 ? "bg-warning" : "bg-success")"
+                                                     role="progressbar"
+                                                     style="width: @(Math.Min(budget.UtilisationPercentage, 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%">
+                                                    @budget.UtilisationPercentage.ToString("F1")%
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">of total budget</small>
+                                        <td>
+                                            @if (budget.Status == "Active")
+                                            {
+                                                <span class="badge bg-success">@budget.Status</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">@budget.Status</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <a asp-action="Details" asp-route-id="@budget.ProgramID" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert alert-info mt-3 mb-0 py-2">
+                        <i class="bi bi-info-circle-fill me-1"></i>
+                        <small><strong>Note:</strong> <em>Resource Allocated %</em> = Funds allocated to the programme as a resource ÷ Total Programme Budget × 100. A programme reaches critical (🔴) when ≥ 80% of the budget has been allocated.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Programme List
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}

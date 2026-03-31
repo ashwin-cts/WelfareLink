@@ -1,0 +1,153 @@
+﻿@model WelfareLink.Models.Disbursement
+
+@{
+    ViewData["Title"] = "Create Disbursement";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-plus-circle-fill"></i> Record New Disbursement</h1>
+    <a asp-action="Index" class="btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<div class="content-card">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <form asp-action="Create" class="needs-validation" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row g-4">
+                    <div class="col-md-12">
+                        <div class="form-floating-modern">
+                            <label asp-for="BenefitID" class="form-label-modern">
+                                <i class="bi bi-gift"></i> Select Benefit
+                            </label>
+                            <select asp-for="BenefitID" id="BenefitID" class="form-select" asp-items="ViewBag.BenefitID" onchange="loadBenefitDetails(this.value)">
+                                <option value="">-- Choose a Benefit --</option>
+                            </select>
+                            <span asp-validation-for="BenefitID" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12" id="benefit-details" style="display:none;">
+                        <div class="card border-0 bg-light p-3">
+                            <h6 class="mb-3 fw-bold text-primary"><i class="bi bi-info-circle"></i> Benefit &amp; Program Details</h6>
+                            <div class="row g-2">
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">Benefit Type</small>
+                                    <span id="detail-type" class="fw-semibold">-</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">Benefit Amount</small>
+                                    <span id="detail-amount" class="fw-semibold">-</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">Program</small>
+                                    <span id="detail-program" class="fw-semibold">-</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">Citizen</small>
+                                    <span id="detail-citizen" class="fw-semibold">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-floating-modern">
+                            <label asp-for="Amount" class="form-label-modern">
+                                <i class="bi bi-currency-rupee"></i> Disbursement Amount
+                            </label>
+                            <input asp-for="Amount" class="form-control" placeholder="Enter Amount" />
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-floating-modern">
+                            <label asp-for="CitizenID" class="form-label-modern">
+                                <i class="bi bi-person-circle"></i> Citizen ID
+                            </label>
+                            <input asp-for="CitizenID" id="CitizenID" class="form-control" placeholder="Auto-filled from benefit" readonly />
+                            <span asp-validation-for="CitizenID" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-floating-modern">
+                            <label asp-for="OfficerID" class="form-label-modern">
+                                <i class="bi bi-person-badge"></i> Officer ID
+                            </label>
+                            <input asp-for="OfficerID" class="form-control" placeholder="Enter Officer ID" />
+                            <span asp-validation-for="OfficerID" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating-modern">
+                            <label asp-for="Date" class="form-label-modern">
+                                <i class="bi bi-calendar-event"></i> Disbursement Date
+                            </label>
+                            <input asp-for="Date" type="date" class="form-control" />
+                            <span asp-validation-for="Date" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating-modern">
+                            <label asp-for="Status" class="form-label-modern">
+                                <i class="bi bi-flag"></i> Status
+                            </label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="">Select Status</option>
+                                <option value="Completed">✅ Completed</option>
+                                <option value="Pending">⏳ Pending</option>
+                                <option value="Disbursement Pending">🔄 Disbursement Pending</option>
+                                <option value="Failed">❌ Failed</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex gap-3 justify-content-end">
+                    <a asp-action="Index" class="btn-modern btn-secondary-modern">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn-modern btn-success-modern">
+                        <i class="bi bi-check-circle"></i> Record Disbursement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function loadBenefitDetails(benefitId) {
+            const panel = document.getElementById('benefit-details');
+            if (!benefitId) {
+                panel.style.display = 'none';
+                document.getElementById('CitizenID').value = '';
+                return;
+            }
+            fetch(`/Disbursement/GetBenefitDetails?benefitId=${benefitId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data) { panel.style.display = 'none'; return; }
+                    document.getElementById('detail-type').textContent    = data.benefitType    ?? '-';
+                    document.getElementById('detail-amount').textContent  = data.benefitAmount != null ? '\u20B9' + data.benefitAmount.toLocaleString('en-IN') : '-';
+                    document.getElementById('detail-program').textContent = data.programTitle  ?? '-';
+                    document.getElementById('detail-citizen').textContent = data.citizenName   ?? '-';
+                    document.getElementById('CitizenID').value            = data.citizenId     ?? '';
+                    panel.style.display = '';
+                })
+                .catch(() => panel.style.display = 'none');
+        }
+    </script>
+}

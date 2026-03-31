@@ -1,0 +1,319 @@
+﻿@model WelfareLink.Models.EligibilityCheck
+
+@{
+    ViewData["Title"] = "Perform Eligibility Check";
+    var applicationId = Context.Request.Query["applicationId"].ToString();
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-clipboard-check"></i>
+        Eligibility Check
+    </h1>
+</div>
+
+@if (ViewBag.Application != null)
+{
+    <div class="content-card mb-3">
+        <h4 class="mb-3"><i class="bi bi-file-earmark-text"></i> Application Information</h4>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <label>Application ID</label>
+                <p>#@ViewBag.Application.ApplicationID</p>
+            </div>
+            <div class="detail-item">
+                <label>Program</label>
+                <p>@(ViewBag.Application.Program?.Title ?? "N/A")</p>
+            </div>
+            <div class="detail-item">
+                <label>Submitted Date</label>
+                <p>@ViewBag.Application.SubmittedDate.ToString("dd MMMM yyyy")</p>
+            </div>
+            <div class="detail-item">
+                <label>Current Status</label>
+                <p>
+                    @if (ViewBag.Application.Status == "Pending")
+                    {
+                        <span class="status-badge status-pending">Pending</span>
+                    }
+                    else if (ViewBag.Application.Status == "Approved")
+                    {
+                        <span class="status-badge status-fully-disbursed">Approved</span>
+                    }
+                    else if (ViewBag.Application.Status == "Rejected")
+                    {
+                        <span class="status-badge status-failed">Rejected</span>
+                    }
+                    else
+                    {
+                        <span class="status-badge status-processing">@ViewBag.Application.Status</span>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+
+    @if (ViewBag.Citizen != null)
+    {
+        <div class="content-card mb-3">
+            <h4 class="mb-3"><i class="bi bi-person-badge"></i> Citizen Information</h4>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Citizen ID</label>
+                    <p>#@ViewBag.Citizen.Id</p>
+                </div>
+                <div class="detail-item">
+                    <label>Name</label>
+                    <p>@ViewBag.Citizen.Name</p>
+                </div>
+                <div class="detail-item">
+                    <label>Date of Birth</label>
+                    <p>@ViewBag.Citizen.DateOfBirth.ToString("dd MMMM yyyy")</p>
+                </div>
+                <div class="detail-item">
+                    <label>Contact Info</label>
+                    <p>@ViewBag.Citizen.ContactInfo</p>
+                </div>
+                <div class="detail-item" style="grid-column: span 2;">
+                    <label>Address</label>
+                    <p>@ViewBag.Citizen.Address</p>
+                </div>
+                <div class="detail-item">
+                    <label>Status</label>
+                    <p>
+                        @if (ViewBag.Citizen.Status == "Active")
+                        {
+                            <span class="status-badge status-fully-disbursed">Active</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-failed">@ViewBag.Citizen.Status</span>
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (ViewBag.Documents != null && ((IEnumerable<WelfareLink.Models.CitizenDocument>)ViewBag.Documents).Any())
+    {
+        <div class="content-card mb-3">
+            <h4 class="mb-3">
+                <i class="bi bi-file-earmark-pdf"></i> Submitted Documents
+                @if (ViewBag.HasApplicationDocs == true)
+                {
+                    <span class="badge bg-success ms-2" style="font-size:0.75rem;">Submitted with Application</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary ms-2" style="font-size:0.75rem;">All Citizen Documents</span>
+                }
+            </h4>
+            <div class="table-responsive">
+                <table class="table table-modern">
+                    <thead>
+                        <tr>
+                            <th>Document ID</th>
+                            <th>Document Name</th>
+                            <th>Document Type</th>
+                            <th>Uploaded Date</th>
+                            <th>Verification Status</th>
+                            <th>View</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doc in (IEnumerable<WelfareLink.Models.CitizenDocument>)ViewBag.Documents)
+                        {
+                            <tr id="doc-row-@doc.DocumentID">
+                                <td><span class="badge bg-secondary">#@doc.DocumentID</span></td>
+                                <td><strong>@(doc.DocumentName ?? "-")</strong></td>
+                                <td><strong>@doc.DocType</strong></td>
+                                <td>@doc.UploadedDate.ToString("dd/MM/yyyy")</td>
+                                <td id="doc-status-@doc.DocumentID">
+                                    @if (doc.VerificationStatus == "Approved")
+                                    {
+                                        <span class="status-badge status-fully-disbursed">
+                                            <i class="bi bi-check-circle"></i> Approved
+                                        </span>
+                                    }
+                                    else if (doc.VerificationStatus == "Pending")
+                                    {
+                                        <span class="status-badge status-pending">
+                                            <i class="bi bi-clock"></i> Pending
+                                        </span>
+                                    }
+                                    else if (doc.VerificationStatus == "Rejected")
+                                    {
+                                        <span class="status-badge status-failed">
+                                            <i class="bi bi-x-circle"></i> Rejected
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-processing">@doc.VerificationStatus</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(doc.FileURI))
+                                    {
+                                        <a href="@doc.FileURI" target="_blank" class="btn-modern btn-info-modern btn-sm">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">No file</span>
+                                    }
+                                </td>
+                                <td id="doc-actions-@doc.DocumentID">
+                                    @if (doc.VerificationStatus != "Approved")
+                                    {
+                                        <button type="button" class="btn btn-sm btn-success me-1" onclick="updateDocStatus(@doc.DocumentID, 'Approved')" title="Approve Document">
+                                            <i class="bi bi-check-lg"></i> Approve
+                                        </button>
+                                    }
+                                    @if (doc.VerificationStatus != "Rejected")
+                                    {
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="updateDocStatus(@doc.DocumentID, 'Rejected')" title="Reject Document">
+                                            <i class="bi bi-x-lg"></i> Reject
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="content-card mb-3">
+            <div class="alert alert-warning mb-0">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>No Documents:</strong> This citizen has not uploaded any documents yet.
+            </div>
+        </div>
+    }
+}
+
+<div class="content-card">
+    <h4 class="mb-3"><i class="bi bi-clipboard-check"></i> Eligibility Assessment Form</h4>
+
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        @if (!string.IsNullOrEmpty(applicationId))
+        {
+            <input type="hidden" name="applicationId" value="@applicationId" />
+            <input type="hidden" asp-for="ApplicationID" value="@applicationId" />
+        }
+        else
+        {
+            <div class="form-floating-modern mb-3">
+                <label asp-for="ApplicationID" class="form-label-modern">Application ID</label>
+                <input asp-for="ApplicationID" type="number" class="form-control" placeholder="Enter Application ID" required />
+                <span asp-validation-for="ApplicationID" class="text-danger"></span>
+            </div>
+        }
+
+        <div class="form-floating-modern mb-3">
+            <label asp-for="OfficerID" class="form-label-modern">Officer ID</label>
+            <input asp-for="OfficerID" type="number" class="form-control" value="@ViewBag.OfficerId" readonly style="background-color: #f8f9fa;" />
+            <span asp-validation-for="OfficerID" class="text-danger"></span>
+            <small class="form-text text-muted">Auto-populated from your logged-in account</small>
+        </div>
+
+        <div class="form-floating-modern mb-3">
+            <label asp-for="Result" class="form-label-modern">Eligibility Result</label>
+            <select asp-for="Result" class="form-select" required>
+                <option value="">-- Select Result --</option>
+                <option value="Eligible">✓ Eligible</option>
+                <option value="Ineligible">✗ Ineligible</option>
+            </select>
+            <span asp-validation-for="Result" class="text-danger"></span>
+        </div>
+
+        <div class="form-floating-modern mb-3">
+            <label asp-for="ResultCode" class="form-label-modern">Result Code</label>
+            <input asp-for="ResultCode" class="form-control" placeholder="e.g., ELIG-001, INELIG-002" required />
+            <span asp-validation-for="ResultCode" class="text-danger"></span>
+            <small class="form-text text-muted">Enter a unique result code for tracking purposes</small>
+        </div>
+
+        <div class="form-floating-modern mb-3">
+            <label asp-for="Notes" class="form-label-modern">Assessment Notes</label>
+            <textarea asp-for="Notes" class="form-control" rows="5" placeholder="Enter detailed assessment notes, reasons for decision, or additional comments..." required></textarea>
+            <span asp-validation-for="Notes" class="text-danger"></span>
+        </div>
+
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Important:</strong> This eligibility check will automatically update the application status:
+            <ul class="mb-0 mt-2">
+                <li><strong>Eligible</strong> → Application marked as <span class="status-badge status-fully-disbursed">Approved</span> + Benefit created</li>
+                <li><strong>Ineligible</strong> → Application marked as <span class="status-badge status-failed">Rejected</span></li>
+            </ul>
+        </div>
+
+        <div class="action-buttons mt-4">
+            @if (!string.IsNullOrEmpty(applicationId))
+            {
+                <a asp-controller="WelfareApplication" asp-action="Details" asp-route-id="@applicationId" class="btn btn-modern btn-secondary-modern">
+                    <i class="bi bi-arrow-left"></i> Cancel
+                </a>
+            }
+            else
+            {
+                <a asp-action="Index" class="btn btn-modern btn-secondary-modern">
+                    <i class="bi bi-arrow-left"></i> Cancel
+                </a>
+            }
+            <button type="submit" class="btn btn-modern btn-primary-modern">
+                <i class="bi bi-check-circle"></i> Submit Eligibility Check
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function updateDocStatus(documentId, status) {
+            if (!confirm(`Are you sure you want to mark document #${documentId} as ${status}?`)) return;
+
+            fetch('/EligibilityCheck/UpdateDocumentStatus', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `documentId=${documentId}&status=${status}`
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the status badge
+                    const statusCell = document.getElementById(`doc-status-${documentId}`);
+                    if (status === 'Approved') {
+                        statusCell.innerHTML = '<span class="status-badge status-fully-disbursed"><i class="bi bi-check-circle"></i> Approved</span>';
+                    } else if (status === 'Rejected') {
+                        statusCell.innerHTML = '<span class="status-badge status-failed"><i class="bi bi-x-circle"></i> Rejected</span>';
+                    }
+
+                    // Update the action buttons
+                    const actionsCell = document.getElementById(`doc-actions-${documentId}`);
+                    let buttons = '';
+                    if (status !== 'Approved') {
+                        buttons += `<button type="button" class="btn btn-sm btn-success me-1" onclick="updateDocStatus(${documentId}, 'Approved')" title="Approve Document"><i class="bi bi-check-lg"></i> Approve</button>`;
+                    }
+                    if (status !== 'Rejected') {
+                        buttons += `<button type="button" class="btn btn-sm btn-danger" onclick="updateDocStatus(${documentId}, 'Rejected')" title="Reject Document"><i class="bi bi-x-lg"></i> Reject</button>`;
+                    }
+                    actionsCell.innerHTML = buttons;
+                } else {
+                    alert(data.message || 'Failed to update document status.');
+                }
+            })
+            .catch(() => alert('Error updating document status.'));
+        }
+    </script>
+}

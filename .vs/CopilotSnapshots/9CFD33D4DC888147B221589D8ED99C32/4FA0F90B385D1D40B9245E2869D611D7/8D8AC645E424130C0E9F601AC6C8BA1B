@@ -1,0 +1,175 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using WelfareLink.Interfaces;
+using WelfareLink.Models;
+using WelfareLink.Models;
+using WelfareLink.Services;
+
+namespace WelfareLink.Controllers
+{
+    public class CitizenDocumentController : Controller
+    {
+        private readonly ICitizenService _citizenService;
+        private readonly ICitizenDocumentService _documentService;
+
+        public CitizenDocumentController(ICitizenService citizenService, ICitizenDocumentService documentService)
+        {
+            _citizenService = citizenService;
+            _documentService = documentService;
+        }
+
+        // GET: CitizenDocument/UploadDocument
+        public async Task<IActionResult> UploadDocument()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
+
+            var citizen = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+
+            if (citizen == null)
+            {
+                return RedirectToAction("CreateProfile", "Citizen");
+            }
+
+            var viewModel = new DocumentUploadViewModel { CitizenId = citizen.Id };
+            return View(viewModel);
+        }
+
+        // POST: CitizenDocument/UploadDocument
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadDocument(DocumentUploadViewModel model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
+
+            // Re-resolve citizen from session to prevent CitizenId tampering via hidden field
+            var citizen = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizen == null)
+                return RedirectToAction("CreateProfile", "Citizen");
+
+            model.CitizenId = citizen.Id;
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            if (model.FileUpload == null || model.FileUpload.Length == 0)
+            {
+                ModelState.AddModelError("FileUpload", "Please select a file to upload.");
+                return View(model);
+            }
+
+            var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx" };
+            var fileExtension = Path.GetExtension(model.FileUpload.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                ModelState.AddModelError("FileUpload", "Invalid file type. Allowed types: PDF, JPG, JPEG, PNG, DOC, DOCX");
+                return View(model);
+            }
+
+            if (model.FileUpload.Length > 10 * 1024 * 1024) // 10 MB
+            {
+                ModelState.AddModelError("FileUpload", "File size cannot exceed 10 MB.");
+                return View(model);
+            }
+
+            var document = new CitizenDocument
+            {
+                CitizenId = model.CitizenId,
+                DocType = model.DocType
+            };
+
+            var success = await _documentService.UploadDocumentAsync(document, model.FileUpload);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Document uploaded successfully!";
+                return RedirectToAction(nameof(DocumentStatus));
+            }
+
+            ModelState.AddModelError(string.Empty, "Failed to upload document.");
+            return View(model);
+        }
+
+        // GET: CitizenDocument/DocumentStatus
+        public async Task<IActionResult> DocumentStatus(string status = "")
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
+
+            var citizen = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+
+            if (citizen == null)
+            {
+                return RedirectToAction("CreateProfile", "Citizen");
+            }
+
+            var allDocuments = await _documentService.GetDocumentsByCitizenIdAsync(citizen.Id);
+
+            IEnumerable<CitizenDocument> documents;
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                documents = allDocuments.Where(d => d.VerificationStatus.Equals(status, StringComparison.OrdinalIgnoreCase))
+                                       .OrderByDescending(d => d.UploadedDate);
+            }
+            else
+            {
+                documents = allDocuments.OrderByDescending(d => d.UploadedDate);
+            }
+
+            var viewModel = new DocumentStatusViewModel
+            {
+                Documents = documents,
+                FilterStatus = status
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: CitizenDocument/Delete
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int documentId)
+        {
+            var success = await _documentService.DeleteDocumentAsync(documentId);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Document deleted successfully!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to delete document.";
+            }
+
+            return RedirectToAction(nameof(DocumentStatus));
+        }
+    }
+
+    // View Models
+    public class DocumentUploadViewModel
+    {
+        public int CitizenId { get; set; }
+
+        [Required]
+        [Display(Name = "Document Type")]
+        public string DocType { get; set; }
+
+        [Required]
+        [Display(Name = "Select File")]
+        public IFormFile FileUpload { get; set; }
+    }
+
+    public class DocumentStatusViewModel
+    {
+        public IEnumerable<CitizenDocument> Documents { get; set; }
+        public string FilterStatus { get; set; }
+    }
+}

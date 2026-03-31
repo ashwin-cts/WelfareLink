@@ -1,0 +1,160 @@
+﻿@model IEnumerable<WelfareLink.ViewModels.ProgramPerformanceViewModel>
+
+@{
+    ViewData["Title"] = "Programme Performance Dashboard";
+}
+
+<div class="container-fluid mt-4" style="padding-bottom: 40px;">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="bi bi-graph-up"></i> Programme Performance Dashboard</h2>
+            <p class="text-muted">KPIs and performance metrics for all welfare programmes</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <i class="bi bi-folder text-primary" style="font-size: 2rem;"></i>
+                    <h6 class="text-muted mt-3 mb-2">Total Programmes</h6>
+                    <h3 class="mb-0">@Model.Count()</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                    <h6 class="text-muted mt-3 mb-2">Active Programmes</h6>
+                    <h3 class="mb-0">@Model.Count(p => p.Status == "Active")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <i class="bi bi-file-earmark-text text-info" style="font-size: 2rem;"></i>
+                    <h6 class="text-muted mt-3 mb-2">Total Applications</h6>
+                    <h3 class="mb-0">@Model.Sum(p => p.TotalApplications)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <i class="bi bi-gift text-warning" style="font-size: 2rem;"></i>
+                    <h6 class="text-muted mt-3 mb-2">Benefits Disbursed</h6>
+                    <h3 class="mb-0">@Model.Sum(p => p.BenefitsDisbursed)</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5>Programme Performance Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Programme</th>
+                                    <th>Applications</th>
+                                    <th>Approved</th>
+                                    <th>Rejected</th>
+                                    <th>Pending</th>
+                                    <th>Approval Rate</th>
+                                    <th>Benefits Disbursed</th>
+                                    <th>Citizen Reach</th>
+                                    <th>Budget Used</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var performance in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@performance.ProgramTitle</strong>
+                                            <br><small class="text-muted">ID: @performance.ProgramID</small>
+                                        </td>
+                                        <td>@performance.TotalApplications</td>
+                                        <td>
+                                            <span class="badge bg-success">@performance.ApprovedApplications</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-danger">@performance.RejectedApplications</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark">@performance.PendingApplications</span>
+                                        </td>
+                                        <td>
+                                            @if (performance.TotalApplications > 0)
+                                            {
+                                                <span class="badge bg-info">@performance.ApprovalRate.ToString("F1")%</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">N/A</span>
+                                            }
+                                        </td>
+                                        <td>@performance.BenefitsDisbursed</td>
+                                        <td>
+                                            <i class="bi bi-people"></i> @performance.CitizenCount
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="width: 100px; height: 20px;">
+                                                <div class="progress-bar @(performance.BudgetUtilisation >= 80 ? "bg-danger" : performance.BudgetUtilisation >= 50 ? "bg-warning" : "bg-success")"
+                                                     style="width: @(Math.Min(performance.BudgetUtilisation, 100).ToString("F0", System.Globalization.CultureInfo.InvariantCulture))%">
+                                                    @performance.BudgetUtilisation.ToString("F0")%
+                                                </div>
+                                            </div>
+                                            <small class="text-muted d-block mt-1">of budget</small>
+                                        </td>
+                                        <td>
+                                            @if (performance.Status == "Active")
+                                            {
+                                                <span class="badge bg-success">@performance.Status</span>
+                                            }
+                                            else if (performance.Status == "Completed")
+                                            {
+                                                <span class="badge bg-secondary">@performance.Status</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark">@performance.Status</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle"></i> No programme performance data available.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Programme List
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}

@@ -1,0 +1,78 @@
+﻿@model WelfareLink.Controllers.EditProfileViewModel
+
+@{
+    ViewData["Title"] = "Edit Profile";
+    var userRole = Context.Session.GetString("UserRole");
+    var userName = Context.Session.GetString("Username") ?? Context.Session.GetString("FullName");
+    var userId   = Context.Session.GetInt32("UserId");
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-person-gear"></i> Edit Profile</h1>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Edit Form -->
+    <div class="col-md-12">
+        <div class="content-card">
+            <h5 class="mb-4"><i class="bi bi-pencil-square text-primary"></i> Update Profile Details</h5>
+
+            <form asp-action="EditProfile" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label-modern">Username</label>
+                        <input type="text" class="form-control" value="@userName" readonly style="background:#f8f9fa;" />
+                        <small class="text-muted">Cannot be changed.</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-modern">Role</label>
+                        <input type="text" class="form-control" value="@userRole" readonly style="background:#f8f9fa;" />
+                    </div>
+                    @if (userRole == "Citizen")
+                    {
+                        var citizenGender = Context.Session.GetString("CitizenGender");
+                        <div class="col-md-6">
+                            <label class="form-label-modern">Gender</label>
+                            <input type="text" class="form-control" value="@(string.IsNullOrEmpty(citizenGender) ? "Not set" : citizenGender)" readonly style="background:#f8f9fa;" />
+                            <small class="text-muted">To update gender, <a asp-controller="Citizen" asp-action="EditProfile">edit your citizen profile</a>.</small>
+                        </div>
+                    }
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label-modern"></label>
+                        <input asp-for="Email" class="form-control" type="email" placeholder="Enter email address" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <label asp-for="FullName" class="form-label-modern"></label>
+                        <input asp-for="FullName" class="form-control" placeholder="Enter your full name" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 mt-4">
+                    <button type="submit" class="btn-modern btn-success-modern">
+                        <i class="bi bi-check-circle"></i> Save Changes
+                    </button>
+                    <a asp-action="ChangePassword" class="btn-modern btn-warning-modern">
+                        <i class="bi bi-lock"></i> Change Password
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

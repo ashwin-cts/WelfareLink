@@ -1,0 +1,303 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using WelfareLink.Interfaces;
+using WelfareLink.Models;
+using WelfareLink.ViewModels;
+
+namespace WelfareLink.Controllers;
+
+
+public class ResourceController : Controller
+{
+    private readonly IResourceService _resourceService;
+    private readonly IWelfareProgramService _programService;
+
+    public ResourceController(IResourceService resourceService, IWelfareProgramService programService)
+    {
+        _resourceService = resourceService;
+        _programService = programService;
+    }
+
+    // GET: Resource
+    public async Task<IActionResult> Index()
+    {
+        var resources = await _resourceService.GetAllResourcesAsync();
+        return View(resources);
+    }
+
+    // GET: Resource/AllocateForm
+    public async Task<IActionResult> AllocateForm(int? programId)
+    {
+        var programs = await _programService.GetAllProgramsAsync();
+        var activePrograms = programs.Where(p => p.Status == "Active");
+        ViewBag.Programs = new SelectList(activePrograms, "ProgramID", "Title", programId);
+
+        // If programme is pre-selected, calculate and show budget info
+        if (programId.HasValue)
+        {
+            var program = await _programService.GetProgramByIdAsync(programId.Value);
+            if (program != null)
+            {
+                var resources = await _resourceService.GetResourcesByProgramIdAsync(programId.Value);
+                var totalAllocatedFunds = resources
+                    .Where(r => r.Type.Equals("Funds", StringComparison.OrdinalIgnoreCase))
+                    .Sum(r => r.Quantity);
+
+                ViewBag.ProgramTitle = program.Title;
+                ViewBag.ProgramBudget = program.Budget;
+                ViewBag.AllocatedFunds = totalAllocatedFunds;
+                ViewBag.RemainingBudget = program.Budget - totalAllocatedFunds;
+            }
+        }
+
+        return View(new Resource());
+    }
+
+    // POST: Resource/AllocateForm
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AllocateForm([Bind("ProgramID,Type,Quantity")] Resource resource)
+    {
+        // Remove Status and Program navigation property from validation
+        ModelState.Remove("Status");
+        ModelState.Remove("Program");
+
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "[400 Bad Request] Please fill all required fields correctly.";
+            await ReloadAllocateFormData(resource.ProgramID, resource);
+            return View(resource);
+        }
+
+        try
+        {
+            await _resourceService.AddResourceAsync(resource);
+            TempData["SuccessMessage"] = "Resource allocated successfully!";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["ErrorMessage"] = $"[400 Bad Request] {ex.Message}";
+            await ReloadAllocateFormData(resource.ProgramID, resource);
+            return View(resource);
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = "[500 Server Error] Failed to allocate resource. Please try again.";
+            await ReloadAllocateFormData(resource.ProgramID, resource);
+            return View(resource);
+        }
+    }
+
+    // Helper method to reload form data with budget calculations
+    private async Task ReloadAllocateFormData(int programId, Resource resource)
+    {
+        var programs = await _programService.GetAllProgramsAsync();
+        var activePrograms = programs.Where(p => p.Status == "Active");
+        ViewBag.Programs = new SelectList(activePrograms, "ProgramID", "Title", programId);
+
+        if (programId > 0)
+        {
+            var program = await _programService.GetProgramByIdAsync(programId);
+            if (program != null)
+            {
+                var resources = await _resourceService.GetResourcesByProgramIdAsync(programId);
+                var totalAllocatedFunds = resources
+                    .Where(r => r.Type.Equals("Funds", StringComparison.OrdinalIgnoreCase))
+                    .Sum(r => r.Quantity);
+
+                ViewBag.ProgramTitle = program.Title;
+                ViewBag.ProgramBudget = program.Budget;
+                ViewBag.AllocatedFunds = totalAllocatedFunds;
+                ViewBag.RemainingBudget = program.Budget - totalAllocatedFunds;
+            }
+        }
+    }
+
+    // GET: Resource/Details/5
+    public async Task<IActionResult> Details(int? id)
+    {
+        if (id == null)
+        {
+            TempData["ErrorMessage"] = "[400 Bad Request] Resource ID is required.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var resources = await _resourceService.GetAllResourcesAsync();
+        var resource = resources.FirstOrDefault(r => r.ResourceID == id);
+
+        if (resource == null)
+        {
+            TempData["ErrorMessage"] = "[404 Not Found] Resource not found. It may have been deleted.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View(resource);
+    }
+
+    // GET: Resource/Edit/5
+    public async Task<IActionResult> Edit(int? id)
+    {
+        if (id == null)
+        {
+            TempData["ErrorMessage"] = "[400 Bad Request] Resource ID is required.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var resources = await _resourceService.GetAllResourcesAsync();
+        var resource = resources.FirstOrDefault(r => r.ResourceID == id);
+
+        if (resource == null)
+        {
+            TempData["ErrorMessage"] = "[404 Not Found] Resource not found. It may have been deleted.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Get program title for display
+        var program = await _programService.GetProgramByIdAsync(resource.ProgramID);
+        ViewBag.ProgramTitle = program?.Title ?? "Unknown Programme";
+
+        var programs = await _programService.GetAllProgramsAsync();
+        ViewBag.Programs = new SelectList(programs, "ProgramID", "Title", resource.ProgramID);
+        ViewBag.ResourceTypes = new SelectList(new[] { "Funds", "Materials" }, resource.Type);
+        ViewBag.ResourceStatuses = new SelectList(new[] { "Available", "Depleted", "Reserved" }, resource.Status);
+        return View(resource);
+    }
+
+    // POST: Resource/Edit/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, [Bind("ResourceID,ProgramID,Type,Quantity,Status")] Resource resource)
+    {
+        if (id != resource.ResourceID)
+        {
+            TempData["ErrorMessage"] = "[400 Bad Request] Invalid resource ID.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Remove Program navigation property from validation
+        ModelState.Remove("Program");
+
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "[400 Bad Request] Please fill all required fields correctly.";
+
+            // Get program title for display on error
+            var program = await _programService.GetProgramByIdAsync(resource.ProgramID);
+            ViewBag.ProgramTitle = program?.Title ?? "Unknown Programme";
+
+            var programs = await _programService.GetAllProgramsAsync();
+            ViewBag.Programs = new SelectList(programs, "ProgramID", "Title", resource.ProgramID);
+            ViewBag.ResourceTypes = new SelectList(new[] { "Funds", "Materials" }, resource.Type);
+            ViewBag.ResourceStatuses = new SelectList(new[] { "Available", "Depleted", "Reserved" }, resource.Status);
+            return View(resource);
+        }
+
+        try
+        {
+            await _resourceService.UpdateResourceAsync(resource);
+            TempData["SuccessMessage"] = "Resource updated successfully!";
+            // Redirect to ManageResources for the specific programme
+            return RedirectToAction(nameof(ManageResources), new { programId = resource.ProgramID });
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["ErrorMessage"] = $"[400 Bad Request] {ex.Message}";
+
+            // Get program title for display on error
+            var program = await _programService.GetProgramByIdAsync(resource.ProgramID);
+            ViewBag.ProgramTitle = program?.Title ?? "Unknown Programme";
+
+            var programs = await _programService.GetAllProgramsAsync();
+            ViewBag.Programs = new SelectList(programs, "ProgramID", "Title", resource.ProgramID);
+            ViewBag.ResourceTypes = new SelectList(new[] { "Funds", "Materials" }, resource.Type);
+            ViewBag.ResourceStatuses = new SelectList(new[] { "Available", "Depleted", "Reserved" }, resource.Status);
+            return View(resource);
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = "[500 Server Error] Failed to update resource. Please try again.";
+
+            // Get program title for display on error
+            var program = await _programService.GetProgramByIdAsync(resource.ProgramID);
+            ViewBag.ProgramTitle = program?.Title ?? "Unknown Programme";
+
+            var programs = await _programService.GetAllProgramsAsync();
+            ViewBag.Programs = new SelectList(programs, "ProgramID", "Title", resource.ProgramID);
+            ViewBag.ResourceTypes = new SelectList(new[] { "Funds", "Materials" }, resource.Type);
+            ViewBag.ResourceStatuses = new SelectList(new[] { "Available", "Depleted", "Reserved" }, resource.Status);
+            return View(resource);
+        }
+    }
+
+    // GET: Resource/ManageResources/5 (by Program)
+    public async Task<IActionResult> ManageResources(int? programId)
+    {
+        if (programId == null)
+        {
+            return RedirectToAction("Index", "WelfareProgram");
+        }
+
+        var program = await _programService.GetProgramByIdAsync(programId.Value);
+        if (program == null)
+        {
+            return NotFound();
+        }
+
+        var resources = await _resourceService.GetResourcesByProgramIdAsync(programId.Value);
+
+        ViewBag.Program = program;
+        ViewBag.ProgramTitle = program.Title;
+        ViewBag.ProgramBudget = program.Budget;
+
+        var totalAllocated = resources
+            .Where(r => r.Type.Equals("Funds", StringComparison.OrdinalIgnoreCase))
+            .Sum(r => r.Quantity);
+
+        ViewBag.TotalAllocated = totalAllocated;
+        ViewBag.RemainingBudget = program.Budget - totalAllocated;
+        ViewBag.UtilisationPercentage = program.Budget > 0 ? (totalAllocated / program.Budget) * 100 : 0;
+
+        return View(resources);
+    }
+
+    // GET: Resource/UtilisationReport
+    public async Task<IActionResult> UtilisationReport()
+    {
+        var resources = await _resourceService.GetAllResourcesAsync();
+        var utilisationViewModels = new List<ResourceUtilisationViewModel>();
+
+        foreach (var resource in resources)
+        {
+            // Estimate used quantity based on status
+            // Since there's no actual usage tracking, we use status as a proxy
+            decimal usedQuantity = resource.Status switch
+            {
+                "Depleted" => resource.Quantity,  // 100% used
+                "Reserved" => resource.Quantity * 0.5m,  // 50% used (estimated)
+                "Available" => 0m,  // 0% used
+                _ => 0m
+            };
+
+            var remainingQuantity = resource.Quantity - usedQuantity;
+            var utilisationPercentage = resource.Quantity > 0
+                ? (usedQuantity / resource.Quantity) * 100
+                : 0;
+
+            utilisationViewModels.Add(new ResourceUtilisationViewModel
+            {
+                ResourceID = resource.ResourceID,
+                Type = resource.Type,
+                InitialQuantity = resource.Quantity,
+                UsedQuantity = usedQuantity,
+                RemainingQuantity = remainingQuantity,
+                Status = resource.Status,
+                ProgramID = resource.ProgramID,
+                ProgramTitle = resource.Program?.Title ?? "Unknown",
+                UtilisationPercentage = utilisationPercentage
+            });
+        }
+
+        return View(utilisationViewModels);
+    }
+}
