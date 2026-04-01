@@ -35,6 +35,12 @@
                     <div class="col-sm-12 col-md-9"><span class="text-muted">Description</span><br /><span id="d-prog-desc"></span></div>
                     <div class="col-sm-6 col-md-3"><span class="text-muted">Budget</span><br /><strong id="d-prog-budget"></strong></div>
                 </div>
+                <hr class="my-2" />
+                <div class="row g-2 small" id="resource-row">
+                    <div class="col-sm-4 col-md-4"><span class="text-muted">Total Resources Allocated</span><br /><strong id="d-total-resource" class="text-secondary">Loading...</strong></div>
+                    <div class="col-sm-4 col-md-4"><span class="text-muted">Used in Benefits</span><br /><strong id="d-used-resource" class="text-warning"></strong></div>
+                    <div class="col-sm-4 col-md-4"><span class="text-muted">Remaining Available</span><br /><strong id="d-remaining-resource"></strong></div>
+                </div>
             </div>
 
             <form asp-action="Edit" class="needs-validation" novalidate>
@@ -147,6 +153,38 @@
                 ? '₹' + Number(app.ProgramBudget).toLocaleString('en-IN') : '-';
 
             box.classList.remove('d-none');
+            fetchResourceInfo(app.ProgramID);
+        }
+
+        function fetchResourceInfo(programId) {
+            const totalEl  = document.getElementById('d-total-resource');
+            const usedEl   = document.getElementById('d-used-resource');
+            const remainEl = document.getElementById('d-remaining-resource');
+
+            totalEl.textContent  = 'Loading...';
+            usedEl.textContent   = '';
+            remainEl.textContent = '';
+
+            fetch(`/Benefit/GetProgramResourceInfo?programId=${programId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data || !data.hasResource) {
+                        totalEl.textContent = 'No resource constraint defined';
+                        totalEl.className   = 'fw-semibold text-muted';
+                        usedEl.textContent  = '-';
+                        remainEl.textContent = '-';
+                        return;
+                    }
+                    totalEl.textContent  = '₹' + data.totalResource.toLocaleString('en-IN');
+                    totalEl.className    = 'fw-semibold text-secondary';
+                    usedEl.textContent   = '₹' + data.alreadyAllocated.toLocaleString('en-IN');
+                    usedEl.className     = 'fw-semibold text-warning';
+                    remainEl.textContent = '₹' + data.remainingResource.toLocaleString('en-IN');
+                    remainEl.className   = data.remainingResource <= 0
+                        ? 'fw-semibold text-danger'
+                        : 'fw-semibold text-success';
+                })
+                .catch(() => { totalEl.textContent = 'Unavailable'; });
         }
 
         const appSelect = document.getElementById('ApplicationID');

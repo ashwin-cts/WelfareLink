@@ -115,9 +115,10 @@ namespace WelfareLink.Services
 
             var updatedDisbursement = await _disbursementRepository.UpdateAsync(disbursement);
 
-            // If disbursement is completed and amount is less than original pending amount, create new pending record for balance
+            // If disbursement is completed and amount is less than original pending/disbursement-pending amount,
+            // create a new Pending record for the remaining balance so the officer can process it later
             if (existingDisbursement != null &&
-                existingDisbursement.Status == "Pending" &&
+                (existingDisbursement.Status == "Pending" || existingDisbursement.Status == "Disbursement Pending") &&
                 disbursement.Status == "Completed" &&
                 disbursement.Amount < existingDisbursement.Amount)
             {

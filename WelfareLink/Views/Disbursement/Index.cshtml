@@ -12,6 +12,28 @@
 </div>
 
 <div class="content-card">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i><strong>Success!</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @{
+        var pendingItems = Model.Where(d => d.Status == "Disbursement Pending" || d.Status == "Pending").ToList();
+    }
+    @if (pendingItems.Any())
+    {
+        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>@pendingItems.Count disbursement(s) require action.</strong>
+            These entries are pending and need to be processed by a welfare officer.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="table-responsive">
         <table class="table table-modern">
             <thead>
@@ -29,8 +51,15 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    <tr>
-                        <td><strong>#@item.DisbursementID</strong></td>
+                    var isPending = item.Status == "Disbursement Pending" || item.Status == "Pending";
+                    <tr class="@(isPending ? "table-warning" : "")">
+                        <td>
+                            <strong>#@item.DisbursementID</strong>
+                            @if (isPending)
+                            {
+                                <span class="badge bg-warning text-dark ms-1" title="Action Required"><i class="bi bi-bell-fill"></i></span>
+                            }
+                        </td>
                         <td>
                             @if (item.Benefit != null)
                             {

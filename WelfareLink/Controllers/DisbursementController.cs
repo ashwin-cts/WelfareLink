@@ -82,6 +82,15 @@ namespace WelfareLinkPRJ.Controllers
                 return NotFound();
             }
 
+            // Load sibling disbursements for the same benefit so the officer can see pending balance entries
+            var siblings = await _disbursementService.GetDisbursementsByBenefitIdAsync(disbursement.BenefitID);
+            ViewBag.SiblingDisbursements = siblings.Where(d => d.DisbursementID != id.Value).OrderBy(d => d.Date).ToList();
+            ViewBag.BenefitTotalAmount = disbursement.Benefit?.Amount ?? 0;
+            ViewBag.TotalDisbursed = siblings.Where(d => d.Status == "Completed").Sum(d => d.Amount);
+            ViewBag.PendingBalance = siblings
+                .Where(d => d.Status == "Pending" || d.Status == "Disbursement Pending")
+                .Sum(d => d.Amount);
+
             return View(disbursement);
         }
 

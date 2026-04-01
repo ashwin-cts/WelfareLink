@@ -82,6 +82,70 @@
 
     <hr class="my-4" />
 
+    @if (ViewBag.BenefitTotalAmount > 0)
+    {
+        <div class="alert @(ViewBag.PendingBalance > 0 ? "alert-warning" : "alert-success") mb-4">
+            <div class="row g-3 text-center">
+                <div class="col-md-4">
+                    <small class="text-muted d-block">Benefit Total</small>
+                    <strong>₹@((double)ViewBag.BenefitTotalAmount).ToString("N2")</strong>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted d-block">Total Disbursed</small>
+                    <strong class="text-success">₹@((double)ViewBag.TotalDisbursed).ToString("N2")</strong>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted d-block">Pending Balance</small>
+                    <strong class="@(ViewBag.PendingBalance > 0 ? "text-danger" : "text-success")">
+                        ₹@((double)ViewBag.PendingBalance).ToString("N2")
+                        @if (ViewBag.PendingBalance > 0)
+                        {
+                            <span class="badge bg-danger ms-1">Pending</span>
+                        }
+                    </strong>
+                </div>
+            </div>
+        </div>
+    }
+
+    @{
+        var siblings = ViewBag.SiblingDisbursements as IEnumerable<WelfareLink.Models.Disbursement>;
+    }
+    @if (siblings != null && siblings.Any())
+    {
+        <h5 class="mb-3"><i class="bi bi-list-check me-2"></i>Other Disbursements for Benefit #@Model?.BenefitID</h5>
+        <div class="table-responsive mb-4">
+            <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sib in siblings)
+                    {
+                        var sibPending = sib.Status == "Disbursement Pending" || sib.Status == "Pending";
+                        <tr class="@(sibPending ? "table-warning" : "")">
+                            <td>#@sib.DisbursementID @if (sibPending) { <span class="badge bg-warning text-dark"><i class="bi bi-bell-fill"></i> Action Required</span> }</td>
+                            <td>₹@sib.Amount.ToString("N2")</td>
+                            <td>@sib.Date.ToString("dd MMM yyyy")</td>
+                            <td>@sib.Status</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@sib.DisbursementID" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i> Process
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
     <div class="d-flex gap-3">
         <a asp-action="Edit" asp-route-id="@Model?.DisbursementID" class="btn-modern btn-warning-modern">
             <i class="bi bi-pencil"></i> Edit Disbursement

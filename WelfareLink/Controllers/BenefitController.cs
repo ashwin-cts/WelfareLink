@@ -9,11 +9,13 @@ namespace WelfareLink.Controllers
     {
         private readonly IBenefitService _benefitService;
         private readonly IWelfareApplicationService _welfareApplicationService;
+        private readonly IResourceService _resourceService;
 
-        public BenefitController(IBenefitService benefitService, IWelfareApplicationService welfareApplicationService)
+        public BenefitController(IBenefitService benefitService, IWelfareApplicationService welfareApplicationService, IResourceService resourceService)
         {
             _benefitService = benefitService;
             _welfareApplicationService = welfareApplicationService;
+            _resourceService = resourceService;
         }
 
         private async Task PopulateApplicationDropdown(int? selectedId = null)
@@ -85,8 +87,25 @@ namespace WelfareLink.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _benefitService.CreateBenefitAsync(benefit, HttpContext.Session.GetInt32("UserId") ?? 0);
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    var created = await _benefitService.CreateBenefitAsync(benefit, HttpContext.Session.GetInt32("UserId") ?? 0);
+                    if (created.Status.Equals("Allocated", StringComparison.OrdinalIgnoreCase))
+                    {
+                        TempData["SuccessMessage"] = $"Benefit #{created.BenefitID} has been successfully allocated. " +
+                            "A disbursement entry has been created \u2014 please process it below.";
+                        return RedirectToAction("Index", "Disbursement");
+                    }
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                }
+                catch (ArgumentException ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                }
             }
             await PopulateApplicationDropdown(benefit.ApplicationID);
             return View(benefit);
@@ -127,11 +146,55 @@ namespace WelfareLink.Controllers
                     return NotFound();
                 }
 
-                await _benefitService.UpdateBenefitAsync(benefit, HttpContext.Session.GetInt32("UserId") ?? 0);
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    var updated = await _benefitService.UpdateBenefitAsync(benefit, HttpContext.Session.GetInt32("UserId") ?? 0);
+                    if (updated.Status.Equals("Allocated", StringComparison.OrdinalIgnoreCase))
+                    {
+                        TempData["SuccessMessage"] = $"Benefit #{updated.BenefitID} has been allocated successfully. " +
+                            "Please process the disbursement entry below.";
+                        return RedirectToAction("Index", "Disbursement");
+                    }
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                }
+                catch (ArgumentException ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                }
             }
             await PopulateApplicationDropdown(benefit.ApplicationID);
             return View(benefit);
+        }
+
+        // GET: Benefit/GetProgramResourceInfo?programId=5
+        [HttpGet]
+        public async Task<IActionResult> GetProgramResourceInfo(int programId)
+        {
+            if (programId <= 0) return Json(null);
+
+            var resources = await _resourceService.GetResourcesByProgramIdAsync(programId);
+            var totalResource = (double)resources.Sum(r => r.Quantity);
+
+            var allBenefits = await _benefitService.GetAllBenefitsAsync();
+            var alreadyAllocated = allBenefits
+                .Where(b => b.WelfareApplication?.ProgramID == programId
+                            && !b.Status.Equals("Allocation Pending", StringComparison.OrdinalIgnoreCase)
+                            && !b.Status.Equals("Failed", StringComparison.OrdinalIgnoreCase))
+                .Sum(b => b.Amount);
+
+            var remainingResource = totalResource - alreadyAllocated;
+
+            return Json(new
+            {
+                totalResource,
+                alreadyAllocated,
+                remainingResource,
+                hasResource = totalResource > 0
+            });
         }
 
         // GET: Benefit/Delete/5

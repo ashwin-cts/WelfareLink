@@ -10,15 +10,17 @@ namespace WelfareLink.Services
         private readonly IDisbursementRepository _disbursementRepository;
         private readonly IWelfareApplicationRepository _applicationRepository;
         private readonly IEligibilityCheckRepository _eligibilityCheckRepository;
+        private readonly IResourceRepository _resourceRepository;
         private readonly string[] _validBenefitTypes = { "Cash", "Food", "Medical", "Education", "Housing" };
         private readonly string[] _validStatuses = { "Allocation Pending", "Allocated", "Partially Disbursed", "Fully Disbursed", "Failed" };
 
-        public BenefitService(IBenefitRepository benefitRepository, IDisbursementRepository disbursementRepository, IWelfareApplicationRepository applicationRepository, IEligibilityCheckRepository eligibilityCheckRepository)
+        public BenefitService(IBenefitRepository benefitRepository, IDisbursementRepository disbursementRepository, IWelfareApplicationRepository applicationRepository, IEligibilityCheckRepository eligibilityCheckRepository, IResourceRepository resourceRepository)
         {
             _benefitRepository = benefitRepository;
             _disbursementRepository = disbursementRepository;
             _applicationRepository = applicationRepository;
             _eligibilityCheckRepository = eligibilityCheckRepository;
+            _resourceRepository = resourceRepository;
         }
 
         public async Task<IEnumerable<Benefit>> GetAllBenefitsAsync()
@@ -41,6 +43,9 @@ namespace WelfareLink.Services
 
             // Check if the application has a rejected eligibility check
             await ValidateEligibilityCheckAsync(benefit.ApplicationID);
+
+            // Validate benefit amount against programme budget and remaining resources
+            await ValidateBudgetAndResourcesAsync(benefit);
 
             var createdBenefit = await _benefitRepository.AddAsync(benefit);
 
@@ -77,6 +82,10 @@ namespace WelfareLink.Services
             }
 
             ValidateBenefit(benefit);
+
+            // Validate benefit amount against programme budget and remaining resources
+            await ValidateBudgetAndResourcesAsync(benefit);
+
             var updatedBenefit = await _benefitRepository.UpdateAsync(benefit);
 
             // When status transitions to "Allocated", auto-create a disbursement with "Disbursement Pending"
@@ -228,6 +237,64 @@ namespace WelfareLink.Services
             if (!_validStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
             {
                 throw new ArgumentException($"Invalid status. Valid statuses are: {string.Join(", ", _validStatuses)}", nameof(status));
+            }
+        }
+
+        private async Task ValidateBudgetAndResourcesAsync(Benefit benefit)
+        {
+            // Only enforce when the benefit is being allocated (has a meaningful amount)
+            if (!benefit.Status.Equals("Allocated", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            var application = await _applicationRepository.GetByIdAsync(benefit.ApplicationID);
+            if (application?.Program == null) return;
+
+            var program = application.Program;
+            var programId = application.ProgramID;
+
+            // 1. Benefit amount must not exceed the programme's total budget
+            if ((decimal)benefit.Amount > program.Budget)
+            {
+                throw new InvalidOperationException(
+                    $"Budget Exceeded: Benefit amount \u20B9{benefit.Amount:N2} exceeds the programme budget of \u20B9{(double)program.Budget:N2}. " +
+                    $"Programme '{program.Title}' has a total budget of \u20B9{(double)program.Budget:N2}. " +
+                    $"Please reduce the benefit amount or contact the Programme Manager to increase the budget.");
+            }
+
+            // 2. Benefit amount must not exceed the remaining resource allocation for the programme
+            var resources = await _resourceRepository.GetResourcesByProgramIdAsync(programId);
+            var totalResourceAllocation = (double)resources.Sum(r => r.Quantity);
+
+            if (totalResourceAllocation == 0) return; // No resource constraint defined — skip check
+
+            // Sum benefit amounts already allocated to this programme (excluding the current benefit when updating)
+            var allBenefits = await _benefitRepository.GetAllAsync();
+            var alreadyAllocated = allBenefits
+                .Where(b => b.WelfareApplication?.ProgramID == programId
+                            && !b.Status.Equals("Allocation Pending", StringComparison.OrdinalIgnoreCase)
+                            && !b.Status.Equals("Failed", StringComparison.OrdinalIgnoreCase)
+                            && b.BenefitID != benefit.BenefitID)
+                .Sum(b => b.Amount);
+
+            var remainingResources = totalResourceAllocation - alreadyAllocated;
+
+            if (benefit.Amount > remainingResources)
+            {
+                if (remainingResources <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Resource Exhausted: Programme '{program.Title}' has no remaining resource allocation. " +
+                        $"Total resources: \u20B9{totalResourceAllocation:N2}, Already allocated to benefits: \u20B9{alreadyAllocated:N2}. " +
+                        $"Please contact the Programme Manager to increase resource allocation.");
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Resource Insufficient: Benefit amount \u20B9{benefit.Amount:N2} exceeds available resources \u20B9{remainingResources:N2}. " +
+                        $"Programme '{program.Title}' \u2014 Total resources: \u20B9{totalResourceAllocation:N2}, " +
+                        $"Already allocated: \u20B9{alreadyAllocated:N2}, Remaining: \u20B9{remainingResources:N2}. " +
+                        $"Please reduce the benefit amount or contact the Programme Manager.");
+                }
             }
         }
 
