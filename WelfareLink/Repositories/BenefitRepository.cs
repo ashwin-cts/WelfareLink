@@ -16,7 +16,10 @@ namespace WelfareLink.Repositories
 
         public async Task<IEnumerable<Benefit>> GetAllAsync()
         {
+            // Return AsNoTracking to avoid tracking conflicts when callers also
+            // pass detached/new Benefit instances to update methods.
             return await _context.Benefits
+                .AsNoTracking()
                 .Include(b => b.Disbursements)
                 .Include(b => b.WelfareApplication)
                     .ThenInclude(a => a.Program)
@@ -46,6 +49,15 @@ namespace WelfareLink.Repositories
 
         public async Task<Benefit> UpdateAsync(Benefit benefit)
         {
+            // If a Benefit with the same key is already tracked, detach it first
+            // to avoid the "instance cannot be tracked" exception.
+            var tracked = _context.ChangeTracker.Entries<Benefit>()
+                .FirstOrDefault(e => e.Entity.BenefitID == benefit.BenefitID);
+            if (tracked != null)
+            {
+                _context.Entry(tracked.Entity).State = EntityState.Detached;
+            }
+
             _context.Entry(benefit).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return benefit;
@@ -71,7 +83,9 @@ namespace WelfareLink.Repositories
 
         public async Task<IEnumerable<Benefit>> GetByApplicationIdAsync(int applicationId)
         {
+            // Use AsNoTracking so returned entities do not remain tracked.
             return await _context.Benefits
+                .AsNoTracking()
                 .Where(b => b.ApplicationID == applicationId)
                 .ToListAsync();
         }
