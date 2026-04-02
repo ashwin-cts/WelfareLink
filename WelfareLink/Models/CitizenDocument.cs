@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace WelfareLink.Models
 {
@@ -28,6 +29,7 @@ namespace WelfareLink.Models
         public string VerificationStatus { get; set; }
 
         // Navigation property mapping back to the Citizen
+        [JsonIgnore]
         public virtual Citizen Citizen { get; set; }
 
 

@@ -15,19 +15,24 @@ namespace WelfareLink.Controllers
         private readonly IWelfareProgramService _programService;
         private readonly IWelfareApplicationService _applicationService;
         private readonly WelfareLinkDbContext _context;
+        private readonly IHttpClientFactory _clientFactory;
+        //private readonly IProductService _productService;
+        
 
         public CitizenController(
             ICitizenService citizenService,
             ICitizenDocumentService documentService,
             IWelfareProgramService programService,
             IWelfareApplicationService applicationService,
-            WelfareLinkDbContext context)
+            WelfareLinkDbContext context,
+            IHttpClientFactory clientFactory)
         {
             _citizenService = citizenService;
             _documentService = documentService;
             _programService = programService;
             _applicationService = applicationService;
             _context = context;
+            _clientFactory = clientFactory;
         }
 
         // GET: Citizen/Dashboard

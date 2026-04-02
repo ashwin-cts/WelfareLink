@@ -15,6 +15,15 @@ namespace WelfareLink
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            // Add HttpClient for API calls
+            builder.Services.AddHttpClient("WelfareLinkApi", client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:7100/"); // Your localhost port
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+                client.Timeout = TimeSpan.FromSeconds(10); // 10 second timeout to prevent hanging
+            });
+
+
             // Add Session support
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>

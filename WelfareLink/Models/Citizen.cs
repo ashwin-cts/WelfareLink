@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace WelfareLink.Models
 {
     public class Citizen
     {
-       
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int CitizenId { get; set; }
@@ -28,6 +28,7 @@ namespace WelfareLink.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         //Navigation Property one to many for CitizenDocument
+        [JsonIgnore]
         public virtual ICollection<CitizenDocument> CitizenDocuments { get; set; }
 
 
