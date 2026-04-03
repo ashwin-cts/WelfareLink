@@ -25,6 +25,11 @@
                 <label>Program</label>
                 <p>@(ViewBag.Application.Program?.Title ?? "N/A")</p>
             </div>
+            <div class="detail-item" style="grid-column: span 2;">
+                <label>Program Description</label>
+                <p>@(ViewBag.Application.Program?.Description ?? "N/A")</p>
+            </div>
+
             <div class="detail-item">
                 <label>Submitted Date</label>
                 <p>@ViewBag.Application.SubmittedDate.ToString("dd MMMM yyyy")</p>
