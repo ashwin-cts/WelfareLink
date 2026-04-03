@@ -1,0 +1,36 @@
+@model WelfareLink.Models.Audit
+@{
+    ViewData["Title"] = "Edit Audit";
+}
+
+<h1>Edit Audit</h1>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="AuditID" />
+    <div class="form-group">
+        <label asp-for="OfficerID"></label>
+        <input asp-for="OfficerID" class="form-control" />
+        <span asp-validation-for="OfficerID" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Scope"></label>
+        <textarea asp-for="Scope" class="form-control"></textarea>
+        <span asp-validation-for="Scope" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Findings"></label>
+        <textarea asp-for="Findings" class="form-control"></textarea>
+        <span asp-validation-for="Findings" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Status"></label>
+        <input asp-for="Status" class="form-control" />
+        <span asp-validation-for="Status" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-controller="Audits" asp-action="Index" class="btn btn-secondary">Back to list</a>
+</form>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}
