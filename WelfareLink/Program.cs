@@ -14,8 +14,12 @@ namespace WelfareLink
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            // Razor Pages
+            builder.Services.AddRazorPages();
             //Db reg
-            builder.Services.AddDbContext<WelfareLinkDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddDbContext<WelfareLinkDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sql => sql.EnableRetryOnFailure())
+            );
 
             //Dependency injections
             // Repository registrations
@@ -63,11 +67,13 @@ namespace WelfareLink
             }
 
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
             app.UseRouting();
 
             app.UseAuthorization();
 
             app.MapStaticAssets();
+            app.MapRazorPages();
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}")
