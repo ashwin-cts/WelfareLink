@@ -1,0 +1,32 @@
+@model WelfareLink.Models.ComplainceRecord
+@{
+    ViewData["Title"] = "Compliance Record Details";
+}
+
+<h1>Compliance Record Details</h1>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">ID</dt>
+        <dd class="col-sm-10">@Model.ComplainceID</dd>
+
+        <dt class="col-sm-2">Entity ID</dt>
+        <dd class="col-sm-10">@Model.EntityID</dd>
+
+        <dt class="col-sm-2">Type</dt>
+        <dd class="col-sm-10">@Model.Type</dd>
+
+        <dt class="col-sm-2">Result</dt>
+        <dd class="col-sm-10">@Model.Result</dd>
+
+        <dt class="col-sm-2">Date</dt>
+        <dd class="col-sm-10">@Model.Date.ToString("yyyy-MM-dd")</dd>
+
+        <dt class="col-sm-2">Notes</dt>
+        <dd class="col-sm-10">@Model.Notes</dd>
+    </dl>
+</div>
+
+<p>
+    <a asp-controller="ComplainceRecords" asp-action="Index" class="btn btn-secondary">Back to list</a>
+</p>

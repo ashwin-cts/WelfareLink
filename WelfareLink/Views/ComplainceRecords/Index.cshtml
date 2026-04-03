@@ -1,0 +1,38 @@
+@model IEnumerable<WelfareLink.Models.ComplainceRecord>
+@{
+    ViewData["Title"] = "Compliance Records";
+}
+
+<h1>Compliance Records</h1>
+<p>
+    <a class="btn btn-primary" asp-controller="ComplainceRecords" asp-action="Create">Create New Record</a>
+</p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Entity ID</th>
+            <th>Type</th>
+            <th>Result</th>
+            <th>Date</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var r in Model)
+    {
+        <tr>
+            <td>@r.ComplainceID</td>
+            <td>@r.EntityID</td>
+            <td>@r.Type</td>
+            <td>@r.Result</td>
+            <td>@r.Date.ToString("yyyy-MM-dd")</td>
+            <td>
+                <a asp-controller="ComplainceRecords" asp-action="Details" asp-route-id="@r.ComplainceID">Details</a> |
+                <a asp-controller="ComplainceRecords" asp-action="Edit" asp-route-id="@r.ComplainceID">Edit</a> |
+                <a asp-controller="ComplainceRecords" asp-action="Delete" asp-route-id="@r.ComplainceID">Delete</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
