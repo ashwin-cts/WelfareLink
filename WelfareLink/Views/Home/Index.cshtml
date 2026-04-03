@@ -1,8 +1,57 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model WelfareLink.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row">
+    <div class="col-md-6">
+        <h2>Recent Audits</h2>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Audit ID</th>
+                    <th>Officer</th>
+                    <th>Scope</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var a in Model.Audits)
+            {
+                <tr>
+                    <td>@a.AuditID</td>
+                    <td>@a.OfficerID</td>
+                    <td>@a.Scope</td>
+                    <td>@a.Date.ToString("yyyy-MM-dd")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        <a class="btn btn-primary" asp-controller="Audits" asp-action="Index">Manage Audits</a>
+    </div>
+    <div class="col-md-6">
+        <h2>Compliance Records</h2>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Entity</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var r in Model.ComplainceRecords)
+            {
+                <tr>
+                    <td>@r.ComplainceID</td>
+                    <td>@r.EntityID</td>
+                    <td>@r.Type</td>
+                    <td>@r.Date.ToString("yyyy-MM-dd")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        <a class="btn btn-primary" asp-controller="ComplainceRecords" asp-action="Index">Manage Compliance</a>
+    </div>
 </div>
