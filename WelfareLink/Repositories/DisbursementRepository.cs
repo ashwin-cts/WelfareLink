@@ -89,5 +89,15 @@ namespace WelfareLink.Repositories
                 .Where(d => d.BenefitID == benefitId)
                 .ToListAsync();
         }
+        public async Task<double> GetCompletedDisbursementTotalForProgramAsync(
+    int programId,
+    int excludeDisbursementId)
+        {
+            return await _context.Disbursements
+                .Where(d => d.Status == "Completed"
+                    && d.DisbursementID != excludeDisbursementId
+                    && d.Benefit.WelfareApplication.ProgramID == programId)
+                .SumAsync(d => d.Amount);
+        }
     }
 }

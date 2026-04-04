@@ -262,11 +262,10 @@ namespace WelfareLink.Services
 
             // Sum completed disbursements across ALL benefits for this program (excluding current record when updating)
             var allDisbursements = await _disbursementRepository.GetAllAsync();
-            var totalCompletedForProgram = allDisbursements
-                .Where(d => d.Status == "Completed"
-                         && d.DisbursementID != disbursement.DisbursementID
-                         && d.Benefit?.WelfareApplication?.ProgramID == programId)
-                .Sum(d => d.Amount);
+            var totalCompletedForProgram =
+                    await _disbursementRepository
+                    .GetCompletedDisbursementTotalForProgramAsync(programId,
+                                                      disbursement.DisbursementID);
 
             var available = totalResourceQuantity - totalCompletedForProgram;
 
