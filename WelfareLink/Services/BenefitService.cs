@@ -265,7 +265,7 @@ namespace WelfareLink.Services
             var resources = await _resourceRepository.GetResourcesByProgramIdAsync(programId);
             var totalResourceAllocation = (double)resources.Sum(r => r.Quantity);
 
-            if (totalResourceAllocation == 0) return; // No resource constraint defined — skip check
+            if (totalResourceAllocation == 0) return; // No resource constraint defined
 
             // Sum benefit amounts already allocated to this programme (excluding the current benefit when updating)
             var allBenefits = await _benefitRepository.GetAllAsync();

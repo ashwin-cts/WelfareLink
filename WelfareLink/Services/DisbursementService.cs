@@ -1,5 +1,6 @@
 using WelfareLink.Interfaces;
 using WelfareLink.Models;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace WelfareLink.Services
 {
@@ -244,11 +245,20 @@ namespace WelfareLink.Services
             if (benefit?.WelfareApplication == null) return;
 
             var programId = benefit.WelfareApplication.ProgramID;
+            var program = benefit.WelfareApplication.Program;
+            
 
             var resources = await _resourceRepository.GetResourcesByProgramIdAsync(programId);
             var totalResourceQuantity = (double)resources.Sum(r => r.Quantity);
 
-            if (totalResourceQuantity == 0) return; // No resource defined; skip check
+            if (totalResourceQuantity == 0)
+            {
+                
+                    throw new InvalidOperationException(
+                        $"Resource Unavailable: Programme '{program.Title}' has no resources allocated. " +
+                        $"Please contact the Programme Manager to allocate resources before disbursing benefits.");
+                
+            }
 
             // Sum completed disbursements across ALL benefits for this program (excluding current record when updating)
             var allDisbursements = await _disbursementRepository.GetAllAsync();
