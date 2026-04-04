@@ -88,16 +88,16 @@
             <div class="row g-3 text-center">
                 <div class="col-md-4">
                     <small class="text-muted d-block">Benefit Total</small>
-                    <strong>₹@((double)ViewBag.BenefitTotalAmount).ToString("N2")</strong>
+                    <strong>₹@(((double)ViewBag.BenefitTotalAmount).ToString("N2"))</strong>
                 </div>
                 <div class="col-md-4">
                     <small class="text-muted d-block">Total Disbursed</small>
-                    <strong class="text-success">₹@((double)ViewBag.TotalDisbursed).ToString("N2")</strong>
+                    <strong class="text-success">₹@(((double)ViewBag.TotalDisbursed).ToString("N2"))</strong>
                 </div>
                 <div class="col-md-4">
                     <small class="text-muted d-block">Pending Balance</small>
                     <strong class="@(ViewBag.PendingBalance > 0 ? "text-danger" : "text-success")">
-                        ₹@((double)ViewBag.PendingBalance).ToString("N2")
+                        ₹@(((double)ViewBag.PendingBalance).ToString("N2"))
                         @if (ViewBag.PendingBalance > 0)
                         {
                             <span class="badge bg-danger ms-1">Pending</span>
