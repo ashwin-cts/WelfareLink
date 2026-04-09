@@ -1,0 +1,162 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WelfareLink.Data;
+using WelfareLink.Models;
+
+namespace WelfareLink.Controllers
+{
+    public class AdminController : Controller
+    {
+        private readonly WelfareLinkDbContext _context;
+
+        public AdminController(WelfareLinkDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (userRole != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+            var users = await _context.Users
+                .Include(u => u.Citizen)
+                .Where(u => u.UserId != currentUserId)
+                .ToListAsync();
+
+            ViewBag.AdminCount = await _context.Users.CountAsync(u => u.Role == "Admin" && u.IsActive);
+            return View(users);
+        }
+
+        [HttpGet]
+        public IActionResult CreateOfficer()
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (userRole != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateOfficer(User user)
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (userRole != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (user.Role == "Citizen")
+            {
+                ModelState.AddModelError("", "Cannot create citizen through this form");
+                return View(user);
+            }
+
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == user.Username);
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("Username", "Username already exists");
+                return View(user);
+            }
+
+            user.IsActive = true;
+            user.CreatedAt = DateTime.UtcNow;
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Officer created successfully";
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public IActionResult CreateAdmin()
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (userRole != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateAdmin(User user)
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (userRole != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            user.Role = "Admin";
+            var success = await _userService.CreateUserAsync(user);
+            if (!success)
+            {
+                ModelState.AddModelError("Username", "Username already exists");
+                return View(user);
+            }
+
+            TempData["Success"] = "Admin created successfully";
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BlockUser(int userId)
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (userRole != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+            if (userId == currentUserId)
+            {
+                TempData["Error"] = "You cannot block your own account.";
+                return RedirectToAction("Index");
+            }
+
+            var success = await _userService.BlockUserAsync(userId);
+            if (success)
+            {
+                TempData["Success"] = "User blocked successfully";
+            }
+            else
+            {
+                TempData["Error"] = "Cannot block the last active admin account.";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UnblockUser(int userId)
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (userRole != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var success = await _userService.UnblockUserAsync(userId);
+            if (success)
+            {
+                TempData["Success"] = "User unblocked successfully";
+            }
+            else
+            {
+                TempData["Error"] = "Failed to unblock user";
+            }
+
+            return RedirectToAction("Index");
+        }
+    }
+}

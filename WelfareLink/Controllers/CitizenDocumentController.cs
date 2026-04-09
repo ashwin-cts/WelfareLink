@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 using WelfareLink.Interfaces;
 using WelfareLink.Models;
-using WelfareLink.Models;
-using WelfareLink.Services;
+using WelfareLink.ViewModels;
 
 namespace WelfareLink.Controllers
 {
@@ -139,6 +137,7 @@ namespace WelfareLink.Controllers
             return RedirectToAction(nameof(DocumentStatus));
         }
     }
+<<<<<<< Updated upstream
 
     // View Models
     public class DocumentUploadViewModel
@@ -159,4 +158,6 @@ namespace WelfareLink.Controllers
         public IEnumerable<CitizenDocument> Documents { get; set; }
         public string FilterStatus { get; set; }
     }
+=======
+>>>>>>> Stashed changes
 }

@@ -39,6 +39,7 @@ namespace WelfareLink
             builder.Services.AddScoped<IAuditLogService, AuditLogService>();
             builder.Services.AddScoped<ICitizenService, CitizenService>();
             builder.Services.AddScoped<ICitizenDocumentService, CitizenDocumentService>();
+            builder.Services.AddScoped<IWelfareApplicationDocumentService, WelfareApplicationDocumentService>();
             builder.Services.AddScoped<IWelfareApplicationService, WelfareApplicationService>();
             builder.Services.AddScoped<IEligibilityCheckService, EligibilityCheckService>();
             builder.Services.AddScoped<IBenefitService, BenefitService>();

@@ -1,9 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
+<<<<<<< Updated upstream
 using System.ComponentModel.DataAnnotations;
 using WelfareLink.Interfaces;
 using WelfareLink.Models;
 using WelfareLink.Models;
 using WelfareLink.Services;
+=======
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using WelfareLink.Data;
+using WelfareLink.Interfaces;
+using WelfareLink.Models;
+using WelfareLink.ViewModels;
+>>>>>>> Stashed changes
 
 namespace WelfareLink.Controllers
 {
@@ -11,11 +20,33 @@ namespace WelfareLink.Controllers
     {
         private readonly ICitizenService _citizenService;
         private readonly ICitizenDocumentService _documentService;
+<<<<<<< Updated upstream
 
         public CitizenController(ICitizenService citizenService, ICitizenDocumentService documentService)
         {
             _citizenService = citizenService;
             _documentService = documentService;
+=======
+        private readonly IWelfareProgramService _programService;
+        private readonly IWelfareApplicationService _applicationService;
+        private readonly IWelfareApplicationDocumentService _applicationDocumentService;
+        private readonly WelfareLinkDbContext _context;
+
+        public CitizenController(
+            ICitizenService citizenService,
+            ICitizenDocumentService documentService,
+            IWelfareProgramService programService,
+            IWelfareApplicationService applicationService,
+            IWelfareApplicationDocumentService applicationDocumentService,
+            WelfareLinkDbContext context)
+        {
+            _citizenService = citizenService;
+            _documentService = documentService;
+            _programService = programService;
+            _applicationService = applicationService;
+            _applicationDocumentService = applicationDocumentService;
+            _context = context;
+>>>>>>> Stashed changes
         }
 
         // GET: Citizen/Dashboard
@@ -62,9 +93,35 @@ namespace WelfareLink.Controllers
                 return View(model);
             }
 
+<<<<<<< Updated upstream
             // For demo purposes, using a hardcoded UserId = 1
             int currentUserId = 1;
 
+=======
+            // Create User account first
+            var user = new User
+            {
+                Username = model.Username,
+                Password = model.Password,
+                Role = "Citizen",
+                FullName = model.Name,
+                Email = model.Email,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var existingUser = _context.Users.FirstOrDefault(u => u.Username == model.Username);
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("Username", "Username already exists");
+                return View(model);
+            }
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // Create Citizen profile
+>>>>>>> Stashed changes
             var citizen = new Citizen
             {
                 UserId = currentUserId,
@@ -149,6 +206,7 @@ namespace WelfareLink.Controllers
             ModelState.AddModelError(string.Empty, "Failed to update profile.");
             return View(model);
         }
+<<<<<<< Updated upstream
     }
 
     // View Models
@@ -205,4 +263,465 @@ namespace WelfareLink.Controllers
         [StringLength(50)]
         public string Status { get; set; }
     }
+=======
+
+        // GET: Citizen/ApplicationDetails/5
+        public async Task<IActionResult> ApplicationDetails(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null || application.CitizenID != citizenProfile.CitizenId)
+                return NotFound();
+
+            return View(application);
+        }
+
+        // GET: Citizen/EditApplication/5
+        public async Task<IActionResult> EditApplication(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null || application.CitizenID != citizenProfile.CitizenId)
+                return NotFound();
+
+            if (application.Status != "Pending" && application.Status != "Rejected")
+            {
+                TempData["ErrorMessage"] = "This application cannot be edited in its current status.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            var programs = await _programService.GetAllProgramsAsync();
+            ViewBag.ProgramList = new SelectList(programs, "ProgramID", "Title", application.ProgramID);
+            return View(application);
+        }
+
+        // POST: Citizen/EditApplication/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditApplication(int id, [Bind("ApplicationID,CitizenID,ProgramID,SubmittedDate,Status")] WelfareApplication application)
+        {
+            if (id != application.ApplicationID)
+                return NotFound();
+
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var original = await _applicationService.GetApplicationByIdAsync(id);
+            if (original == null || original.CitizenID != citizenProfile.CitizenId)
+                return NotFound();
+
+            if (original.Status != "Pending" && original.Status != "Rejected")
+            {
+                TempData["ErrorMessage"] = "This application cannot be edited in its current status.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            if (ModelState.IsValid)
+            {
+                // If was Rejected, re-submitting resets status to Pending
+                application.CitizenID = citizenProfile.CitizenId;
+                application.Status = original.Status == "Rejected" ? "Pending" : original.Status;
+                application.SubmittedDate = original.Status == "Rejected"
+                    ? DateOnly.FromDateTime(DateTime.Today)
+                    : original.SubmittedDate;
+
+                await _applicationService.UpdateApplicationAsync(application);
+                TempData["SuccessMessage"] = original.Status == "Rejected"
+                    ? "Application re-submitted successfully. Status reset to Pending."
+                    : "Application updated successfully.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            var programs = await _programService.GetAllProgramsAsync();
+            ViewBag.ProgramList = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(programs, "ProgramID", "Title", application.ProgramID);
+            return View(application);
+        }
+
+        // GET: Citizen/DeleteApplication/5
+        public async Task<IActionResult> DeleteApplication(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null || application.CitizenID != citizenProfile.CitizenId)
+                return NotFound();
+
+            if (application.Status != "Pending")
+            {
+                TempData["ErrorMessage"] = "Only pending applications can be deleted.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            return View(application);
+        }
+
+        // POST: Citizen/DeleteApplication/5
+        [HttpPost, ActionName("DeleteApplication")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteApplicationConfirmed(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null || application.CitizenID != citizenProfile.CitizenId)
+                return NotFound();
+
+            if (application.Status != "Pending")
+            {
+                TempData["ErrorMessage"] = "Only pending applications can be deleted.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            await _applicationService.DeleteApplicationAsync(id);
+            TempData["SuccessMessage"] = $"Application #{id} deleted successfully.";
+            return RedirectToAction(nameof(MyApplications));
+        }
+
+        // GET: Citizen/MyApplications
+        public async Task<IActionResult> MyApplications()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+            {
+                return RedirectToAction(nameof(CreateProfile));
+            }
+
+            var all = await _applicationService.GetAllApplicationsAsync();
+            var myApplications = all.Where(a => a.CitizenID == citizenProfile.CitizenId).OrderByDescending(a => a.SubmittedDate);
+            return View(myApplications);
+        }
+
+        // GET: Citizen/ProgramList
+        public async Task<IActionResult> ProgramList()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+            {
+                return RedirectToAction(nameof(CreateProfile));
+            }
+
+            var programs = await _programService.GetAllProgramsAsync();
+            var applications = await _applicationService.GetAllApplicationsAsync();
+            var appliedProgramIds = applications
+                .Where(a => a.CitizenID == citizenProfile.CitizenId)
+                .Select(a => a.ProgramID)
+                .ToHashSet();
+
+            ViewBag.CitizenId = citizenProfile.CitizenId;
+            ViewBag.CitizenGender = citizenProfile.Gender ?? "";
+            ViewBag.AppliedProgramIds = appliedProgramIds;
+            return View(programs);
+        }
+
+        // POST: Citizen/ApplyForProgram (kept for legacy/direct use — now bypassed by SelectDocuments)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplyForProgram(int programId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+            {
+                return RedirectToAction(nameof(CreateProfile));
+            }
+
+            var application = new WelfareApplication
+            {
+                CitizenID = citizenProfile.CitizenId,
+                ProgramID = programId,
+                SubmittedDate = DateOnly.FromDateTime(DateTime.Today),
+                Status = "Pending"
+            };
+
+            var created = await _applicationService.CreateApplicationAsync(application);
+            TempData["SuccessMessage"] = $"Application #{created.ApplicationID} submitted successfully!";
+            return RedirectToAction(nameof(ProgramList));
+        }
+
+        // GET: Citizen/SelectDocuments?programId=5
+        public async Task<IActionResult> SelectDocuments(int programId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+                return RedirectToAction("Login", "Account");
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var program = await _programService.GetProgramByIdAsync(programId);
+            if (program == null)
+                return NotFound();
+
+            // Gender eligibility check (delegated to service layer)
+            var (isEligible, errorMessage) = await _programService.ValidateGenderEligibilityAsync(programId, citizenProfile.Gender);
+            if (!isEligible)
+            {
+                TempData["ErrorMessage"] = errorMessage;
+                return errorMessage.Contains("profile") ? RedirectToAction(nameof(EditProfile)) : RedirectToAction(nameof(ProgramList));
+            }
+
+            var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.CitizenId);
+            var requiredDocs = program.RequiredDocuments ?? "None";
+            var requiredDocTypes = requiredDocs == "None"
+                ? new List<string>()
+                : requiredDocs.Split(',').Select(d => d.Trim()).ToList();
+
+            ViewBag.Program = program;
+            ViewBag.Documents = documents;
+            ViewBag.ProgramId = programId;
+            ViewBag.RequiredDocTypes = requiredDocTypes;
+            ViewBag.NoDocRequired = requiredDocs == "None";
+            return View();
+        }
+
+        // POST: Citizen/SelectDocuments
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SelectDocuments(int programId, int[] selectedDocumentIds)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+                return RedirectToAction("Login", "Account");
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var program = await _programService.GetProgramByIdAsync(programId);
+            if (program == null)
+                return NotFound();
+
+            // Gender eligibility check (re-validate on POST - delegated to service layer)
+            var (isEligible, errorMessage) = await _programService.ValidateGenderEligibilityAsync(programId, citizenProfile.Gender);
+            if (!isEligible)
+            {
+                TempData["ErrorMessage"] = errorMessage;
+                return RedirectToAction(nameof(ProgramList));
+            }
+
+            var requiredDocs = program.RequiredDocuments ?? "None";
+            var requiredDocTypes = requiredDocs == "None"
+                ? new List<string>()
+                : requiredDocs.Split(',').Select(d => d.Trim()).ToList();
+
+            if (requiredDocTypes.Any())
+            {
+                // Documents are required — validate selection
+                if (selectedDocumentIds == null || selectedDocumentIds.Length == 0)
+                {
+                    var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.CitizenId);
+                    ViewBag.Program = program;
+                    ViewBag.Documents = documents;
+                    ViewBag.ProgramId = programId;
+                    ViewBag.RequiredDocTypes = requiredDocTypes;
+                    ViewBag.NoDocRequired = false;
+                    ViewBag.Error = "Please select the required documents before submitting.";
+                    return View();
+                }
+
+                // Check that selected docs cover each required type
+                var citizenDocs = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.CitizenId);
+                var selectedDocList = citizenDocs.Where(d => selectedDocumentIds.Contains(d.DocumentID)).ToList();
+                var missingTypes = requiredDocTypes
+                    .Where(req => !selectedDocList.Any(d => d.DocType == req))
+                    .ToList();
+
+                if (missingTypes.Any())
+                {
+                    ViewBag.Program = program;
+                    ViewBag.Documents = citizenDocs;
+                    ViewBag.ProgramId = programId;
+                    ViewBag.RequiredDocTypes = requiredDocTypes;
+                    ViewBag.NoDocRequired = false;
+                    ViewBag.Error = $"Missing required document type(s): {string.Join(", ", missingTypes)}. Please upload and select the required documents.";
+                    return View();
+                }
+            }
+
+            var application = new WelfareApplication
+            {
+                CitizenID = citizenProfile.CitizenId,
+                ProgramID = programId,
+                SubmittedDate = DateOnly.FromDateTime(DateTime.Today),
+                Status = "Pending"
+            };
+
+            var created = await _applicationService.CreateApplicationAsync(application);
+
+            if (selectedDocumentIds != null && selectedDocumentIds.Length > 0)
+            {
+                await _applicationDocumentService.AddApplicationDocumentsAsync(created.ApplicationID, selectedDocumentIds);
+            }
+
+            TempData["SuccessMessage"] = requiredDocs == "None"
+                ? $"Application #{created.ApplicationID} submitted successfully!"
+                : $"Application #{created.ApplicationID} submitted successfully with {selectedDocumentIds!.Length} document(s)!";
+            return RedirectToAction(nameof(ProgramList));
+        }
+
+        // GET: Citizen/ReselectDocuments/5
+        public async Task<IActionResult> ReselectDocuments(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+                return RedirectToAction("Login", "Account");
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null || application.CitizenID != citizenProfile.CitizenId)
+                return NotFound();
+
+            if (application.Status != "Rejected")
+            {
+                TempData["ErrorMessage"] = "Only rejected applications can be re-submitted with new documents.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.CitizenId);
+
+            // Get previously selected document IDs for this application
+            var previousDocIds = await _applicationDocumentService.GetApplicationDocumentIdsAsync(id);
+
+            ViewBag.Application = application;
+            ViewBag.Program = application.Program;
+            ViewBag.Documents = documents;
+            ViewBag.PreviousDocIds = previousDocIds;
+            return View();
+        }
+
+        // POST: Citizen/ReselectDocuments/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReselectDocuments(int id, int[] selectedDocumentIds)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            if (userId == null || userRole != "Citizen")
+                return RedirectToAction("Login", "Account");
+
+            var citizenProfile = await _citizenService.GetCitizenByUserIdAsync(userId.Value);
+            if (citizenProfile == null)
+                return RedirectToAction(nameof(CreateProfile));
+
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null || application.CitizenID != citizenProfile.CitizenId)
+                return NotFound();
+
+            if (application.Status != "Rejected")
+            {
+                TempData["ErrorMessage"] = "Only rejected applications can be re-submitted.";
+                return RedirectToAction(nameof(ApplicationDetails), new { id });
+            }
+
+            if (selectedDocumentIds == null || selectedDocumentIds.Length == 0)
+            {
+                var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenProfile.CitizenId);
+                var previousDocIds = await _applicationDocumentService.GetApplicationDocumentIdsAsync(id);
+
+                ViewBag.Application = application;
+                ViewBag.Program = application.Program;
+                ViewBag.Documents = documents;
+                ViewBag.PreviousDocIds = previousDocIds;
+                ViewBag.Error = "Please select at least one document before re-submitting.";
+                return View();
+            }
+
+            // Update application documents
+            await _applicationDocumentService.UpdateApplicationDocumentsAsync(id, selectedDocumentIds);
+
+            // Reset application status to Pending and update submitted date
+            application.Status = "Pending";
+            application.SubmittedDate = DateOnly.FromDateTime(DateTime.Today);
+            await _applicationService.UpdateApplicationAsync(application);
+
+            TempData["SuccessMessage"] = $"Application #{id} re-submitted successfully with {selectedDocumentIds.Length} document(s)!";
+            return RedirectToAction(nameof(ApplicationDetails), new { id });
+        }
+    }
+>>>>>>> Stashed changes
 }

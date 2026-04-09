@@ -382,7 +382,8 @@
               "RelativeToolTip": "WelfareLink\\ROUTING_DOCUMENTATION.md",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAHUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2026-03-26T09:18:23.771Z"
+              "WhenOpened": "2026-03-26T09:18:23.771Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -407,7 +408,8 @@
               "RelativeToolTip": "WelfareLink\\Migrations\\20260326091200_table1.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T09:12:01.436Z"
+              "WhenOpened": "2026-03-26T09:12:01.436Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -419,7 +421,8 @@
               "RelativeToolTip": "WelfareLink\\Controllers\\CitizenDocumentController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:30:21.776Z"
+              "WhenOpened": "2026-03-26T03:30:21.776Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -431,7 +434,8 @@
               "RelativeToolTip": "WelfareLink\\Views\\CitizenDocument\\UploadDocument.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-26T08:46:08.142Z"
+              "WhenOpened": "2026-03-26T08:46:08.142Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -443,7 +447,8 @@
               "RelativeToolTip": "WelfareLink\\Controllers\\CitizenController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:30:22.549Z"
+              "WhenOpened": "2026-03-26T03:30:22.549Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -455,7 +460,8 @@
               "RelativeToolTip": "WelfareLink\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAABJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-03-26T03:37:00.425Z"
+              "WhenOpened": "2026-03-26T03:37:00.425Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -467,7 +473,8 @@
               "RelativeToolTip": "WelfareLink\\Program.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAADAAAABGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:38:14.127Z"
+              "WhenOpened": "2026-03-26T03:38:14.127Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -479,7 +486,8 @@
               "RelativeToolTip": "WelfareLink\\Views\\CitizenDocument\\DocumentStatus.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAHoAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-26T08:45:47.327Z"
+              "WhenOpened": "2026-03-26T08:45:47.327Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -491,7 +499,8 @@
               "RelativeToolTip": "WelfareLink\\Models\\CitizenDocument.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAuwAUAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:17:14.603Z"
+              "WhenOpened": "2026-03-26T03:17:14.603Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -503,7 +512,8 @@
               "RelativeToolTip": "WelfareLink\\Repositories\\CitizenRepository.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAAMAAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:24:20.113Z"
+              "WhenOpened": "2026-03-26T03:24:20.113Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -515,7 +525,8 @@
               "RelativeToolTip": "WelfareLink\\Repositories\\CitizenDocumentRepository.cs",
               "ViewState": "AgIAAB8AAAAAAAAAAAAkwC0AAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:24:21.256Z"
+              "WhenOpened": "2026-03-26T03:24:21.256Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -527,7 +538,8 @@
               "RelativeToolTip": "WelfareLink\\Interfaces\\ICitizenDocumentRepository.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAAgAAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:20:58.403Z"
+              "WhenOpened": "2026-03-26T03:20:58.403Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -539,7 +551,8 @@
               "RelativeToolTip": "WelfareLink\\Data\\WelfareLinkDbContext.cs",
               "ViewState": "AgIAAAgAAAAAAAAAAAAAwAsAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:19:24.429Z"
+              "WhenOpened": "2026-03-26T03:19:24.429Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -551,7 +564,8 @@
               "RelativeToolTip": "WelfareLink\\Interfaces\\ICitizenDocumentService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:26:07.892Z"
+              "WhenOpened": "2026-03-26T03:26:07.892Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -563,7 +577,8 @@
               "RelativeToolTip": "WelfareLink\\Views\\Citizen\\EditProfile.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-26T08:38:55.101Z"
+              "WhenOpened": "2026-03-26T08:38:55.101Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -575,7 +590,8 @@
               "RelativeToolTip": "WelfareLink\\Views\\Citizen\\Dashboard.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAHwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-26T08:38:23.15Z"
+              "WhenOpened": "2026-03-26T08:38:23.15Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -587,7 +603,8 @@
               "RelativeToolTip": "WelfareLink\\Views\\Citizen\\CreateProfile.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-26T08:37:38.926Z"
+              "WhenOpened": "2026-03-26T08:37:38.926Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -599,7 +616,8 @@
               "RelativeToolTip": "WelfareLink\\Interfaces\\ICitizenService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:26:08.701Z"
+              "WhenOpened": "2026-03-26T03:26:08.701Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -611,7 +629,8 @@
               "RelativeToolTip": "WelfareLink\\Services\\CitizenDocumentService.cs",
               "ViewState": "AgIAAEEAAAAAAAAAAAAowAoAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:26:51.209Z"
+              "WhenOpened": "2026-03-26T03:26:51.209Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -623,7 +642,8 @@
               "RelativeToolTip": "WelfareLink\\Services\\CitizenService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAADIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:26:52.31Z"
+              "WhenOpened": "2026-03-26T03:26:52.31Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -635,7 +655,8 @@
               "RelativeToolTip": "WelfareLink\\Models\\Citizen.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:17:08.559Z"
+              "WhenOpened": "2026-03-26T03:17:08.559Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -647,7 +668,8 @@
               "RelativeToolTip": "WelfareLink\\Interfaces\\ICitizenRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:20:56.833Z"
+              "WhenOpened": "2026-03-26T03:20:56.833Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -659,7 +681,8 @@
               "RelativeToolTip": "WelfareLink\\Repositories\\BenefitRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:24:21.137Z"
+              "WhenOpened": "2026-03-26T03:24:21.137Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -671,7 +694,8 @@
               "RelativeToolTip": "WelfareLink\\Repositories\\NotificationRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-26T03:24:20.262Z"
+              "WhenOpened": "2026-03-26T03:24:20.262Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -683,7 +707,8 @@
               "RelativeToolTip": "WelfareLink\\WelfareLink.csproj",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-03-26T03:19:06.166Z"
+              "WhenOpened": "2026-03-26T03:19:06.166Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",

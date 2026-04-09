@@ -14,7 +14,11 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WelfareLink")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+<<<<<<< Updated upstream
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+45d06b3818e15065356ee0162723e2a7ba247adb")]
+=======
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a9de4052db4db9a9a3b45bbaa705349975ff712f")]
+>>>>>>> Stashed changes
 [assembly: System.Reflection.AssemblyProductAttribute("WelfareLink")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WelfareLink")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

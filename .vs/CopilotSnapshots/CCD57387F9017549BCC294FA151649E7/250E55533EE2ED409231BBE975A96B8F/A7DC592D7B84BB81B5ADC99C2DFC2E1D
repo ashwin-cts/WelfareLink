@@ -1,0 +1,125 @@
+﻿@model WelfareLink.Controllers.CitizenDashboardViewModel
+@{
+    ViewData["Title"] = "Citizen Dashboard";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Welcome, @Model.CitizenProfile.Name</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Documents</h5>
+                    <h2>@Model.PendingDocuments</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Approved Documents</h5>
+                    <h2>@Model.ApprovedDocuments</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Rejected Documents</h5>
+                    <h2>@Model.RejectedDocuments</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> @Model.CitizenProfile.Name</p>
+                    <p><strong>Date of Birth:</strong> @Model.CitizenProfile.DateOfBirth.ToShortDateString()</p>
+                    <p><strong>Gender:</strong> @(Model.CitizenProfile.Gender ?? "Not specified")</p>
+                    <p><strong>Address:</strong> @Model.CitizenProfile.Address</p>
+                    <p><strong>Contact:</strong> @Model.CitizenProfile.ContactInfo</p>
+                    <p><strong>Status:</strong> <span class="badge bg-info">@Model.CitizenProfile.Status</span></p>
+                    <a asp-controller="Citizen" asp-action="EditProfile" class="btn btn-primary mt-2">Edit Profile</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-controller="CitizenDocument" asp-action="UploadDocument" class="btn btn-success btn-lg">Upload Document</a>
+                        <a asp-controller="CitizenDocument" asp-action="DocumentStatus" class="btn btn-info btn-lg">View Document Status</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Recent Documents</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Documents.Any())
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Document Type</th>
+                            <th>Upload Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doc in Model.Documents.Take(5))
+                        {
+                            <tr>
+                                <td>@doc.DocType</td>
+                                <td>@doc.UploadedDate.ToShortDateString()</td>
+                                <td>
+                                    @if (doc.VerificationStatus == "Pending")
+                                    {
+                                        <span class="badge bg-warning">@doc.VerificationStatus</span>
+                                    }
+                                    else if (doc.VerificationStatus == "Approved")
+                                    {
+                                        <span class="badge bg-success">@doc.VerificationStatus</span>
+                                    }
+                                    else if (doc.VerificationStatus == "Rejected")
+                                    {
+                                        <span class="badge bg-danger">@doc.VerificationStatus</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <a asp-controller="CitizenDocument" asp-action="DocumentStatus" class="btn btn-link">View All Documents</a>
+            }
+            else
+            {
+                <p class="text-muted">No documents uploaded yet.</p>
+                <a asp-controller="CitizenDocument" asp-action="UploadDocument" class="btn btn-primary">Upload Your First Document</a>
+            }
+        </div>
+    </div>
+</div>
