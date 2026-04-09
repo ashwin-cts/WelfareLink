@@ -191,7 +191,12 @@
 
                 <div class="mb-3">
                     <label class="form-label">Password</label>
-                    <input type="password" class="form-control" name="password" placeholder="Enter your password" required />
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="passwordInput" name="password" placeholder="Enter your password" required />
+                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-login">
@@ -230,6 +235,19 @@
                 e.preventDefault();
                 alert('Please select a user type');
             }
+        });
+
+        const togglePassword = document.getElementById("togglePassword");
+        const passwordInput = document.getElementById("passwordInput");
+
+        togglePassword.addEventListener("click", function () {
+            const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+            passwordInput.setAttribute("type", type);
+
+            // Toggle icon
+            this.innerHTML = type === "password"
+                ? '<i class="bi bi-eye"></i>'
+                : '<i class="bi bi-eye-slash"></i>';
         });
     </script>
 </body>

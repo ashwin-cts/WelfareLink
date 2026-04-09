@@ -32,9 +32,20 @@ namespace WelfareLink.Controllers
             var user = _context.Users.FirstOrDefault(u => 
                 u.Username == username && 
                 u.Password == password && 
-                u.Role == userType &&
-                u.IsActive);
+                u.Role == userType );
+            if (user == null)
+            {
+                TempData["Error"] = "Invalid username or password";
+                return RedirectToAction("Login");
+            }
 
+            if (!user.IsActive)
+            {
+                TempData["Error"] = "Your account is blocked. Please contact Admin.";
+                return RedirectToAction("Login");
+
+            }
+            
             if (user != null)
             {
                 HttpContext.Session.Clear();
@@ -54,7 +65,7 @@ namespace WelfareLink.Controllers
                 return RedirectBasedOnRole(user.Role);
             }
 
-            TempData["Error"] = "Invalid username or password";
+            TempData["Error"] = "Unknown Error";
             return RedirectToAction("Login");
         }
 

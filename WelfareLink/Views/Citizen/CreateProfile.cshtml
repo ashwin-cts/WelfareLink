@@ -125,8 +125,13 @@
 
                     <div class="col-md-6 mb-3">
                         <label asp-for="Password" class="form-label">Password</label>
-                        <input asp-for="Password" class="form-control" type="password" placeholder="Choose a password" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
+                        <div class="input-group">
+                            <input asp-for="Password" class="form-control" id="passwordInput" type="password" placeholder="Choose a password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                        </div>
                     </div>
                 </div>
 
@@ -199,6 +204,21 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+            const togglePassword = document.getElementById("togglePassword");
+            const passwordInput = document.getElementById("passwordInput");
+
+            togglePassword.addEventListener("click", function () {
+                const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+                passwordInput.setAttribute("type", type);
+
+                // Toggle icon
+                this.innerHTML = type === "password"
+                    ? '<i class="bi bi-eye"></i>'
+                    : '<i class="bi bi-eye-slash"></i>';
+            });
+    </script>
+
 </body>
 </html>
 </div>
