@@ -25,6 +25,7 @@ namespace WelfareLink.Repositories
                 .Include(d => d.Benefit)
                     .ThenInclude(b => b.WelfareApplication)
                         .ThenInclude(a => a.Program)
+                .OrderBy(d=>d.DisbursementID)
                 .ToListAsync();
         }
 

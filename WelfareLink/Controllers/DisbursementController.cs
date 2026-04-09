@@ -146,7 +146,11 @@ namespace WelfareLinkPRJ.Controllers
             {
                 return NotFound();
             }
-
+            if (disbursement.Status == "Completed")
+            {
+                TempData["Error"] = "Cannot edit disbursement";
+                return RedirectToAction("Index");
+            }
             await PopulateBenefitDropdown(disbursement.BenefitID);
             ViewBag.OfficerId = disbursement.OfficerID;
             return View(disbursement);
@@ -197,6 +201,11 @@ namespace WelfareLinkPRJ.Controllers
             }
 
             var disbursement = await _disbursementService.GetDisbursementByIdAsync(id.Value);
+            if (disbursement.Status == "Completed")
+            {
+                TempData["Error"] = "Cannot delete disbursement";
+                return RedirectToAction("Index");
+            }
             if (disbursement == null)
             {
                 return NotFound();
