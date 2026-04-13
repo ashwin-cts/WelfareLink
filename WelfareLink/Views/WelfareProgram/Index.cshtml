@@ -73,6 +73,18 @@
                                     <i class="bi bi-flag-fill"></i> @item.Status
                                 </span>
                             }
+                            else if (item.Status == "Suspended")
+                            {
+                                <span class="status-badge status-processing">
+                                    <i class="bi bi-pause-circle-fill"></i> @item.Status
+                                </span>
+                            }
+                            else if (item.Status == "Expired")
+                            {
+                                <span class="status-badge status-failed">
+                                    <i class="bi bi-x-circle-fill"></i> @item.Status
+                                </span>
+                            }
                             else
                             {
                                 <span class="status-badge status-pending">
@@ -91,6 +103,17 @@
                                 <a asp-controller="Resource" asp-action="ManageResources" asp-route-programId="@item.ProgramID" class="btn-modern btn-success-modern btn-sm">
                                     <i class="bi bi-box-seam"></i> Allocate
                                 </a>
+                                @if (item.Status == "Active")
+                                {
+                                    <form asp-action="Suspend" method="post" style="display:inline;"
+                                          onsubmit="return confirm('Are you sure you want to suspend \'@item.Title\'?');">
+                                        <input type="hidden" name="id" value="@item.ProgramID" />
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn-modern btn-danger-modern btn-sm">
+                                            <i class="bi bi-pause-circle"></i> Suspend
+                                        </button>
+                                    </form>
+                                }
                             </div>
                         </td>
                     </tr>

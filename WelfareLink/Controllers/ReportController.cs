@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using WelfareLink.Interfaces;
+using WelfareLink.Services;
 
 namespace WelfareLink.Controllers;
 
@@ -7,10 +7,10 @@ namespace WelfareLink.Controllers;
 [Route("api/[controller]")]
 public class ReportController : ControllerBase
 {
-    private readonly IReportService _reportService;
+    private readonly WelfareApiClient _api;
 
-    public ReportController(IReportService reportService)
+    public ReportController(WelfareApiClient api)
     {
-        _reportService = reportService;
+        _api = api;
     }
 }

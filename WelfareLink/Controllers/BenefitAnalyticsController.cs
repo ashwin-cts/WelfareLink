@@ -1,22 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WelfareLink.Interfaces;
+using WelfareLink.Services;
 
 namespace WelfareLink.Controllers
 {
     public class BenefitAnalyticsController : Controller
     {
-        private readonly IBenefitAnalyticsService _analyticsService;
+        private readonly WelfareApiClient _api;
 
-        public BenefitAnalyticsController(IBenefitAnalyticsService analyticsService)
+        public BenefitAnalyticsController(WelfareApiClient api)
         {
-            _analyticsService = analyticsService;
+            _api = api;
         }
 
         // GET: Analytics/Dashboard
         public async Task<IActionResult> Dashboard()
         {
-            var viewModel = await _analyticsService.GetDashboardDataAsync();
+            var viewModel = await _api.GetBenefitAnalyticsDashboardAsync();
             return View(viewModel);
         }
     }
 }
+

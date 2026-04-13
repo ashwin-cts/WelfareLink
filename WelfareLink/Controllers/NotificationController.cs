@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using WelfareLink.Interfaces;
+using WelfareLink.Services;
 
 namespace WelfareLink.Controllers;
 
@@ -7,10 +7,10 @@ namespace WelfareLink.Controllers;
 [Route("api/[controller]")]
 public class NotificationController : ControllerBase
 {
-    private readonly INotificationService _notificationService;
+    private readonly WelfareApiClient _api;
 
-    public NotificationController(INotificationService notificationService)
+    public NotificationController(WelfareApiClient api)
     {
-        _notificationService = notificationService;
+        _api = api;
     }
 }

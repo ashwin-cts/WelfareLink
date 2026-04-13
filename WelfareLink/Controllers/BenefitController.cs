@@ -1,74 +1,44 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using WelfareLink.Interfaces;
 using WelfareLink.Models;
+using WelfareLink.Services;
 
 namespace WelfareLink.Controllers
 {
     public class BenefitController : Controller
     {
-        private readonly IBenefitService _benefitService;
-        private readonly IWelfareApplicationService _welfareApplicationService;
-        private readonly IResourceService _resourceService;
+        private readonly WelfareApiClient _api;
 
-        public BenefitController(IBenefitService benefitService, IWelfareApplicationService welfareApplicationService, IResourceService resourceService)
+        public BenefitController(WelfareApiClient api)
         {
-            _benefitService = benefitService;
-            _welfareApplicationService = welfareApplicationService;
-            _resourceService = resourceService;
+            _api = api;
         }
 
         private async Task PopulateApplicationDropdown(int? selectedId = null)
         {
-            var applications = await _welfareApplicationService.GetAllApplicationsAsync();
-
-            // Filter to show only APPROVED applications
-            var appList = applications
-                .Where(a => a.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            var data = await _api.GetBenefitDropdownAsync(selectedId);
 
             ViewBag.ApplicationList = new SelectList(
-                appList.Select(a => new {
-                    a.ApplicationID,
-                    Display = $"App #{a.ApplicationID} | {a.Citizen?.Name ?? $"Citizen #{a.CitizenID}"} | {a.Program?.Title ?? $"Program #{a.ProgramID}"}"
-                }),
+                data?.Dropdown.Select(d => new { d.ApplicationID, d.Display }) ?? [],
                 "ApplicationID", "Display", selectedId);
 
-            ViewBag.ApplicationsJson = System.Text.Json.JsonSerializer.Serialize(
-                appList.Select(a => new {
-                    a.ApplicationID,
-                    a.CitizenID,
-                    CitizenName     = a.Citizen?.Name ?? "-",
-                    a.ProgramID,
-                    ProgramTitle    = a.Program?.Title ?? $"Program #{a.ProgramID}",
-                    ProgramDesc     = a.Program?.Description ?? "-",
-                    ProgramBudget   = a.Program?.Budget,
-                    ProgramStatus   = a.Program?.Status ?? "-",
-                    SubmittedDate   = a.SubmittedDate.ToString("dd MMM yyyy"),
-                    a.Status
-                }));
+            ViewBag.ApplicationsJson = System.Text.Json.JsonSerializer.Serialize(data?.Applications ?? []);
         }
 
         // GET: Benefit
         public async Task<IActionResult> Index()
         {
-            var benefits = await _benefitService.GetAllBenefitsAsync();
+            var benefits = await _api.GetAllBenefitsAsync();
             return View(benefits);
         }
 
         // GET: Benefit/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var benefit = await _benefitService.GetBenefitByIdAsync(id.Value);
-            if (benefit == null)
-            {
-                return NotFound();
-            }
+            var benefit = await _api.GetBenefitByIdAsync(id.Value);
+            if (benefit == null) return NotFound();
 
             return View(benefit);
         }
@@ -87,9 +57,9 @@ namespace WelfareLink.Controllers
         {
             if (ModelState.IsValid)
             {
-                try
+                var (created, error) = await _api.CreateBenefitAsync(benefit, HttpContext.Session.GetInt32("UserId") ?? 0);
+                if (created != null)
                 {
-                    var created = await _benefitService.CreateBenefitAsync(benefit, HttpContext.Session.GetInt32("UserId") ?? 0);
                     if (created.Status.Equals("Allocated", StringComparison.OrdinalIgnoreCase))
                     {
                         TempData["SuccessMessage"] = $"Benefit #{created.BenefitID} has been successfully allocated. " +
@@ -98,14 +68,7 @@ namespace WelfareLink.Controllers
                     }
                     return RedirectToAction(nameof(Index));
                 }
-                catch (InvalidOperationException ex)
-                {
-                    ModelState.AddModelError(string.Empty, ex.Message);
-                }
-                catch (ArgumentException ex)
-                {
-                    ModelState.AddModelError(string.Empty, ex.Message);
-                }
+                ModelState.AddModelError(string.Empty, error ?? "Failed to create benefit.");
             }
             await PopulateApplicationDropdown(benefit.ApplicationID);
             return View(benefit);
@@ -114,16 +77,10 @@ namespace WelfareLink.Controllers
         // GET: Benefit/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var benefit = await _benefitService.GetBenefitByIdAsync(id.Value);
-            if (benefit == null)
-            {
-                return NotFound();
-            }
+            var benefit = await _api.GetBenefitByIdAsync(id.Value);
+            if (benefit == null) return NotFound();
 
             await PopulateApplicationDropdown(benefit.ApplicationID);
             return View(benefit);
@@ -134,21 +91,15 @@ namespace WelfareLink.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("BenefitID,ApplicationID,Type,Amount,Date,Status")] Benefit benefit)
         {
-            if (id != benefit.BenefitID)
-            {
-                return NotFound();
-            }
+            if (id != benefit.BenefitID) return NotFound();
 
             if (ModelState.IsValid)
             {
-                if (!await _benefitService.BenefitExistsAsync(benefit.BenefitID))
-                {
-                    return NotFound();
-                }
+                if (!await _api.BenefitExistsAsync(benefit.BenefitID)) return NotFound();
 
-                try
+                var (updated, error) = await _api.UpdateBenefitAsync(benefit, HttpContext.Session.GetInt32("UserId") ?? 0);
+                if (updated != null)
                 {
-                    var updated = await _benefitService.UpdateBenefitAsync(benefit, HttpContext.Session.GetInt32("UserId") ?? 0);
                     if (updated.Status.Equals("Allocated", StringComparison.OrdinalIgnoreCase))
                     {
                         TempData["SuccessMessage"] = $"Benefit #{updated.BenefitID} has been allocated successfully. " +
@@ -157,14 +108,7 @@ namespace WelfareLink.Controllers
                     }
                     return RedirectToAction(nameof(Index));
                 }
-                catch (InvalidOperationException ex)
-                {
-                    ModelState.AddModelError(string.Empty, ex.Message);
-                }
-                catch (ArgumentException ex)
-                {
-                    ModelState.AddModelError(string.Empty, ex.Message);
-                }
+                ModelState.AddModelError(string.Empty, error ?? "Failed to update benefit.");
             }
             await PopulateApplicationDropdown(benefit.ApplicationID);
             return View(benefit);
@@ -175,41 +119,17 @@ namespace WelfareLink.Controllers
         public async Task<IActionResult> GetProgramResourceInfo(int programId)
         {
             if (programId <= 0) return Json(null);
-
-            var resources = await _resourceService.GetResourcesByProgramIdAsync(programId);
-            var totalResource = (double)resources.Sum(r => r.Quantity);
-
-            var allBenefits = await _benefitService.GetAllBenefitsAsync();
-            var alreadyAllocated = allBenefits
-                .Where(b => b.WelfareApplication?.ProgramID == programId
-                            && !b.Status.Equals("Allocation Pending", StringComparison.OrdinalIgnoreCase)
-                            && !b.Status.Equals("Failed", StringComparison.OrdinalIgnoreCase))
-                .Sum(b => b.Amount);
-
-            var remainingResource = totalResource - alreadyAllocated;
-
-            return Json(new
-            {
-                totalResource,
-                alreadyAllocated,
-                remainingResource,
-                hasResource = totalResource > 0
-            });
+            var info = await _api.GetProgramResourceInfoAsync(programId);
+            return Json(info);
         }
 
         // GET: Benefit/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var benefit = await _benefitService.GetBenefitByIdAsync(id.Value);
-            if (benefit == null)
-            {
-                return NotFound();
-            }
+            var benefit = await _api.GetBenefitByIdAsync(id.Value);
+            if (benefit == null) return NotFound();
 
             return View(benefit);
         }
@@ -219,7 +139,7 @@ namespace WelfareLink.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _benefitService.DeleteBenefitAsync(id);
+            await _api.DeleteBenefitAsync(id);
             return RedirectToAction(nameof(Index));
         }
     }

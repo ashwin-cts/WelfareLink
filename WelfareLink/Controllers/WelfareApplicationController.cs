@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using WelfareLink.Interfaces;
+﻿using Microsoft.AspNetCore.Mvc;
 using WelfareLink.Models;
 using WelfareLink.Services;
 
@@ -8,91 +6,72 @@ namespace WelfareLink.Controllers;
 
 public class WelfareApplicationController : Controller
 {
-    private readonly IWelfareApplicationService _welfareApplicationService;
-    private readonly IWelfareProgramService _welfareProgramService;
+    private readonly WelfareApiClient _api;
 
-    public WelfareApplicationController(IWelfareApplicationService welfareApplicationService, IWelfareProgramService welfareProgramService)
+    public WelfareApplicationController(WelfareApiClient api)
     {
-        _welfareApplicationService = welfareApplicationService;
-        _welfareProgramService = welfareProgramService;
+        _api = api;
     }
 
-    public async Task<IActionResult> HomeIndex(string status = null)
+    public async Task<IActionResult> HomeIndex(string? status = null)
     {
-        var applications = await _welfareApplicationService.GetAllApplicationsAsync();
-
-        // Filter by status if provided
-        if (!string.IsNullOrEmpty(status))
-        {
-            applications = applications.Where(a => a.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
-            ViewBag.CurrentStatus = status;
-        }
-
+        var applications = await _api.GetAllApplicationsAsync(status);
+        if (!string.IsNullOrEmpty(status)) ViewBag.CurrentStatus = status;
         return View(applications);
     }
-
 
     // GET: WelfareApplication
-    // Application Review Dashboard (Officer) - Lists applications pending review
     public async Task<IActionResult> Index()
     {
-        var applications = await _welfareApplicationService.GetAllApplicationsAsync();
+        var applications = await _api.GetAllApplicationsAsync();
         return View(applications);
     }
+
     // GET: WelfareApplication/Pending
-    // Get all pending applications for officer review
     public async Task<IActionResult> Pending()
     {
-        var pendingApplications = await _welfareApplicationService.GetPendingApplicationsAsync();
+        var pendingApplications = await _api.GetPendingApplicationsAsync();
         return View(pendingApplications);
     }
 
     // GET: WelfareApplication/Details/5
-    // Application Detail Page - Full view of a single application
     public async Task<IActionResult> Details(int id)
     {
-        var application = await _welfareApplicationService.GetApplicationByIdAsync(id);
-        if (application == null)
-        {
-            return NotFound();
-        }
+        var application = await _api.GetApplicationByIdAsync(id);
+        if (application == null) return NotFound();
         return View(application);
     }
+
     // GET: WelfareApplication/Edit/5
     public async Task<IActionResult> Edit(int id)
     {
-        var application = await _welfareApplicationService.GetApplicationByIdAsync(id);
-        if (application == null)
-        {
-            return NotFound();
-        }
+        var application = await _api.GetApplicationByIdAsync(id);
+        if (application == null) return NotFound();
         return View(application);
     }
+
     // POST: WelfareApplication/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, WelfareApplication application)
     {
-        if (id != application.ApplicationID)
-        {
-            return NotFound();
-        }
+        if (id != application.ApplicationID) return NotFound();
 
         if (ModelState.IsValid)
         {
-            await _welfareApplicationService.UpdateApplicationAsync(application);
+            await _api.UpdateApplicationAsync(application);
             TempData["SuccessMessage"] = "Application updated successfully!";
             return RedirectToAction(nameof(Index));
         }
         return View(application);
     }
+
     // POST: WelfareApplication/UpdateStatus/5
-    // Update application status (Approved/Rejected/Under Review)
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateStatus(int id, string status)
     {
-        var result = await _welfareApplicationService.UpdateApplicationStatusAsync(id, status);
+        var result = await _api.UpdateApplicationStatusAsync(id, status);
         if (result)
         {
             TempData["SuccessMessage"] = $"Application status updated to {status}";
@@ -101,57 +80,44 @@ public class WelfareApplicationController : Controller
         TempData["ErrorMessage"] = "Failed to update application status";
         return RedirectToAction(nameof(Index));
     }
+
     // GET: WelfareApplication/ByStatus
-    // Filter applications by status
-    public async Task<IActionResult> ByStatus(string status)
+    public async Task<IActionResult> ByStatus(string? status)
     {
-        IEnumerable<WelfareLink.Models.WelfareApplication> applications;
-
-        if (string.IsNullOrEmpty(status))
-        {
-            applications = await _welfareApplicationService.GetAllApplicationsAsync();
-            ViewBag.SelectedStatus = "";
-        }
-        else
-        {
-            applications = await _welfareApplicationService.GetApplicationsByStatusAsync(status);
-            ViewBag.SelectedStatus = status;
-        }
-
+        var applications = string.IsNullOrEmpty(status)
+            ? await _api.GetAllApplicationsAsync()
+            : await _api.GetAllApplicationsAsync(status);
+        ViewBag.SelectedStatus = status ?? "";
         return View("Index", applications);
     }
+
     // GET: WelfareApplication/DateRange
-    // Filter applications by date range
     public async Task<IActionResult> DateRange(DateOnly? startDate, DateOnly? endDate)
     {
-        if (!startDate.HasValue || !endDate.HasValue)
-        {
-            return RedirectToAction(nameof(Index));
-        }
+        if (!startDate.HasValue || !endDate.HasValue) return RedirectToAction(nameof(Index));
 
-        var applications = await _welfareApplicationService.GetApplicationsByDateRangeAsync(startDate.Value, endDate.Value);
+        var applications = await _api.GetAllApplicationsAsync();
+        applications = applications.Where(a => a.SubmittedDate >= startDate.Value && a.SubmittedDate <= endDate.Value);
         ViewBag.StartDate = startDate.Value;
         ViewBag.EndDate = endDate.Value;
         return View("Index", applications);
     }
+
     // GET: WelfareApplication/Delete/5
     public async Task<IActionResult> Delete(int id)
     {
-        var application = await _welfareApplicationService.GetApplicationByIdAsync(id);
-        if (application == null)
-        {
-            return NotFound();
-        }
+        var application = await _api.GetApplicationByIdAsync(id);
+        if (application == null) return NotFound();
         return View(application);
     }
+
     // POST: WelfareApplication/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        await _welfareApplicationService.DeleteApplicationAsync(id);
+        await _api.DeleteApplicationAsync(id);
         TempData["SuccessMessage"] = "Application deleted successfully!";
         return RedirectToAction(nameof(Index));
     }
-
 }

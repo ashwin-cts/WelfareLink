@@ -1,64 +1,53 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using WelfareLink.Interfaces;
 using WelfareLink.Models;
+using WelfareLink.Services;
 
-namespace WelfareLinkPRJ.Controllers
+namespace WelfareLink.Controllers
 {
     public class DisbursementController : Controller
     {
-        private readonly IDisbursementService _disbursementService;
-        private readonly IBenefitService _benefitService;
-        private readonly IResourceService _resourceService;
+        private readonly WelfareApiClient _api;
 
-        public DisbursementController(IDisbursementService disbursementService, IBenefitService benefitService, IResourceService resourceService)
+        public DisbursementController(WelfareApiClient api)
         {
-            _disbursementService = disbursementService;
-            _benefitService = benefitService;
-            _resourceService = resourceService;
+            _api = api;
+        }
+
+        private async Task PopulateBenefitDropdown(int? selectedBenefitId = null)
+        {
+            var benefits = await _api.GetAllBenefitsAsync();
+            var benefitList = benefits.Select(b => new SelectListItem
+            {
+                Value = b.BenefitID.ToString(),
+                Text = $"{b.BenefitID} - {b.Type} - {b.Amount:C}",
+                Selected = b.BenefitID == selectedBenefitId
+            });
+            ViewData["BenefitID"] = new SelectList(benefitList, "Value", "Text", selectedBenefitId);
         }
 
         // GET: Disbursement
         public async Task<IActionResult> Index()
         {
-            var disbursements = await _disbursementService.GetAllDisbursementsAsync();
+            var disbursements = await _api.GetAllDisbursementsAsync();
             return View(disbursements);
         }
 
         // GET: Disbursement/History
         public async Task<IActionResult> History(DateTime? startDate, DateTime? endDate, string? benefitType, int? officerId, string? status)
         {
-            var disbursements = await _disbursementService.GetAllDisbursementsAsync();
-            var benefits = await _benefitService.GetAllBenefitsAsync();
+            var disbursements = (await _api.GetAllDisbursementsAsync()).AsQueryable();
+            var benefits = await _api.GetAllBenefitsAsync();
 
-            // Apply filters
-            if (startDate.HasValue)
-            {
-                disbursements = disbursements.Where(d => d.Date >= startDate.Value);
-            }
-            if (endDate.HasValue)
-            {
-                disbursements = disbursements.Where(d => d.Date <= endDate.Value);
-            }
-            if (!string.IsNullOrEmpty(benefitType))
-            {
-                disbursements = disbursements.Where(d => d.Benefit != null && d.Benefit.Type == benefitType);
-            }
-            if (officerId.HasValue)
-            {
-                disbursements = disbursements.Where(d => d.OfficerID == officerId.Value);
-            }
-            if (!string.IsNullOrEmpty(status))
-            {
-                disbursements = disbursements.Where(d => d.Status == status);
-            }
+            if (startDate.HasValue) disbursements = disbursements.Where(d => d.Date >= startDate.Value);
+            if (endDate.HasValue) disbursements = disbursements.Where(d => d.Date <= endDate.Value);
+            if (!string.IsNullOrEmpty(benefitType)) disbursements = disbursements.Where(d => d.Benefit != null && d.Benefit.Type == benefitType);
+            if (officerId.HasValue) disbursements = disbursements.Where(d => d.OfficerID == officerId.Value);
+            if (!string.IsNullOrEmpty(status)) disbursements = disbursements.Where(d => d.Status == status);
 
-            // Populate filter dropdowns
             ViewBag.BenefitTypes = benefits.Select(b => b.Type).Distinct().ToList();
             ViewBag.Statuses = new List<string> { "Completed", "Pending", "Failed" };
             ViewBag.OfficerIds = disbursements.Select(d => d.OfficerID).Distinct().OrderBy(o => o).ToList();
-
-            // Pass current filter values
             ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd");
             ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
             ViewBag.SelectedBenefitType = benefitType;
@@ -71,27 +60,17 @@ namespace WelfareLinkPRJ.Controllers
         // GET: Disbursement/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var disbursement = await _disbursementService.GetDisbursementByIdAsync(id.Value);
-            if (disbursement == null)
-            {
-                return NotFound();
-            }
+            var detail = await _api.GetDisbursementByIdAsync(id.Value);
+            if (detail?.Disbursement == null) return NotFound();
 
-            // Load sibling disbursements for the same benefit so the officer can see pending balance entries
-            var siblings = await _disbursementService.GetDisbursementsByBenefitIdAsync(disbursement.BenefitID);
-            ViewBag.SiblingDisbursements = siblings.Where(d => d.DisbursementID != id.Value).OrderBy(d => d.Date).ToList();
-            ViewBag.BenefitTotalAmount = disbursement.Benefit?.Amount ?? 0;
-            ViewBag.TotalDisbursed = siblings.Where(d => d.Status == "Completed").Sum(d => d.Amount);
-            ViewBag.PendingBalance = siblings
-                .Where(d => d.Status == "Pending" || d.Status == "Disbursement Pending")
-                .Sum(d => d.Amount);
+            ViewBag.SiblingDisbursements = detail.SiblingDisbursements;
+            ViewBag.BenefitTotalAmount = detail.BenefitTotalAmount;
+            ViewBag.TotalDisbursed = detail.TotalDisbursed;
+            ViewBag.PendingBalance = detail.PendingBalance;
 
-            return View(disbursement);
+            return View(detail.Disbursement);
         }
 
         // GET: Disbursement/Create
@@ -107,26 +86,14 @@ namespace WelfareLinkPRJ.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("DisbursementID,BenefitID,CitizenID,OfficerID,Amount,Date,Status")] Disbursement disbursement)
         {
-            // Always use the logged-in officer's ID
             var sessionOfficerId = HttpContext.Session.GetInt32("UserId");
-            if (sessionOfficerId.HasValue)
-                disbursement.OfficerID = sessionOfficerId.Value;
+            if (sessionOfficerId.HasValue) disbursement.OfficerID = sessionOfficerId.Value;
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    await _disbursementService.CreateDisbursementAsync(disbursement);
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (ArgumentException ex)
-                {
-                    ModelState.AddModelError(string.Empty, ex.Message);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    ModelState.AddModelError(string.Empty, ex.Message);
-                }
+                var (created, error) = await _api.CreateDisbursementAsync(disbursement);
+                if (created != null) return RedirectToAction(nameof(Index));
+                ModelState.AddModelError(string.Empty, error ?? "Failed to create disbursement.");
             }
             await PopulateBenefitDropdown(disbursement.BenefitID);
             ViewBag.OfficerId = disbursement.OfficerID;
@@ -136,24 +103,19 @@ namespace WelfareLinkPRJ.Controllers
         // GET: Disbursement/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var disbursement = await _disbursementService.GetDisbursementByIdAsync(id.Value);
-            if (disbursement == null)
-            {
-                return NotFound();
-            }
-            if (disbursement.Status == "Completed")
+            var detail = await _api.GetDisbursementByIdAsync(id.Value);
+            if (detail?.Disbursement == null) return NotFound();
+
+            if (detail.Disbursement.Status == "Completed")
             {
                 TempData["Error"] = "Cannot edit disbursement";
                 return RedirectToAction("Index");
             }
-            await PopulateBenefitDropdown(disbursement.BenefitID);
-            ViewBag.OfficerId = disbursement.OfficerID;
-            return View(disbursement);
+            await PopulateBenefitDropdown(detail.Disbursement.BenefitID);
+            ViewBag.OfficerId = detail.Disbursement.OfficerID;
+            return View(detail.Disbursement);
         }
 
         // POST: Disbursement/Edit/5
@@ -161,31 +123,15 @@ namespace WelfareLinkPRJ.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("DisbursementID,BenefitID,CitizenID,OfficerID,Amount,Date,Status")] Disbursement disbursement)
         {
-            if (id != disbursement.DisbursementID)
-            {
-                return NotFound();
-            }
+            if (id != disbursement.DisbursementID) return NotFound();
 
             if (ModelState.IsValid)
             {
-                if (!await _disbursementService.DisbursementExistsAsync(disbursement.DisbursementID))
-                {
-                    return NotFound();
-                }
+                if (!await _api.DisbursementExistsAsync(disbursement.DisbursementID)) return NotFound();
 
-                try
-                {
-                    await _disbursementService.UpdateDisbursementAsync(disbursement);
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (ArgumentException ex)
-                {
-                    ModelState.AddModelError(string.Empty, ex.Message);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    ModelState.AddModelError(string.Empty, ex.Message);
-                }
+                var (updated, error) = await _api.UpdateDisbursementAsync(disbursement);
+                if (updated != null) return RedirectToAction(nameof(Index));
+                ModelState.AddModelError(string.Empty, error ?? "Failed to update disbursement.");
             }
             await PopulateBenefitDropdown(disbursement.BenefitID);
             ViewBag.OfficerId = disbursement.OfficerID;
@@ -195,23 +141,17 @@ namespace WelfareLinkPRJ.Controllers
         // GET: Disbursement/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var disbursement = await _disbursementService.GetDisbursementByIdAsync(id.Value);
-            if (disbursement.Status == "Completed")
+            var detail = await _api.GetDisbursementByIdAsync(id.Value);
+            if (detail?.Disbursement == null) return NotFound();
+
+            if (detail.Disbursement.Status == "Completed")
             {
                 TempData["Error"] = "Cannot delete disbursement";
                 return RedirectToAction("Index");
             }
-            if (disbursement == null)
-            {
-                return NotFound();
-            }
-
-            return View(disbursement);
+            return View(detail.Disbursement);
         }
 
         // POST: Disbursement/Delete/5
@@ -219,7 +159,7 @@ namespace WelfareLinkPRJ.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _disbursementService.DeleteDisbursementAsync(id);
+            await _api.DeleteDisbursementAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
@@ -227,54 +167,9 @@ namespace WelfareLinkPRJ.Controllers
         [HttpGet]
         public async Task<IActionResult> GetBenefitDetails(int benefitId)
         {
-            if (benefitId <= 0)
-                return Json(null);
-
-            var benefit = await _benefitService.GetBenefitByIdAsync(benefitId);
-            if (benefit == null)
-                return Json(null);
-
-            var programId = benefit.WelfareApplication?.ProgramID ?? 0;
-
-            // Resource availability for the programme
-            var resources = programId > 0
-                ? await _resourceService.GetResourcesByProgramIdAsync(programId)
-                : Enumerable.Empty<WelfareLink.Models.Resource>();
-            var totalResource = (double)resources.Sum(r => r.Quantity);
-
-            var allDisbursements = await _disbursementService.GetAllDisbursementsAsync();
-            var totalDisbursedForProgram = allDisbursements
-                .Where(d => d.Status == "Completed" && d.Benefit?.WelfareApplication?.ProgramID == programId)
-                .Sum(d => d.Amount);
-
-            var availableResource = totalResource - totalDisbursedForProgram;
-
-            return Json(new
-            {
-                benefitType              = benefit.Type,
-                benefitAmount            = benefit.Amount,
-                benefitStatus            = benefit.Status,
-                programTitle             = benefit.WelfareApplication?.Program?.Title,
-                programBudget            = benefit.WelfareApplication?.Program?.Budget,
-                citizenId                = benefit.WelfareApplication?.CitizenID,
-                citizenName              = benefit.WelfareApplication?.Citizen?.Name,
-                totalResource,
-                totalDisbursedForProgram,
-                availableResource,
-                isResourceExhausted      = totalResource > 0 && availableResource <= 0
-            });
-        }
-
-        private async Task PopulateBenefitDropdown(int? selectedBenefitId = null)
-        {
-            var benefits = await _benefitService.GetAllBenefitsAsync();
-            var benefitList = benefits.Select(b => new SelectListItem
-            {
-                Value = b.BenefitID.ToString(),
-                Text = $"{b.BenefitID} - {b.Type} - {b.Amount:C}",
-                Selected = b.BenefitID == selectedBenefitId
-            });
-            ViewData["BenefitID"] = new SelectList(benefitList, "Value", "Text", selectedBenefitId);
+            if (benefitId <= 0) return Json(null);
+            var details = await _api.GetDisbursementBenefitDetailsAsync(benefitId);
+            return Json(details);
         }
     }
 }

@@ -1,3 +1,9 @@
+using System.Text;
+using Microsoft.EntityFrameworkCore;
+using WelfareLinkApi.Data;
+using WelfareLinkApi.Interfaces;
+using WelfareLinkApi.Repositories;
+using WelfareLinkApi.Services;
 
 namespace WelfareLinkApi
 {
@@ -9,9 +15,63 @@ namespace WelfareLinkApi
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                    options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+                })
+                .ConfigureApiBehaviorOptions(options =>
+                {
+                    options.InvalidModelStateResponseFactory = ctx =>
+                        new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(new
+                        {
+                            Error = string.Join("; ",
+                                ctx.ModelState.Values
+                                    .SelectMany(v => v.Errors)
+                                    .Select(e => e.ErrorMessage))
+                        });
+                });
+            //Db reg
+            builder.Services.AddDbContext<WelfareLinkDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            //DI Container
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+            builder.Services.AddScoped<ICitizenRepository, CitizenRepository>();
+            builder.Services.AddScoped<ICitizenDocumentRepository, CitizenDocumentRepository>();
+            builder.Services.AddScoped<IWelfareApplicationRepository, WelfareApplicationRepository>();
+            builder.Services.AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>();
+            builder.Services.AddScoped<IBenefitRepository, BenefitRepository>();
+            builder.Services.AddScoped<IDisbursementRepository, DisbursementRepository>();
+            builder.Services.AddScoped<IWelfareProgramRepository, WelfareProgramRespository>();
+            builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
+            builder.Services.AddScoped<IComplainceRecordRepository, ComplainceRecordRepository>();
+            builder.Services.AddScoped<IAuditRepository, AuditRepository>();
+            builder.Services.AddScoped<IReportRepository, ReportRepository>();
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+
+            // Service registrations
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+            builder.Services.AddScoped<ICitizenService, CitizenService>();
+            builder.Services.AddScoped<ICitizenDocumentService, CitizenDocumentService>();
+            builder.Services.AddScoped<IWelfareApplicationService, WelfareApplicationService>();
+            builder.Services.AddScoped<IEligibilityCheckService, EligibilityCheckService>();
+            builder.Services.AddScoped<IBenefitService, BenefitService>();
+            builder.Services.AddScoped<IDisbursementService, DisbursementService>();
+            builder.Services.AddScoped<IWelfareProgramService, WelfareProgramService>();
+            builder.Services.AddScoped<IResourceService, ResourceService>();
+            builder.Services.AddScoped<IComplainceRecordService, ComplainceRecordService>();
+            builder.Services.AddScoped<IAuditService, AuditService>();
+            builder.Services.AddScoped<IReportService, ReportService>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<IBenefitAnalyticsService, BenefitAnalyticsService>();
+            builder.Services.AddScoped<IWelfareApplicationAnalyticsService, WelfareApplicationAnalyticsService>();
+            builder.Services.AddScoped<IWelfareApplicationDocumentService, WelfareApplicationDocumentService>();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+            builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
@@ -19,9 +79,13 @@ namespace WelfareLinkApi
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
             app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
 
             app.UseAuthorization();
 

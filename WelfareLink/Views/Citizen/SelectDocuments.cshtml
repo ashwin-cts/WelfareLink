@@ -89,12 +89,29 @@
         {
             <div class="alert alert-warning">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <strong>No documents found.</strong> You have not uploaded any documents to your profile yet.
-                Please <a asp-controller="Citizen" asp-action="Dashboard" class="alert-link">go to your Dashboard</a> to upload documents before applying.
+                <strong>No documents found.</strong> You have not uploaded any documents yet.
+                Please <a asp-controller="CitizenDocument" asp-action="UploadDocument" class="alert-link">upload your documents</a> before applying.
             </div>
         }
         else
         {
+            @if (!noDocRequired && requiredDocTypes.Any())
+            {
+                <!-- Required doc type tracker -->
+                <div class="alert alert-light border mb-3" id="reqTracker">
+                    <strong><i class="bi bi-list-check me-1"></i> Requirements Checklist:</strong>
+                    <div class="d-flex flex-wrap gap-2 mt-2" id="reqBadges">
+                        @foreach (var dt in requiredDocTypes)
+                        {
+                            <span class="badge bg-danger req-type-badge" data-reqtype="@dt" style="font-size:0.85rem;padding:6px 12px;">
+                                <i class="bi bi-circle"></i> @dt
+                            </span>
+                        }
+                    </div>
+                    <small class="text-muted mt-1 d-block">Tick at least one document of each required type to enable submission.</small>
+                </div>
+            }
+
             <div class="table-responsive">
                 <table class="table table-modern">
                     <thead>
@@ -105,6 +122,7 @@
                             <th>Document Type</th>
                             <th>Uploaded Date</th>
                             <th>Verification Status</th>
+                            <th>File</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -152,6 +170,15 @@
                                         <span class="status-badge status-processing">@doc.VerificationStatus</span>
                                     }
                                 </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(doc.FileURI))
+                                    {
+                                        <a asp-controller="CitizenDocument" asp-action="ViewDocument" asp-route-id="@doc.DocumentID"
+                                           target="_blank" class="btn-modern btn-info-modern btn-sm" onclick="event.stopPropagation();" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    }
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -165,19 +192,15 @@
         }
     </div>
 
+    <div id="docValidationError" class="alert alert-danger d-none mb-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span id="docValidationMsg"></span>
+    </div>
+
     <div class="d-flex gap-2">
-        @if (noDocRequired)
-        {
-            <button type="submit" class="btn-modern btn-success-modern" id="submitBtn">
-                <i class="bi bi-send"></i> Submit Application
-            </button>
-        }
-        else if (documents.Any())
-        {
-            <button type="submit" class="btn-modern btn-success-modern" id="submitBtn" disabled>
-                <i class="bi bi-send"></i> Submit Application
-            </button>
-        }
+        <button type="submit" class="btn-modern btn-success-modern" id="submitBtn">
+            <i class="bi bi-send"></i> Submit Application
+        </button>
         <a asp-action="ProgramList" asp-controller="Citizen" class="btn-modern btn-secondary-modern">
             <i class="bi bi-arrow-left"></i> Cancel
         </a>
@@ -196,39 +219,75 @@
 
         function toggleDoc(docId) {
             var cb = document.getElementById('doc-' + docId);
-            cb.checked = !cb.checked;
-            onCheckboxChange();
+            if (cb) {
+                cb.checked = !cb.checked;
+                onCheckboxChange();
+            }
+        }
+
+        function getSelectedTypes() {
+            var checked = Array.from(document.querySelectorAll('.doc-checkbox:checked'));
+            return checked.map(function (cb) { return getDocTypeForRow(cb.value); });
         }
 
         function onCheckboxChange() {
-            var checked = document.querySelectorAll('.doc-checkbox:checked');
-            var count = checked.length;
-            var submitBtn = document.getElementById('submitBtn');
-            var summary = document.getElementById('selectionSummary');
-            var countSpan = document.getElementById('selectedCount');
+            var selectedTypes = getSelectedTypes();
+            var count = selectedTypes.length;
 
-            if (!noDocRequired && submitBtn) {
-                if (requiredDocTypes.length > 0) {
-                    // Enable submit only when all required types are covered
-                    var selectedTypes = Array.from(checked).map(cb => getDocTypeForRow(cb.value));
-                    var allCovered = requiredDocTypes.every(rt => selectedTypes.includes(rt));
-                    submitBtn.disabled = !allCovered;
-                } else {
-                    submitBtn.disabled = count === 0;
-                }
+            // Update the requirements checklist badges
+            document.querySelectorAll('.req-type-badge').forEach(function (badge) {
+                var reqType = badge.getAttribute('data-reqtype');
+                var covered = selectedTypes.includes(reqType);
+                badge.classList.toggle('bg-success', covered);
+                badge.classList.toggle('bg-danger', !covered);
+                var icon = badge.querySelector('i');
+                if (icon) icon.className = covered ? 'bi bi-check-circle-fill' : 'bi bi-circle';
+            });
+
+            // Hide validation error live as user selects
+            var errorDiv = document.getElementById('docValidationError');
+            if (errorDiv && !errorDiv.classList.contains('d-none')) {
+                var missing = requiredDocTypes.filter(function (rt) { return !selectedTypes.includes(rt); });
+                if (missing.length === 0) errorDiv.classList.add('d-none');
+                else document.getElementById('docValidationMsg').textContent =
+                    'Please select at least one document for: ' + missing.join(', ') + '.';
             }
 
+            // Show / hide selection summary
+            var summary = document.getElementById('selectionSummary');
+            var countSpan = document.getElementById('selectedCount');
             if (summary && countSpan) {
                 countSpan.textContent = count;
                 summary.classList.toggle('d-none', count === 0);
             }
 
+            // Highlight selected rows
             document.querySelectorAll('.doc-checkbox').forEach(function (cb) {
                 var row = document.getElementById('row-' + cb.value);
                 if (row) {
-                    row.style.background = cb.checked ? 'rgba(16,185,129,0.08)' : '';
+                    row.style.background = cb.checked ? 'rgba(16,185,129,0.1)' : '';
+                    row.style.outline = cb.checked ? '2px solid rgba(16,185,129,0.4)' : '';
                 }
             });
         }
+
+        // Validate on submit — show message instead of silent block
+        document.getElementById('docSelectForm').addEventListener('submit', function (e) {
+            if (noDocRequired) return; // no docs needed — let it through
+
+            var selectedTypes = getSelectedTypes();
+            var missing = requiredDocTypes.filter(function (rt) { return !selectedTypes.includes(rt); });
+
+            if (missing.length > 0) {
+                e.preventDefault();
+                var errorDiv = document.getElementById('docValidationError');
+                document.getElementById('docValidationMsg').textContent =
+                    'Please select at least one document for: ' + missing.join(', ') + '.';
+                errorDiv.classList.remove('d-none');
+                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () { onCheckboxChange(); });
     </script>
 }

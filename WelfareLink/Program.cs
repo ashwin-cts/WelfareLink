@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using WelfareLink.Data;
-using WelfareLink.Interfaces;
-using WelfareLink.Repositories;
 using WelfareLink.Services;
 
 namespace WelfareLink
@@ -19,49 +17,27 @@ namespace WelfareLink
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(60);
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
 
-            //Db reg
-            builder.Services.AddDbContext<WelfareLinkDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            // DB context kept only for AccountController and AdminController (login/auth)
+            builder.Services.AddDbContext<WelfareLinkDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            //Dependency injections
-            // Repository registrations
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-            builder.Services.AddScoped<ICitizenRepository, CitizenRepository>();
-            builder.Services.AddScoped<ICitizenDocumentRepository, CitizenDocumentRepository>();
-            builder.Services.AddScoped<IWelfareApplicationRepository, WelfareApplicationRepository>();
-            builder.Services.AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>();
-            builder.Services.AddScoped<IBenefitRepository, BenefitRepository>();
-            builder.Services.AddScoped<IDisbursementRepository, DisbursementRepository>();
-            builder.Services.AddScoped<IWelfareProgramRepository, WelfareProgramRespository>();
-            builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
-            builder.Services.AddScoped<IComplainceRecordRepository, ComplainceRecordRepository>();
-            builder.Services.AddScoped<IAuditRepository, AuditRepository>();
-            builder.Services.AddScoped<IReportRepository, ReportRepository>();
-            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-            
+            // Register typed HttpClient pointing at the API
+            var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"]
+                             ?? throw new InvalidOperationException("ApiSettings:BaseUrl is not configured.");
 
-            // Service registrations
-            builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IAuditLogService, AuditLogService>();
-            builder.Services.AddScoped<ICitizenService, CitizenService>();
-            builder.Services.AddScoped<ICitizenDocumentService, CitizenDocumentService>();
-            builder.Services.AddScoped<IWelfareApplicationService, WelfareApplicationService>();
-            builder.Services.AddScoped<IEligibilityCheckService, EligibilityCheckService>();
-            builder.Services.AddScoped<IBenefitService, BenefitService>();
-            builder.Services.AddScoped<IDisbursementService, DisbursementService>();
-            builder.Services.AddScoped<IWelfareProgramService, WelfareProgramService>();
-            builder.Services.AddScoped<IResourceService, ResourceService>();
-            builder.Services.AddScoped<IComplainceRecordService, ComplainceRecordService>();
-            builder.Services.AddScoped<IAuditService, AuditService>();
-            builder.Services.AddScoped<IReportService, ReportService>();
-            builder.Services.AddScoped<INotificationService, NotificationService>();
-            builder.Services.AddScoped<IBenefitAnalyticsService, BenefitAnalyticsService>();
-            builder.Services.AddScoped<IWelfareApplicationAnalyticsService, WelfareApplicationAnalyticsService>();
+            builder.Services.AddHttpClient<WelfareApiClient>(client =>
+            {
+                client.BaseAddress = new Uri(apiBaseUrl);
+            }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                // Accept self-signed certs in development
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            });
 
 
             var app = builder.Build();

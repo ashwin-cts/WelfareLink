@@ -171,9 +171,9 @@
                                                     }
                                                 </td>
                                                 <td>
-                                                    @if (!string.IsNullOrEmpty(doc.FileURI))
+                                                    @if (doc.DocumentID > 0)
                                                     {
-                                                        <a href="@doc.FileURI" target="_blank" class="btn-modern btn-info-modern btn-sm">
+                                                        <a asp-controller="CitizenDocument" asp-action="ViewDocument" asp-route-id="@doc.DocumentID" target="_blank" class="btn-modern btn-info-modern btn-sm">
                                                             <i class="bi bi-eye"></i> View
                                                         </a>
                                                     }

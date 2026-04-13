@@ -139,12 +139,15 @@
                                 <a asp-action="Details" asp-route-id="@item.DisbursementID" class="btn-modern btn-info-modern btn-sm">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a asp-action="Edit" asp-route-id="@item.DisbursementID" class="btn-modern btn-warning-modern btn-sm">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@item.DisbursementID" class="btn-modern btn-danger-modern btn-sm">
-                                    <i class="bi bi-trash"></i>
-                                </a>
+                                @if (item.Status != "Completed" && item.Status != "Fully Disbursed")
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.DisbursementID" class="btn-modern btn-warning-modern btn-sm">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.DisbursementID" class="btn-modern btn-danger-modern btn-sm">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                }
                             </div>
                         </td>
                     </tr>

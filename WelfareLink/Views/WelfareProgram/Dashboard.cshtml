@@ -75,6 +75,7 @@
                     <th>Program ID</th>
                     <th>Title</th>
                     <th>Budget</th>
+                    <th>End Date</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -86,6 +87,7 @@
                         <td><strong>PRG-@program.ProgramID</strong></td>
                         <td>@program.Title</td>
                         <td><strong>₹@program.Budget.ToString("N0")</strong></td>
+                        <td>@program.EndDate.ToString("MMM dd, yyyy")</td>
                         <td>
                             <span class="status-badge status-completed">
                                 <i class="bi bi-check-circle-fill"></i> @program.Status
@@ -99,6 +101,14 @@
                                 <a asp-action="Details" asp-route-id="@program.ProgramID" class="btn-modern btn-info-modern btn-sm">
                                     <i class="bi bi-eye"></i> View
                                 </a>
+                                <form asp-action="Suspend" method="post" style="display:inline;"
+                                      onsubmit="return confirm('Are you sure you want to suspend \'@program.Title\'? Citizens will no longer see this programme.');">
+                                    <input type="hidden" name="id" value="@program.ProgramID" />
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-modern btn-danger-modern btn-sm">
+                                        <i class="bi bi-pause-circle"></i> Suspend
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -115,3 +125,56 @@
         }
     </div>
 </div>
+
+@if (Model.Any(p => p.Status == "Suspended" || p.Status == "Expired"))
+{
+    <div class="content-card mt-4">
+        <h2 style="color: #64748b; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+            <i class="bi bi-archive"></i> Suspended / Expired Programmes
+        </h2>
+        <div class="table-responsive">
+            <table class="table table-modern">
+                <thead>
+                    <tr>
+                        <th>Program ID</th>
+                        <th>Title</th>
+                        <th>Budget</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var program in Model.Where(p => p.Status == "Suspended" || p.Status == "Expired"))
+                    {
+                        <tr style="opacity: 0.75;">
+                            <td><strong>PRG-@program.ProgramID</strong></td>
+                            <td>@program.Title</td>
+                            <td><strong>₹@program.Budget.ToString("N0")</strong></td>
+                            <td>@program.EndDate.ToString("MMM dd, yyyy")</td>
+                            <td>
+                                @if (program.Status == "Suspended")
+                                {
+                                    <span class="status-badge status-processing">
+                                        <i class="bi bi-pause-circle-fill"></i> Suspended
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-failed">
+                                        <i class="bi bi-x-circle-fill"></i> Expired
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@program.ProgramID" class="btn-modern btn-info-modern btn-sm">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

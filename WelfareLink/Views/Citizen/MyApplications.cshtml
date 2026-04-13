@@ -63,6 +63,18 @@
                                 @if (item.Program != null)
                                 {
                                     <strong>@item.Program.Title</strong>
+                                    @if (item.Program.Status == "Suspended")
+                                    {
+                                        <span class="status-badge status-processing ms-1" style="font-size:0.7rem;">
+                                            <i class="bi bi-pause-circle-fill"></i> Suspended
+                                        </span>
+                                    }
+                                    else if (item.Program.Status == "Expired")
+                                    {
+                                        <span class="status-badge status-failed ms-1" style="font-size:0.7rem;">
+                                            <i class="bi bi-x-circle-fill"></i> Expired
+                                        </span>
+                                    }
                                     <br /><small class="text-muted">#@item.ProgramID</small>
                                 }
                                 else

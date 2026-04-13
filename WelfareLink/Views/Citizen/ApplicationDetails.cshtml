@@ -37,6 +37,26 @@
 }
 
 <div class="content-card">
+    <!-- Program Status Banner -->
+    @if (Model.Program?.Status == "Suspended" || Model.Program?.Status == "Expired")
+    {
+        <div class="alert @(Model.Program.Status == "Expired" ? "alert-danger" : "alert-warning") d-flex align-items-center gap-2 mb-4" role="alert">
+            <i class="bi @(Model.Program.Status == "Expired" ? "bi-x-octagon-fill" : "bi-pause-circle-fill")" style="font-size:1.4rem;"></i>
+            <div>
+                <strong>Programme @Model.Program.Status:</strong>
+                The welfare programme <em>@Model.Program.Title</em> is currently <strong>@Model.Program.Status.ToLower()</strong>.
+                @if (Model.Program.Status == "Expired")
+                {
+                    <span>This programme has ended and is no longer accepting applications.</span>
+                }
+                else
+                {
+                    <span>This programme has been suspended by the administration.</span>
+                }
+            </div>
+        </div>
+    }
+
     <!-- Status Banner -->
     <div class="d-flex align-items-center gap-3 mb-4">
         <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center"
@@ -71,7 +91,21 @@
         </div>
         <div class="detail-item">
             <label><i class="bi bi-diagram-3"></i> Program</label>
-            <p>@(Model.Program?.Title ?? $"Program #{Model.ProgramID}")</p>
+            <p>
+                @(Model.Program?.Title ?? $"Program #{Model.ProgramID}")
+                @if (Model.Program?.Status == "Suspended")
+                {
+                    <span class="status-badge status-processing ms-1" style="font-size:0.7rem;">
+                        <i class="bi bi-pause-circle-fill"></i> Suspended
+                    </span>
+                }
+                else if (Model.Program?.Status == "Expired")
+                {
+                    <span class="status-badge status-failed ms-1" style="font-size:0.7rem;">
+                        <i class="bi bi-x-circle-fill"></i> Expired
+                    </span>
+                }
+            </p>
         </div>
         <div class="detail-item">
             <label><i class="bi bi-calendar-event"></i> Submitted Date</label>

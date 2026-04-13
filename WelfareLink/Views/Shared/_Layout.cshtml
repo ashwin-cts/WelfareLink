@@ -732,6 +732,48 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    @if (isLoggedIn)
+    {
+        <script>
+            // Session timeout: 30 minutes of inactivity triggers automatic logout
+            var SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+            var sessionTimer;
+
+            function resetSessionTimer() {
+                clearTimeout(sessionTimer);
+                sessionTimer = setTimeout(function () {
+                    window.location.href = '/Account/Logout';
+                }, SESSION_TIMEOUT_MS);
+            }
+
+            // Reset the timer on any user interaction
+            ['click', 'keydown', 'mousemove', 'scroll', 'touchstart'].forEach(function (evt) {
+                document.addEventListener(evt, resetSessionTimer, { passive: true });
+            });
+
+            // Start the timer when the page loads
+            resetSessionTimer();
+
+            // Handle device waking from sleep: check session validity with the server
+            document.addEventListener('visibilitychange', function () {
+                if (document.visibilityState === 'visible') {
+                    fetch('/Account/CheckSession', { credentials: 'same-origin' })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            if (data.expired) {
+                                window.location.href = '/Account/Logout';
+                            } else {
+                                resetSessionTimer();
+                            }
+                        })
+                        .catch(function () {
+                            // Network error on wake — redirect to login to be safe
+                            window.location.href = '/Account/Logout';
+                        });
+                }
+            });
+        </script>
+    }
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

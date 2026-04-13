@@ -48,7 +48,8 @@
                     {
                         var isApplied = appliedProgramIds.Contains(program.ProgramID);
                         var eligibleGender = program.EligibleGender ?? "Anyone";
-                        var isGenderBlocked = eligibleGender != "Anyone" && !string.IsNullOrEmpty(citizenGender) && citizenGender != eligibleGender;
+                        var eligibleGenders = eligibleGender.Split(',').Select(g => g.Trim()).ToList();
+                        var isGenderBlocked = !eligibleGenders.Contains("Anyone") && !string.IsNullOrEmpty(citizenGender) && !eligibleGenders.Contains(citizenGender);
                         var requiredDocs = program.RequiredDocuments ?? "None";
                         <tr class="@(isGenderBlocked ? "table-secondary" : "")">
                             <td><strong>#@program.ProgramID</strong></td>
@@ -62,15 +63,18 @@
                             </td>
                             <td><strong>₹@program.Budget.ToString("N2")</strong></td>
                             <td>
-                                @if (eligibleGender == "Anyone")
+                                @if (eligibleGenders.Contains("Anyone"))
                                 {
                                     <span class="badge bg-success"><i class="bi bi-people"></i> Anyone</span>
                                 }
                                 else
                                 {
-                                    <span class="badge @(isGenderBlocked ? "bg-danger" : "bg-primary")">
-                                        <i class="bi bi-person"></i> @eligibleGender Only
-                                    </span>
+                                    @foreach (var g in eligibleGenders)
+                                    {
+                                        <span class="badge @(isGenderBlocked ? "bg-danger" : "bg-primary") me-1">
+                                            <i class="bi bi-person"></i> @g
+                                        </span>
+                                    }
                                 }
                             </td>
                             <td>
@@ -167,7 +171,7 @@
                                             </div>
                                             <div class="detail-item">
                                                 <label><i class="bi bi-gender-ambiguous"></i> Eligible Gender</label>
-                                                <p>@(eligibleGender == "Anyone" ? "Anyone (No Restriction)" : eligibleGender + " Only")</p>
+                                                <p>@(eligibleGenders.Contains("Anyone") ? "Anyone (No Restriction)" : string.Join(", ", eligibleGenders))</p>
                                             </div>
                                             <div class="detail-item" style="grid-column: span 2;">
                                                 <label><i class="bi bi-file-earmark-check"></i> Required Documents</label>

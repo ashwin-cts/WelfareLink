@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using WelfareLink.Interfaces;
+using WelfareLink.Services;
 
 namespace WelfareLink.Controllers;
 
@@ -7,10 +7,10 @@ namespace WelfareLink.Controllers;
 [Route("api/[controller]")]
 public class ComplainceRecordController : ControllerBase
 {
-    private readonly IComplainceRecordService _complainceRecordService;
+    private readonly WelfareApiClient _api;
 
-    public ComplainceRecordController(IComplainceRecordService complainceRecordService)
+    public ComplainceRecordController(WelfareApiClient api)
     {
-        _complainceRecordService = complainceRecordService;
+        _api = api;
     }
 }
