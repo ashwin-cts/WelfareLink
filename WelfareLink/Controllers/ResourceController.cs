@@ -19,6 +19,18 @@ public class ResourceController : Controller
     public async Task<IActionResult> Index()
     {
         var resources = await _api.GetAllResourcesAsync();
+        var programs = await _api.GetAllProgramsAsync();
+
+        // Populate the Program navigation property for each resource
+        var programDict = programs.ToDictionary(p => p.ProgramID);
+        foreach (var resource in resources)
+        {
+            if (programDict.TryGetValue(resource.ProgramID, out var program))
+            {
+                resource.Program = program;
+            }
+        }
+
         return View(resources);
     }
 
