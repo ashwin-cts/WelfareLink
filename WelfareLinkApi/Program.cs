@@ -53,7 +53,9 @@ namespace WelfareLinkApi
 
             // Service registrations
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+            builder.Services.AddScoped<IAuditLogServiceEnhanced, AuditLogService>();
+            builder.Services.AddScoped<IAuditLogService>(sp => sp.GetRequiredService<IAuditLogServiceEnhanced>());
+            builder.Services.AddScoped<IComplianceCheckService, ComplianceCheckService>();
             builder.Services.AddScoped<ICitizenService, CitizenService>();
             builder.Services.AddScoped<ICitizenDocumentService, CitizenDocumentService>();
             builder.Services.AddScoped<IWelfareApplicationService, WelfareApplicationService>();
@@ -69,9 +71,33 @@ namespace WelfareLinkApi
             builder.Services.AddScoped<IBenefitAnalyticsService, BenefitAnalyticsService>();
             builder.Services.AddScoped<IWelfareApplicationAnalyticsService, WelfareApplicationAnalyticsService>();
             builder.Services.AddScoped<IWelfareApplicationDocumentService, WelfareApplicationDocumentService>();
+
+            // Audit monitoring service for government auditors
+            builder.Services.AddScoped<IAuditMonitoringService, AuditMonitoringService>();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
+
+            // Add CORS to allow requests from WelfareLink (MVC) to WelfareLinkApi
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowWelfareLinkMvc", policy =>
+                {
+                    policy.WithOrigins("https://localhost:7100", "http://localhost:5100")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
+            });
+
+            // Add session support so API can read session values (e.g., UserId)
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
             var app = builder.Build();
 
@@ -87,8 +113,11 @@ namespace WelfareLinkApi
 
             app.UseStaticFiles();
 
-            app.UseAuthorization();
+            // Enable session and CORS before authorization so controllers can access session
+            app.UseSession();
+            app.UseCors("AllowWelfareLinkMvc");
 
+            app.UseAuthorization();
 
             app.MapControllers();
 

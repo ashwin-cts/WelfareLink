@@ -1,0 +1,89 @@
+@{
+    ViewData["Title"] = "My Compliance Issues";
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-exclamation-circle"></i> My Compliance Issues</h1>
+        <p class="text-muted">Track and manage raised compliance issues</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.Error))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> @ViewBag.Error
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table table-modern">
+            <thead>
+                <tr>
+                    <th>Record ID</th>
+                    <th>Violation Type</th>
+                    <th>Benefit ID</th>
+                    <th>Priority</th>
+                    <th>Created Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="issuesTableBody">
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Loading issues...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function loadIssues() {
+            try {
+                const response = await fetch('/api/ComplianceOfficerDashboard/issues');
+                const data = await response.json();
+                const issues = Array.isArray(data) ? data : (data.data || []);
+                displayIssues(issues);
+            } catch (error) {
+                console.error('Error loading issues:', error);
+                document.getElementById('issuesTableBody').innerHTML = 
+                    '<tr><td colspan="6" class="text-center text-danger">Error loading issues</td></tr>';
+            }
+        }
+
+        function displayIssues(issues) {
+            const tbody = document.getElementById('issuesTableBody');
+
+            if (!issues || issues.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No open issues</td></tr>';
+                return;
+            }
+
+            let html = '';
+            issues.forEach(issue => {
+                const priorityClass = issue.priority === 'Critical' ? 'bg-danger' : 
+                                     issue.priority === 'High' ? 'bg-danger' :
+                                     issue.priority === 'Medium' ? 'bg-warning' : 'bg-info';
+                const statusClass = issue.status === 'Closed' ? 'status-completed' : 
+                                   issue.status === 'Open' ? 'status-pending' : 'status-processing';
+
+                html += `
+                    <tr>
+                        <td><strong>#${issue.recordID}</strong></td>
+                        <td>${issue.violationType}</td>
+                        <td>${issue.benefitID || 'N/A'}</td>
+                        <td><span class="badge ${priorityClass}">${issue.priority}</span></td>
+                        <td>${new Date(issue.createdDate).toLocaleDateString()}</td>
+                        <td><span class="badge ${statusClass === 'status-completed' ? 'bg-success' : 'bg-warning'}">${issue.status}</span></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadIssues);
+    </script>
+}

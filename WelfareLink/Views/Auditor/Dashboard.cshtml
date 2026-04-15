@@ -1,0 +1,226 @@
+@{
+    ViewData["Title"] = "Auditor Dashboard";
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-bank"></i> Auditor Dashboard</h1>
+        <p class="text-muted">System overview and audit monitoring</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.Error))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> @ViewBag.Error
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="content-card">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="text-muted mb-1">Total Programs</p>
+                    <h3 id="totalPrograms" class="mb-0">-</h3>
+                </div>
+                <i class="bi bi-diagram-3" style="font-size: 2.5rem; color: #1e3c72; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="content-card">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="text-muted mb-1">Active Applications</p>
+                    <h3 id="activeApplications" class="mb-0">-</h3>
+                </div>
+                <i class="bi bi-file-earmark" style="font-size: 2.5rem; color: #00b4d8; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="content-card">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="text-muted mb-1">Flagged Benefits</p>
+                    <h3 id="flaggedBenefits" class="mb-0">-</h3>
+                </div>
+                <i class="bi bi-exclamation-triangle" style="font-size: 2.5rem; color: #f59e0b; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="content-card">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="text-muted mb-1">Budget Utilization</p>
+                    <h3 id="budgetUtilization" class="mb-0">-</h3>
+                </div>
+                <i class="bi bi-graph-up" style="font-size: 2.5rem; color: #10b981; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="content-card">
+            <h5 class="mb-3"><i class="bi bi-graph-up"></i> Budget Status</h5>
+            <div id="budgetContainer">
+                <p class="text-muted text-center py-4">Loading budget data...</p>
+            </div>
+            <a href="@Url.Action("BudgetMonitoring")" class="btn btn-info-modern mt-3">View Detailed Report</a>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="content-card">
+            <h5 class="mb-3"><i class="bi bi-exclamation-triangle"></i> Flagged for Review</h5>
+            <div id="flaggedContainer">
+                <p class="text-muted text-center py-4">Loading flagged benefits...</p>
+            </div>
+            <a href="@Url.Action("SystemLogs")" class="btn btn-warning-modern mt-3">View All Logs</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function loadDashboardData() {
+            try {
+                console.log('Loading Auditor Dashboard Data...');
+
+                // Load budget monitoring data
+                console.log('Fetching /api/AuditorDashboard/budget-monitoring');
+                const budgetResponse = await fetch('/api/AuditorDashboard/budget-monitoring');
+                if (!budgetResponse.ok) throw new Error('Failed to fetch budget data: ' + budgetResponse.statusText);
+                const budgetData = await budgetResponse.json();
+                console.log('Budget Response:', budgetData);
+
+                const programs = Array.isArray(budgetData) ? budgetData : (budgetData.data || []);
+                console.log('Programs (processed):', programs);
+
+                if (programs.length > 0) {
+                    const totalBudget = programs.reduce((sum, p) => sum + (p.Budget || p.budget || 0), 0);
+                    const totalAllocated = programs.reduce((sum, p) => sum + (p.TotalAllocated || p.totalAllocated || 0), 0);
+                    const totalPrograms = programs.length;
+                    const activeApps = programs.reduce((sum, p) => sum + (p.ApplicationsCount || p.applicationsCount || 0), 0);
+                    const budgetUtil = totalBudget > 0 ? ((totalAllocated / totalBudget) * 100) : 0;
+
+                    document.getElementById('totalPrograms').textContent = totalPrograms;
+                    document.getElementById('activeApplications').textContent = activeApps;
+                    document.getElementById('budgetUtilization').textContent = budgetUtil.toFixed(1) + '%';
+                    console.log('Stats - Programs:', totalPrograms, 'Apps:', activeApps, 'Util:', budgetUtil.toFixed(1) + '%');
+                }
+
+                displayBudgetStatus(programs);
+
+                // Load resource utilization
+                console.log('Fetching /api/AuditorDashboard/resource-utilization');
+                const resourceResponse = await fetch('/api/AuditorDashboard/resource-utilization');
+                if (!resourceResponse.ok) throw new Error('Failed to fetch resource data: ' + resourceResponse.statusText);
+                const resourceData = await resourceResponse.json();
+                console.log('Resource Response:', resourceData);
+
+                const resources = Array.isArray(resourceData) ? resourceData : (resourceData.data || []);
+                console.log('Resources (processed):', resources);
+
+                displayResourceUtilization(resources);
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                document.getElementById('budgetContainer').innerHTML = '<p class="text-danger">Error: ' + error.message + '</p>';
+                document.getElementById('flaggedContainer').innerHTML = '<p class="text-danger">Error: ' + error.message + '</p>';
+            }
+        }
+
+        function displayBudgetStatus(programs) {
+            const container = document.getElementById('budgetContainer');
+
+            if (!programs || programs.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center py-4">No program data available</p>';
+                return;
+            }
+
+            let html = '<div class="list-group">';
+            programs.slice(0, 5).forEach(p => {
+                console.log('Processing program:', p);
+                const budget = p.Budget || p.budget || 0;
+                const totalAllocated = p.TotalAllocated || p.totalAllocated || 0;
+                const budgetPercentage = budget > 0 ? ((totalAllocated / budget) * 100) : 0;
+                const remaining = budget - totalAllocated;
+
+                let progressColor = budgetPercentage > 80 ? 'danger' : budgetPercentage > 60 ? 'warning' : 'success';
+                const title = p.Title || p.title || 'Program';
+
+                html += `
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1"><strong>${title}</strong></h6>
+                                <small class="text-muted">Budget: ₹${parseFloat(budget).toLocaleString('en-IN', {minimumFractionDigits: 2})}</small>
+                            </div>
+                            <span class="badge bg-${progressColor} ms-2">${budgetPercentage.toFixed(1)}%</span>
+                        </div>
+                        <div class="progress mt-2" style="height: 6px;">
+                            <div class="progress-bar bg-${progressColor}" role="progressbar" style="width: ${Math.min(budgetPercentage, 100)}%"></div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">
+                            Allocated: ₹${parseFloat(totalAllocated).toLocaleString('en-IN', {minimumFractionDigits: 2})} | 
+                            Remaining: ₹${parseFloat(remaining).toLocaleString('en-IN', {minimumFractionDigits: 2})}
+                        </small>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function displayResourceUtilization(resources) {
+            const container = document.getElementById('flaggedContainer');
+
+            if (!resources || resources.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center py-4">No resource data available</p>';
+                return;
+            }
+
+            let html = '<div class="list-group">';
+            resources.slice(0, 5).forEach(r => {
+                console.log('Processing resource:', r);
+                const quantity = r.Quantity || r.quantity || 0;
+                const resourceType = r.Type || r.type || 'Resource';
+                const programTitle = r.Program?.Title || r.program?.title || 'N/A';
+                const allocatedBenefits = r.AllocatedBenefits || r.allocatedBenefits || 0;
+                const totalBenefitAmount = r.TotalBenefitAmount || r.totalBenefitAmount || 0;
+
+                const utilizationPercent = quantity > 0 ? ((allocatedBenefits / quantity) * 100) : 0;
+                const remaining = (quantity || 0) - (allocatedBenefits || 0);
+
+                html += `
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1"><strong>${resourceType}</strong></h6>
+                                <small class="text-muted">Program: ${programTitle}</small>
+                            </div>
+                            <span class="badge bg-info">${utilizationPercent.toFixed(1)}%</span>
+                        </div>
+                        <div class="progress mt-2" style="height: 6px;">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: ${Math.min(utilizationPercent, 100)}%"></div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">
+                            Quantity: ${allocatedBenefits} / ${quantity} | Amount: ₹${parseFloat(totalBenefitAmount).toFixed(2)}
+                        </small>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded - Starting auditor dashboard load');
+            loadDashboardData();
+        });
+    </script>
+}

@@ -43,6 +43,11 @@
                             <span class="badge bg-success fs-6">₹@Model.Program.Budget.ToString("N2")</span>
                         </dd>
 
+                        <dt class="col-sm-4">Max Benefit per Citizen:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-info fs-6">₹@Model.Program.MaxBenefitPerCitizen.ToString("N2")</span>
+                        </dd>
+
                         <dt class="col-sm-4">Status:</dt>
                         <dd class="col-sm-8">
                             @if (Model.Program.Status == "Active")

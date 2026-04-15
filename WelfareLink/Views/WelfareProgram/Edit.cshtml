@@ -62,6 +62,14 @@
 
             <div class="col-md-6">
                 <div class="form-floating-modern">
+                    <label asp-for="MaxBenefitPerCitizen" class="form-label-modern">Max Benefit Allowed Per Citizen (₹)</label>
+                    <input asp-for="MaxBenefitPerCitizen" type="number" class="form-control" step="0.01" placeholder="0.00" />
+                    <span asp-validation-for="MaxBenefitPerCitizen" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-floating-modern">
                     <label asp-for="Status" class="form-label-modern">Programme Status</label>
                     <select asp-for="Status" class="form-select">
                         <option value="Active">Active</option>

@@ -1,0 +1,135 @@
+@model WelfareLink.Services.ComplianceRecord
+@{
+    ViewData["Title"] = $"Compliance Record #{Model.RecordID}";
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-shield-exclamation"></i> Compliance Record #@Model.RecordID</h1>
+        <p class="mb-0 text-muted">@Model.ViolationType</p>
+    </div>
+    <a asp-action="Index" class="btn btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="content-card mb-3">
+            <h4 class="mb-3"><i class="bi bi-info-circle"></i> Record Details</h4>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Entity Type</label>
+                    <p><span class="badge bg-dark fs-6">@Model.EntityType</span></p>
+                </div>
+                <div class="detail-item">
+                    <label>Entity ID</label>
+                    <p><code>#@Model.EntityId</code></p>
+                </div>
+                <div class="detail-item">
+                    <label>Violation Type</label>
+                    <p><span class="badge bg-danger fs-6">@Model.ViolationType</span></p>
+                </div>
+                <div class="detail-item">
+                    <label>Status</label>
+                    <p>
+                        @if (Model.Status == "Open")
+                        {
+                            <span class="status-badge status-pending">Open</span>
+                        }
+                        else if (Model.Status == "Under Investigation")
+                        {
+                            <span class="status-badge status-processing">Under Investigation</span>
+                        }
+                        else if (Model.Status == "Resolved")
+                        {
+                            <span class="status-badge status-fully-disbursed">Resolved</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-failed">@Model.Status</span>
+                        }
+                    </p>
+                </div>
+                <div class="detail-item">
+                    <label>Raised By (Officer)</label>
+                    <p>@(Model.RaisedByUserName ?? (Model.RaisedByUserId.HasValue ? $"User #{Model.RaisedByUserId}" : "System"))</p>
+                </div>
+                <div class="detail-item">
+                    <label>Date Raised</label>
+                    <p>@Model.CreatedDate.ToString("dd MMMM yyyy HH:mm")</p>
+                </div>
+                @if (Model.ResolvedDate.HasValue)
+                {
+                    <div class="detail-item">
+                        <label>Date Resolved</label>
+                        <p>@Model.ResolvedDate.Value.ToString("dd MMMM yyyy HH:mm")</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Resolved By</label>
+                        <p>@(Model.ResolvedByUserName ?? (Model.ResolvedByUserId.HasValue ? $"User #{Model.ResolvedByUserId}" : "—"))</p>
+                    </div>
+                }
+                <div class="detail-item" style="grid-column:span 2;">
+                    <label>Description</label>
+                    <p>@Model.Description</p>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="detail-item" style="grid-column:span 2;">
+                        <label>Resolution Notes</label>
+                        <p>@Model.Notes</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        @if (Model.Status != "Resolved" && Model.Status != "Dismissed")
+        {
+            <div class="content-card">
+                <h5 class="mb-3"><i class="bi bi-gear"></i> Update Status</h5>
+
+                @if (Model.Status == "Open")
+                {
+                    <form asp-action="UpdateStatus" method="post" class="mb-3">
+                        <input type="hidden" name="id" value="@Model.RecordID" />
+                        <input type="hidden" name="status" value="Under Investigation" />
+                        <button type="submit" class="btn btn-modern btn-warning-modern w-100">
+                            <i class="bi bi-search"></i> Mark Under Investigation
+                        </button>
+                    </form>
+                }
+
+                <form asp-action="UpdateStatus" method="post" class="mb-2">
+                    <input type="hidden" name="id" value="@Model.RecordID" />
+                    <input type="hidden" name="status" value="Resolved" />
+                    <div class="form-floating-modern mb-2">
+                        <label class="form-label-modern">Resolution Notes</label>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Describe what action was taken..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-modern btn-success-modern w-100">
+                        <i class="bi bi-check-circle"></i> Mark Resolved
+                    </button>
+                </form>
+
+                <form asp-action="UpdateStatus" method="post">
+                    <input type="hidden" name="id" value="@Model.RecordID" />
+                    <input type="hidden" name="status" value="Dismissed" />
+                    <button type="submit" class="btn btn-modern btn-secondary-modern w-100">
+                        <i class="bi bi-x-circle"></i> Dismiss
+                    </button>
+                </form>
+            </div>
+        }
+    </div>
+</div>

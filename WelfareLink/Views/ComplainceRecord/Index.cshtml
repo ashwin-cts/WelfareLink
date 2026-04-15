@@ -1,0 +1,141 @@
+@model IEnumerable<WelfareLink.Services.ComplianceRecord>
+@{
+    ViewData["Title"] = "Compliance Records";
+    var statusFilter = ViewBag.StatusFilter as string;
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-shield-exclamation"></i> Compliance Records</h1>
+        <p class="mb-0 text-muted">Monitor and resolve compliance violations</p>
+    </div>
+    <div class="action-buttons">
+        <a asp-action="Create" class="btn btn-modern btn-primary-modern">
+            <i class="bi bi-plus-circle"></i> Raise Violation
+        </a>
+        <a asp-controller="AuditLog" asp-action="Index" class="btn btn-modern btn-secondary-modern">
+            <i class="bi bi-journal-text"></i> Audit Log
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Stat Cards -->
+<div class="row mb-4">
+    <div class="col-6 col-md-3 mb-2">
+        <a asp-action="Index" asp-route-status="Open" class="text-decoration-none">
+            <div class="content-card text-center @(statusFilter == "Open" ? "border border-warning" : "")">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size:2rem;color:#f59e0b;"></i>
+                <h3 class="mb-0">@ViewBag.OpenCount</h3>
+                <small class="text-muted">Open</small>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 mb-2">
+        <a asp-action="Index" asp-route-status="Under Investigation" class="text-decoration-none">
+            <div class="content-card text-center @(statusFilter == "Under Investigation" ? "border border-info" : "")">
+                <i class="bi bi-search" style="font-size:2rem;color:#00b4d8;"></i>
+                <h3 class="mb-0">@ViewBag.InvestigatingCount</h3>
+                <small class="text-muted">Under Investigation</small>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 mb-2">
+        <a asp-action="Index" asp-route-status="Resolved" class="text-decoration-none">
+            <div class="content-card text-center @(statusFilter == "Resolved" ? "border border-success" : "")">
+                <i class="bi bi-check-circle-fill" style="font-size:2rem;color:#10b981;"></i>
+                <h3 class="mb-0">@ViewBag.ResolvedCount</h3>
+                <small class="text-muted">Resolved</small>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 mb-2">
+        <a asp-action="Index" class="text-decoration-none">
+            <div class="content-card text-center">
+                <i class="bi bi-funnel" style="font-size:2rem;color:#6b7280;"></i>
+                <h3 class="mb-0">@ViewBag.DismissedCount</h3>
+                <small class="text-muted">Dismissed</small>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="content-card">
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info mb-0">
+            <i class="bi bi-info-circle"></i> No compliance records found
+            @(statusFilter != null ? $" with status \"{statusFilter}\"." : ".")
+            @if (statusFilter != null)
+            {
+                <a asp-action="Index" class="btn btn-sm btn-modern btn-secondary-modern ms-2">Show All</a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-modern">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Entity</th>
+                        <th>Violation Type</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Raised By</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td><span class="badge bg-secondary">#@r.RecordID</span></td>
+                            <td>
+                                <span class="badge bg-dark">@r.EntityType</span>
+                                <code> #@r.EntityId</code>
+                            </td>
+                            <td><span class="badge bg-danger">@r.ViolationType</span></td>
+                            <td>@(r.Description.Length > 55 ? r.Description[..55] + "…" : r.Description)</td>
+                            <td>
+                                @if (r.Status == "Open")
+                                {
+                                    <span class="status-badge status-pending">Open</span>
+                                }
+                                else if (r.Status == "Under Investigation")
+                                {
+                                    <span class="status-badge status-processing">Under Investigation</span>
+                                }
+                                else if (r.Status == "Resolved")
+                                {
+                                    <span class="status-badge status-fully-disbursed">Resolved</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-failed">@r.Status</span>
+                                }
+                            </td>
+                            <td>@(r.RaisedByUserName ?? (r.RaisedByUserId.HasValue ? $"User #{r.RaisedByUserId}" : "System"))</td>
+                            <td><small>@r.CreatedDate.ToString("dd MMM yyyy")</small></td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@r.RecordID"
+                                   class="btn btn-sm btn-modern btn-info-modern">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

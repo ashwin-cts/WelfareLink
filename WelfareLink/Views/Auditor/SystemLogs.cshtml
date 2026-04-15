@@ -1,0 +1,140 @@
+@{
+    ViewData["Title"] = "System Logs";
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-journal-text"></i> System Audit Logs</h1>
+        <p class="text-muted">Complete system activity history</p>
+    </div>
+    <div>
+        <form method="get" class="d-flex gap-2">
+            <input type="date" name="from" class="form-control form-control-sm" placeholder="From Date" />
+            <input type="date" name="to" class="form-control form-control-sm" placeholder="To Date" />
+            <button type="submit" class="btn btn-primary-modern btn-sm">Filter</button>
+            <a href="@Url.Action("SystemLogs")" class="btn btn-secondary-modern btn-sm">Reset</a>
+        </form>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.Error))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> @ViewBag.Error
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table table-modern">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Entity Type</th>
+                    <th>Entity ID</th>
+                    <th>Status</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody id="logsTableBody">
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">Loading system logs...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function loadSystemLogs() {
+            try {
+                const url = new URL(window.location);
+                const params = new URLSearchParams(url.search);
+                
+                let apiUrl = '/api/AuditorDashboard/system-logs';
+                if (params.has('from') && params.has('to')) {
+                    apiUrl += `?from=${params.get('from')}&to=${params.get('to')}`;
+                }
+
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                displayLogs(data.data || []);
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                document.getElementById('logsTableBody').innerHTML = 
+                    '<tr><td colspan="7" class="text-center text-danger">Error loading logs</td></tr>';
+            }
+        }
+
+        function displayLogs(logs) {
+            const tbody = document.getElementById('logsTableBody');
+            
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No logs found</td></tr>';
+                return;
+            }
+
+            let html = '';
+            logs.forEach(log => {
+                const statusClass = log.status === 'Success' ? 'bg-success' : 
+                                   log.status === 'Error' ? 'bg-danger' : 'bg-warning';
+                
+                const timestamp = new Date(log.timestamp).toLocaleString();
+                
+                html += `
+                    <tr>
+                        <td><small>${timestamp}</small></td>
+                        <td>${log.userName || 'System'}</td>
+                        <td><strong>${log.action}</strong></td>
+                        <td>${log.entityType}</td>
+                        <td>${log.entityId || '-'}</td>
+                        <td><span class="badge ${statusClass}">${log.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-info-modern" onclick="showDetails('${btoa(JSON.stringify(log))}')">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function showDetails(encodedLog) {
+            const log = JSON.parse(atob(encodedLog));
+            let details = `
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Description</label>
+                        <p>${log.description}</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>IP Address</label>
+                        <p>${log.ipAddress || 'N/A'}</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Old Value</label>
+                        <p>${log.oldValue || 'N/A'}</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>New Value</label>
+                        <p>${log.newValue || 'N/A'}</p>
+                    </div>
+                </div>
+            `;
+            
+            alert('Log Details:\n\n' + 
+                `Timestamp: ${log.timestamp}\n` +
+                `User: ${log.userName}\n` +
+                `Action: ${log.action}\n` +
+                `Status: ${log.status}\n` +
+                `Description: ${log.description}`);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadSystemLogs);
+    </script>
+}

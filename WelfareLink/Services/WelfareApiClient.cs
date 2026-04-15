@@ -405,6 +405,76 @@ namespace WelfareLink.Services
 
         public async Task<Dictionary<string, object>?> GetEligibilityReportAsync()
             => await _http.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/eligibility-report");
+
+        // ──────────────────────────────────────────────
+        // AUDIT LOG
+        // ──────────────────────────────────────────────
+        public async Task<IEnumerable<AuditLog>> GetAllAuditLogsAsync()
+            => await _http.GetFromJsonAsync<IEnumerable<AuditLog>>("api/auditlogapi") ?? [];
+
+        public async Task<bool> CreateAuditLogAsync(int? userId, string action, string entityType, int entityId, string description)
+        {
+            var payload = new { UserId = userId, Action = action, EntityType = entityType, EntityId = entityId, Description = description };
+            var response = await _http.PostAsJsonAsync("api/auditlogapi", payload);
+            return response.IsSuccessStatusCode;
+        }
+
+        // ──────────────────────────────────────────────
+        // AUDIT (Government Auditor)
+        // ──────────────────────────────────────────────
+        public async Task<IEnumerable<ProgramAuditSummary>> GetGovernmentAuditorDashboardAsync()
+            => await _http.GetFromJsonAsync<IEnumerable<ProgramAuditSummary>>("api/auditapi/dashboard") ?? [];
+
+        public async Task<IEnumerable<Audit>> GetAllAuditsAsync()
+            => await _http.GetFromJsonAsync<IEnumerable<Audit>>("api/auditapi") ?? [];
+
+        public async Task<Audit?> GetAuditByIdAsync(int id)
+            => await _http.GetFromJsonAsync<Audit>($"api/auditapi/{id}");
+
+        public async Task<(Audit? audit, string? error)> CreateAuditAsync(Audit audit)
+        {
+            var response = await _http.PostAsJsonAsync("api/auditapi", audit);
+            if (response.IsSuccessStatusCode)
+                return (await response.Content.ReadFromJsonAsync<Audit>(_json), null);
+            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return (null, err?.Error ?? "Failed to create audit.");
+        }
+
+        public async Task<bool> UpdateAuditStatusAsync(int id, string status)
+        {
+            var content = new StringContent(JsonSerializer.Serialize(status), Encoding.UTF8, "application/json");
+            var response = await _http.PatchAsync($"api/auditapi/{id}/status", content);
+            return response.IsSuccessStatusCode;
+        }
+
+        // ──────────────────────────────────────────────
+        // COMPLIANCE RECORD
+        // ──────────────────────────────────────────────
+        public async Task<IEnumerable<ComplianceRecord>> GetAllComplianceRecordsAsync()
+            => await _http.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi") ?? [];
+
+        public async Task<IEnumerable<ComplianceRecord>> GetOpenComplianceRecordsAsync()
+            => await _http.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi/open") ?? [];
+
+        public async Task<ComplianceRecord?> GetComplianceRecordByIdAsync(int id)
+            => await _http.GetFromJsonAsync<ComplianceRecord>($"api/complaincerecordapi/{id}");
+
+        public async Task<(ComplianceRecord? record, string? error)> CreateComplianceRecordAsync(ComplianceRecord record)
+        {
+            var response = await _http.PostAsJsonAsync("api/complaincerecordapi", record);
+            if (response.IsSuccessStatusCode)
+                return (await response.Content.ReadFromJsonAsync<ComplianceRecord>(_json), null);
+            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return (null, err?.Error ?? "Failed to create compliance record.");
+        }
+
+        public async Task<bool> UpdateComplianceStatusAsync(int id, string status, int? resolvedByUserId, string? notes)
+        {
+            var payload = new { Status = status, ResolvedByUserId = resolvedByUserId, Notes = notes };
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            var response = await _http.PatchAsync($"api/complaincerecordapi/{id}/status", content);
+            return response.IsSuccessStatusCode;
+        }
     }
 
     // ──────────────────────────────────────────────
@@ -506,5 +576,68 @@ namespace WelfareLink.Services
         public string Status { get; set; } = string.Empty;
         public int Count { get; set; }
         public double Percentage { get; set; }
+    }
+
+    public class AuditLog
+    {
+        public int LogID { get; set; }
+        public int? UserId { get; set; }
+        public string? UserName { get; set; }
+        public string Action { get; set; } = string.Empty;
+        public string EntityType { get; set; } = string.Empty;
+        public int EntityId { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+    }
+
+    public class Audit
+    {
+        public int AuditID { get; set; }
+        public int? ProgramID { get; set; }
+        public string? ProgramTitle { get; set; }
+        public int AuditedByUserId { get; set; }
+        public string? AuditedByUserName { get; set; }
+        public DateTime AuditDate { get; set; }
+        public string FindingType { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Status { get; set; } = "Open";
+        public DateTime? ResolvedDate { get; set; }
+    }
+
+    public class ComplianceRecord
+    {
+        public int RecordID { get; set; }
+        public int? RaisedByUserId { get; set; }
+        public string? RaisedByUserName { get; set; }
+        public string EntityType { get; set; } = string.Empty;
+        public int EntityId { get; set; }
+        public string ViolationType { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Status { get; set; } = "Open";
+        public DateTime CreatedDate { get; set; }
+        public DateTime? ResolvedDate { get; set; }
+        public int? ResolvedByUserId { get; set; }
+        public string? ResolvedByUserName { get; set; }
+        public string? Notes { get; set; }
+        public string? CitizenName { get; set; }
+        public string? ProgramTitle { get; set; }
+    }
+
+    // ──────────────────────────────────────────────
+    // Government Auditor dashboard summary
+    // ──────────────────────────────────────────────
+    public class ProgramAuditSummary
+    {
+        public int ProgramID { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal Budget { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public int TotalBeneficiaries { get; set; }
+        public double TotalBenefitAmount { get; set; }
+        public double TotalDisbursed { get; set; }
+        public double RemainingBudget { get; set; }
+        public int TotalResources { get; set; }
+        public int OpenAudits { get; set; }
     }
 }

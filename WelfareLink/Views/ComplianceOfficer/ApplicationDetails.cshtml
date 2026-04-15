@@ -1,0 +1,136 @@
+@model WelfareLink.Models.ApplicationDetailsViewModel
+@{
+    ViewData["Title"] = "Application Details (Compliance View)";
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-file-earmark-text"></i> Compliance View - Application #@Model.Application.ApplicationID</h1>
+        <p class="text-muted">Detailed view for compliance investigations</p>
+    </div>
+    <div class="action-buttons">
+        <a asp-controller="ComplianceOfficer" asp-action="Dashboard" class="btn btn-modern btn-secondary-modern">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.Error))
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="content-card mb-3">
+            <h4 class="mb-3">Application</h4>
+            <div class="detail-grid">
+                <div class="detail-item"><label>Application ID</label><p>#@Model.Application.ApplicationID</p></div>
+                <div class="detail-item"><label>Citizen ID</label><p>#@Model.Application.CitizenID</p></div>
+                <div class="detail-item"><label>Citizen Name</label><p>@(Model.Application.Citizen?.Name ?? "-")</p></div>
+                <div class="detail-item"><label>Program</label><p>@(Model.Application.Program?.Title ?? "-")</p></div>
+                <div class="detail-item"><label>Submitted Date</label><p>@Model.Application.SubmittedDate.ToString("dd MMM yyyy")</p></div>
+                <div class="detail-item"><label>Status</label><p>@(Model.Application.Status ?? "-")</p></div>
+                <div class="detail-item" style="grid-column:span 2;"><label>Application Documents</label>
+                    <p>
+                        @if (Model.Application.ApplicationDocuments != null)
+                        {
+                            <ul>
+                                @foreach (var docLink in Model.Application.ApplicationDocuments)
+                                {
+                                    var doc = docLink.CitizenDocument;
+                                    <li>@(doc?.DocumentName ?? "Document")</li>
+                                }
+                            </ul>
+                        }
+                        else { <span class="text-muted">No documents</span> }
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-card mb-3">
+            <h4 class="mb-3">Benefits & Disbursements</h4>
+            @if (Model.Application.Benefits != null && Model.Application.Benefits.Count > 0)
+            {
+                foreach (var b in Model.Application.Benefits)
+                {
+                    <div class="mb-3 p-2 border rounded">
+                        <h6>Benefit #@b.BenefitID - @b.Type</h6>
+                        <p><strong>Amount:</strong> ₹@b.Amount</p>
+                        <p><strong>Status:</strong> @b.Status</p>
+                        <p><strong>Date:</strong> @b.Date.ToString("dd MMM yyyy")</p>
+
+                        <h6>Disbursements</h6>
+                        @if (b.Disbursements != null && b.Disbursements.Count > 0)
+                        {
+                            <table class="table table-sm">
+                                <thead><tr><th>ID</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+                                <tbody>
+                                    @foreach (var d in b.Disbursements)
+                                    {
+                                        <tr>
+                                            <td>@d.DisbursementID</td>
+                                            <td>@d.Date.ToString("dd MMM yyyy")</td>
+                                            <td>₹@d.Amount</td>
+                                            <td>@d.Status</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else { <p class="text-muted">No disbursements</p> }
+                    </div>
+                }
+            }
+            else { <p class="text-muted">No benefits allocated</p> }
+        </div>
+
+        <div class="content-card mb-3">
+            <h4 class="mb-3">Resource Allocation</h4>
+            @{ 
+                var pr = Model.ProgramResources;
+            }
+            @if (pr != null)
+            {
+                <p><strong>Program:</strong> @pr.ProgramTitle</p>
+                <p><strong>Program Budget:</strong> ₹@pr.ProgramBudget</p>
+                <p><strong>Total Allocated:</strong> ₹@pr.TotalAllocated</p>
+                <p><strong>Remaining:</strong> ₹@pr.RemainingBudget</p>
+
+                if (pr.Resources != null)
+                {
+                    <table class="table table-sm">
+                        <thead><tr><th>Resource ID</th><th>Name</th><th>Allocated</th></tr></thead>
+                        <tbody>
+                            @foreach (var r in pr.Resources)
+                            {
+                                <tr>
+                                    <td>@r.ResourceID</td>
+                                    <td>@r.Name</td>
+                                    <td>₹@r.AmountAllocated</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            }
+            else { <p class="text-muted">No resource information available</p> }
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="content-card mb-3">
+            <h5>Quick Actions</h5>
+            <div class="d-grid gap-2">
+                <a asp-controller="ComplainceRecord" asp-action="Create" asp-route-entityType="Application" asp-route-entityId="@Model.Application.ApplicationID" class="btn btn-outline-danger">Flag Application</a>
+                @* <a asp-controller="WelfareApplication" asp-action="Edit" asp-route-id="@Model.Application.ApplicationID" class="btn btn-outline-primary">Edit Application</a> *@
+            </div>
+        </div>
+
+        <div class="content-card">
+            <h5>Notes</h5>
+            <p class="text-muted">Use this view when raising compliance records to include all context.</p>
+        </div>
+    </div>
+</div>

@@ -62,7 +62,7 @@ namespace WelfareLink.Controllers
         // POST: Program/Manage
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Manage([Bind("ProgramID,Title,Description,StartDate,EndDate,Budget,Status,EligibleGender,RequiredDocuments")] WelfareProgram program)
+        public async Task<IActionResult> Manage([Bind("ProgramID,Title,Description,StartDate,EndDate,Budget,MaxBenefitPerCitizen,Status,EligibleGender,RequiredDocuments")] WelfareProgram program)
         {
             if (program.ProgramID == 0) ModelState.Remove("Status");
 
@@ -97,7 +97,7 @@ namespace WelfareLink.Controllers
         // POST: Program/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProgramID,Title,Description,StartDate,EndDate,Budget")] WelfareProgram program)
+        public async Task<IActionResult> Create([Bind("ProgramID,Title,Description,StartDate,EndDate,Budget,MaxBenefitPerCitizen")] WelfareProgram program)
         {
             ModelState.Remove("Status");
             if (!ModelState.IsValid)
@@ -137,7 +137,7 @@ namespace WelfareLink.Controllers
         // POST: Program/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ProgramID,Title,Description,StartDate,EndDate,Budget,Status,EligibleGender,RequiredDocuments")] WelfareProgram program)
+        public async Task<IActionResult> Edit(int id, [Bind("ProgramID,Title,Description,StartDate,EndDate,Budget,MaxBenefitPerCitizen,Status,EligibleGender,RequiredDocuments")] WelfareProgram program)
         {
             if (id != program.ProgramID)
             {

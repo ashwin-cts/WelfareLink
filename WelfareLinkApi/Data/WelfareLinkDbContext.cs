@@ -25,6 +25,9 @@ namespace WelfareLinkApi.Data
         public DbSet<WelfareApplicationDocument> WelfareApplicationDocuments { get; set; }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<Audit> Audits { get; set; }
+        public DbSet<ComplainceRecord> ComplianceRecords { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,6 +45,39 @@ namespace WelfareLinkApi.Data
                 .WithMany()
                 .HasForeignKey(d => d.DocumentID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Prevent cascade delete on Audit → User / WelfareProgram
+            modelBuilder.Entity<Audit>()
+                .HasOne(a => a.AuditedByUser)
+                .WithMany()
+                .HasForeignKey(a => a.AuditedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Audit>()
+                .HasOne(a => a.WelfareProgram)
+                .WithMany()
+                .HasForeignKey(a => a.ProgramID)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Prevent cascade delete on ComplianceRecord → User
+            modelBuilder.Entity<ComplainceRecord>()
+                .HasOne(r => r.RaisedByUser)
+                .WithMany()
+                .HasForeignKey(r => r.RaisedByUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ComplainceRecord>()
+                .HasOne(r => r.ResolvedByUser)
+                .WithMany()
+                .HasForeignKey(r => r.ResolvedByUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // AuditLog → User
+            modelBuilder.Entity<AuditLog>()
+                .HasOne(l => l.User)
+                .WithMany()
+                .HasForeignKey(l => l.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
 
         

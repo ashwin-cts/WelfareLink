@@ -28,6 +28,11 @@ namespace WelfareLinkApi.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal Budget { get; set; }
 
+        // Maximum benefit amount allowed per citizen for this program
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Max benefit must be greater than or equal to 0")]
+        public decimal MaxBenefitPerCitizen { get; set; } = 0;
+
         // Status is set by service layer, NOT required from user input
         [StringLength(50)]
         public string? Status { get; set; }

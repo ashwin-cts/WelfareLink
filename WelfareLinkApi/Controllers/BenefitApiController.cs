@@ -39,6 +39,73 @@ namespace WelfareLinkApi.Controllers
             return Ok(benefit);
         }
 
+        // GET: api/benefit/filter
+        /// <summary>
+        /// Get benefits filtered by status and/or date range
+        /// </summary>
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetFilteredBenefits(
+            [FromQuery] string? status = null,
+            [FromQuery] DateTime? fromDate = null,
+            [FromQuery] DateTime? toDate = null,
+            [FromQuery] int? applicationId = null)
+        {
+            var benefits = await _benefitService.GetAllBenefitsAsync();
+
+            if (!string.IsNullOrEmpty(status) && !status.Equals("All", StringComparison.OrdinalIgnoreCase))
+                benefits = benefits.Where(b => b.Status?.Equals(status, StringComparison.OrdinalIgnoreCase) ?? false).ToList();
+
+            if (fromDate.HasValue)
+                benefits = benefits.Where(b => b.Date >= fromDate.Value).ToList();
+
+            if (toDate.HasValue)
+                benefits = benefits.Where(b => b.Date <= toDate.Value).ToList();
+
+            if (applicationId.HasValue)
+                benefits = benefits.Where(b => b.ApplicationID == applicationId.Value).ToList();
+
+            var result = benefits
+                .OrderByDescending(b => b.Date)
+                .Select(b => new
+                {
+                    b.BenefitID,
+                    b.Amount,
+                    b.Type,
+                    b.Status,
+                    b.Date,
+                    Application = new
+                    {
+                        b.WelfareApplication?.ApplicationID,
+                        b.WelfareApplication?.Status
+                    },
+                    Citizen = new
+                    {
+                        b.WelfareApplication?.Citizen?.CitizenId,
+                        b.WelfareApplication?.Citizen?.Name,
+                        b.WelfareApplication?.Citizen?.ContactInfo
+                    },
+                    Program = new
+                    {
+                        b.WelfareApplication?.Program?.ProgramID,
+                        b.WelfareApplication?.Program?.Title,
+                        b.WelfareApplication?.Program?.Budget,
+                        b.WelfareApplication?.Program?.MaxBenefitPerCitizen
+                    }
+                });
+
+            return Ok(result);
+        }
+
+        // GET: api/benefit/pending
+        /// <summary>
+        /// Get all pending benefits
+        /// </summary>
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingBenefits()
+        {
+            return await GetFilteredBenefits(status: "Pending");
+        }
+
         // GET: api/benefit/dropdown
         [HttpGet("dropdown")]
         public async Task<IActionResult> PopulateApplicationDropdown(int? selectedId = null)

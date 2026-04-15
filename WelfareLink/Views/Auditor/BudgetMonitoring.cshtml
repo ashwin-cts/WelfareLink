@@ -1,0 +1,180 @@
+@{
+    ViewData["Title"] = "Budget Monitoring";
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-graph-up"></i> Budget Monitoring Report</h1>
+        <p class="text-muted">Detailed budget analysis and resource allocation</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.Error))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> @ViewBag.Error
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="content-card">
+            <p class="text-muted mb-1">Total Allocated</p>
+            <h3 id="totalAllocated" class="text-success">$0.00</h3>
+            <small class="text-muted">Across all programs</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="content-card">
+            <p class="text-muted mb-1">Disbursed</p>
+            <h3 id="totalDisbursed" class="text-info">$0.00</h3>
+            <small class="text-muted">Funds released to beneficiaries</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="content-card">
+            <p class="text-muted mb-1">Pending</p>
+            <h3 id="totalPending" class="text-warning">$0.00</h3>
+            <small class="text-muted">Awaiting disbursement</small>
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <h5 class="mb-4"><i class="bi bi-diagram-3"></i> Program Budget Breakdown</h5>
+    <div class="table-responsive">
+        <table class="table table-modern">
+            <thead>
+                <tr>
+                    <th>Program</th>
+                    <th>Budget</th>
+                    <th>Allocated</th>
+                    <th>Disbursed</th>
+                    <th>Remaining</th>
+                    <th>Utilization</th>
+                </tr>
+            </thead>
+            <tbody id="budgetTableBody">
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Loading budget data...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="content-card mt-4">
+    <h5 class="mb-4"><i class="bi bi-box-seam"></i> Resource Allocation Summary</h5>
+    <div class="table-responsive">
+        <table class="table table-modern">
+            <thead>
+                <tr>
+                    <th>Resource Type</th>
+                    <th>Quantity</th>
+                    <th>Unit Cost</th>
+                    <th>Total Value</th>
+                    <th>Allocated</th>
+                </tr>
+            </thead>
+            <tbody id="resourceTableBody">
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">Loading resource data...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function loadBudgetData() {
+            try {
+                // Load budget monitoring data
+                const response = await fetch('/api/AuditorDashboard/budget-monitoring');
+                const data = await response.json();
+                const programs = Array.isArray(data) ? data : (data.data || []);
+                displayBudgetData(programs);
+
+                // Load resource utilization
+                const resourceResponse = await fetch('/api/AuditorDashboard/resource-utilization');
+                const resources = await resourceResponse.json();
+                const resourceList = Array.isArray(resources) ? resources : (resources.data || []);
+                displayResourceAllocation(resourceList);
+            } catch (error) {
+                console.error('Error loading budget data:', error);
+                document.getElementById('budgetTableBody').innerHTML = 
+                    '<tr><td colspan="6" class="text-center text-danger">Error loading data</td></tr>';
+            }
+        }
+
+        function displayBudgetData(programs) {
+            // Calculate and update summary
+            let totalAllocated = 0;
+            let totalPending = 0;
+
+            if (programs && programs.length > 0) {
+                totalAllocated = programs.reduce((sum, p) => sum + (p.totalAllocated || 0), 0);
+                totalPending = programs.reduce((sum, p) => sum + ((p.budget || 0) - (p.totalAllocated || 0)), 0);
+            }
+
+            document.getElementById('totalAllocated').textContent = '₹' + totalAllocated.toLocaleString('en-IN', {minimumFractionDigits: 2});
+            document.getElementById('totalDisbursed').textContent = '₹' + totalAllocated.toLocaleString('en-IN', {minimumFractionDigits: 2});
+            document.getElementById('totalPending').textContent = '₹' + totalPending.toLocaleString('en-IN', {minimumFractionDigits: 2});
+
+            // Display program breakdown
+            const tbody = document.getElementById('budgetTableBody');
+
+            if (!programs || programs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No budget data</td></tr>';
+                return;
+            }
+
+            let html = '';
+            programs.forEach(p => {
+                const remaining = (p.budget || 0) - (p.totalAllocated || 0);
+                const utilization = (p.budget > 0 ? ((p.totalAllocated || 0) / p.budget) * 100 : 0).toFixed(1);
+                const utilizationClass = utilization > 80 ? 'bg-danger' : 
+                                        utilization > 50 ? 'bg-warning' : 'bg-success';
+
+                html += `
+                    <tr>
+                        <td><strong>${p.title || 'Program'}</strong></td>
+                        <td class="text-info">₹${(p.budget || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                        <td class="text-primary">₹${(p.totalAllocated || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                        <td class="text-success">₹${(p.totalAllocated || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                        <td class="text-warning">₹${remaining.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                        <td><span class="badge ${utilizationClass}">${utilization}%</span></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function displayResourceAllocation(resources) {
+            const tbody = document.getElementById('resourceTableBody');
+
+            if (!resources || resources.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No resource data</td></tr>';
+                return;
+            }
+
+            let html = '';
+            resources.forEach(r => {
+                const totalBenefitAmount = r.totalBenefitAmount || 0;
+                html += `
+                    <tr>
+                        <td><strong>${r.type || 'Resource'}</strong></td>
+                        <td>${r.quantity || 0}</td>
+                        <td>₹${(totalBenefitAmount / (r.quantity || 1)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                        <td class="text-primary">₹${totalBenefitAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                        <td>${r.allocatedBenefits || 0}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadBudgetData);
+    </script>
+}

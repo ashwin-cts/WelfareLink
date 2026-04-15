@@ -71,6 +71,7 @@ namespace WelfareLink.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
+            // Log will be created by API through database triggers or background service
             TempData["Success"] = "Officer created successfully";
             return RedirectToAction("Index");
         }
@@ -109,6 +110,7 @@ namespace WelfareLink.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
+            // Log will be created by API through database triggers or background service
             TempData["Success"] = "Admin created successfully";
             return RedirectToAction("Index");
         }

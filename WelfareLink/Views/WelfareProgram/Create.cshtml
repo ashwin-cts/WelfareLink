@@ -51,6 +51,16 @@
                             <small class="form-text text-muted">Enter the total allocated budget for this programme</small>
                         </div>
 
+                        <div class="mb-3">
+                            <label asp-for="MaxBenefitPerCitizen" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input asp-for="MaxBenefitPerCitizen" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="MaxBenefitPerCitizen" class="text-danger"></span>
+                            <small class="form-text text-muted">Maximum benefit allowed per citizen for this programme</small>
+                        </div>
+
                         <div class="alert alert-info">
                             <i class="bi bi-info-circle"></i> <strong>Note:</strong> Programme will be created with "Active" status automatically.
                         </div>

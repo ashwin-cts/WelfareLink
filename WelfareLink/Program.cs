@@ -39,6 +39,15 @@ namespace WelfareLink
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             });
 
+            // Register HttpClient for dashboard controllers
+            builder.Services.AddHttpClient("DashboardClient", client =>
+            {
+                client.BaseAddress = new Uri(apiBaseUrl);
+            }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            });
+
 
             var app = builder.Build();
 

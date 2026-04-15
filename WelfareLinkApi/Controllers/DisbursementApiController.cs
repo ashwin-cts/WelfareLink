@@ -30,6 +30,80 @@ namespace WelfareLinkApi.Controllers
             return Ok(disbursements);
         }
 
+        // GET: api/disbursementapi/filter
+        /// <summary>
+        /// Get disbursements filtered by status and/or date range
+        /// </summary>
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetFilteredDisbursements(
+            [FromQuery] string? status = null,
+            [FromQuery] DateTime? fromDate = null,
+            [FromQuery] DateTime? toDate = null,
+            [FromQuery] int? benefitId = null,
+            [FromQuery] int? officerId = null)
+        {
+            var disbursements = await _disbursementService.GetAllDisbursementsAsync();
+
+            if (!string.IsNullOrEmpty(status) && !status.Equals("All", StringComparison.OrdinalIgnoreCase))
+                disbursements = disbursements.Where(d => d.Status?.Equals(status, StringComparison.OrdinalIgnoreCase) ?? false).ToList();
+
+            if (fromDate.HasValue)
+                disbursements = disbursements.Where(d => d.Date >= fromDate.Value).ToList();
+
+            if (toDate.HasValue)
+                disbursements = disbursements.Where(d => d.Date <= toDate.Value).ToList();
+
+            if (benefitId.HasValue)
+                disbursements = disbursements.Where(d => d.BenefitID == benefitId.Value).ToList();
+
+            if (officerId.HasValue)
+                disbursements = disbursements.Where(d => d.OfficerID == officerId.Value).ToList();
+
+            var result = disbursements
+                .OrderByDescending(d => d.Date)
+                .Select(d => new
+                {
+                    d.DisbursementID,
+                    d.Amount,
+                    d.Status,
+                    d.Date,
+                    d.CitizenID,
+                    d.OfficerID,
+                    BenefitID = d.BenefitID,
+                    BenefitType = d.Benefit?.Type,
+                    BenefitAmount = d.Benefit?.Amount,
+                    BenefitStatus = d.Benefit?.Status,
+                    Citizen = new
+                    {
+                        d.CitizenID
+                    },
+                    Benefit = new
+                    {
+                        d.Benefit?.BenefitID,
+                        d.Benefit?.Type,
+                        d.Benefit?.Amount,
+                        d.Benefit?.Status,
+                        Application = new
+                        {
+                            d.Benefit?.WelfareApplication?.ApplicationID,
+                            d.Benefit?.WelfareApplication?.Status
+                        }
+                    }
+                });
+
+            return Ok(result);
+        }
+
+        // GET: api/disbursementapi/pending
+        /// <summary>
+        /// Get all pending disbursements
+        /// </summary>
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingDisbursements()
+        {
+            return await GetFilteredDisbursements(status: "Pending");
+        }
+
         // GET: api/disbursementapi/history
         [HttpGet("history")]
         public async Task<IActionResult> GetHistory(

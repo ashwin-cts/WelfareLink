@@ -38,6 +38,7 @@ public class WelfareProgramRespository : IWelfareProgramRepository
             existingProgram.StartDate = program.StartDate;
             existingProgram.EndDate = program.EndDate;
             existingProgram.Budget = program.Budget;
+            existingProgram.MaxBenefitPerCitizen = program.MaxBenefitPerCitizen;
             existingProgram.Status = program.Status;
             existingProgram.EligibleGender = program.EligibleGender;
             existingProgram.RequiredDocuments = program.RequiredDocuments;
