@@ -13,7 +13,6 @@ namespace WelfareLinkApi.Interfaces
         Task<List<ComplainceRecord>> GetComplianceIssuesWithFiltersAsync(
             string? status = null,
             string? violationType = null,
-            string? priority = null,
             int? citizenID = null,
             int? benefitID = null);
 

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WelfareLinkApi.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAuditComplianceTables : Migration
+    public partial class tableCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -42,6 +42,7 @@ namespace WelfareLinkApi.Migrations
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Budget = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    MaxBenefitPerCitizen = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     EligibleGender = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     RequiredDocuments = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
@@ -159,8 +160,13 @@ namespace WelfareLinkApi.Migrations
                     UserId = table.Column<int>(type: "int", nullable: true),
                     Action = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     EntityType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    EntityId = table.Column<int>(type: "int", nullable: false),
+                    EntityId = table.Column<int>(type: "int", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OldValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NewValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IPAddress = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
+                    UserAgent = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -214,13 +220,18 @@ namespace WelfareLinkApi.Migrations
                     RaisedByUserId = table.Column<int>(type: "int", nullable: true),
                     EntityType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     EntityId = table.Column<int>(type: "int", nullable: false),
+                    BenefitID = table.Column<int>(type: "int", nullable: true),
+                    DisbursementID = table.Column<int>(type: "int", nullable: true),
+                    ApplicationID = table.Column<int>(type: "int", nullable: true),
+                    CitizenID = table.Column<int>(type: "int", nullable: true),
                     ViolationType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ResolvedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ResolvedByUserId = table.Column<int>(type: "int", nullable: true),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Priority = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -229,14 +240,12 @@ namespace WelfareLinkApi.Migrations
                         name: "FK_ComplianceRecords_Users_RaisedByUserId",
                         column: x => x.RaisedByUserId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.SetNull);
+                        principalColumn: "UserId");
                     table.ForeignKey(
                         name: "FK_ComplianceRecords_Users_ResolvedByUserId",
                         column: x => x.ResolvedByUserId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.SetNull);
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(

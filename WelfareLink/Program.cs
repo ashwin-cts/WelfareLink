@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using WelfareLink.Data;
 using WelfareLink.Services;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace WelfareLink
 {
@@ -12,6 +14,14 @@ namespace WelfareLink
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            // Configure JSON serialization options
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                ReferenceHandler = ReferenceHandler.IgnoreCycles,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
 
             // Add Session support
             builder.Services.AddDistributedMemoryCache();
@@ -39,7 +49,7 @@ namespace WelfareLink
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             });
 
-            // Register HttpClient for dashboard controllers
+            // Register HttpClient for dashboard controllers with case-insensitive JSON deserialization
             builder.Services.AddHttpClient("DashboardClient", client =>
             {
                 client.BaseAddress = new Uri(apiBaseUrl);

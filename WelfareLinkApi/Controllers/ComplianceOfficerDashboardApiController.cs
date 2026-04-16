@@ -116,7 +116,6 @@ namespace WelfareLinkApi.Controllers
             {
                 i.RecordID,
                 i.ViolationType,
-                i.Priority,
                 i.Description,
                 i.Status,
                 i.CreatedDate,
@@ -162,7 +161,6 @@ namespace WelfareLinkApi.Controllers
                     ViolationType = request.ViolationType,
                     Description = request.Description,
                     Status = "Open",
-                    Priority = request.Priority ?? "Medium",
                     RaisedByUserId = userId > 0 ? userId : null,
                     CreatedDate = DateTime.UtcNow
                 };
@@ -182,7 +180,6 @@ namespace WelfareLinkApi.Controllers
                     ViolationType = request.ViolationType,
                     Description = request.Description,
                     Status = "Open",
-                    Priority = request.Priority ?? "Medium",
                     RaisedByUserId = userId > 0 ? userId : null,
                     CreatedDate = DateTime.UtcNow
                 };
@@ -236,7 +233,6 @@ namespace WelfareLinkApi.Controllers
                 ViolationType = request.ViolationType,
                 Description = request.Description,
                 Status = "Open",
-                Priority = request.Priority ?? "Medium",
                 RaisedByUserId = userId > 0 ? userId : null,
                 CreatedDate = DateTime.UtcNow
             };
@@ -319,7 +315,6 @@ namespace WelfareLinkApi.Controllers
 
             // Create a new note indicating the officer has been flagged
             record.Notes = $"[FLAGGED] Officer flagged on {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}: {request.Reason}";
-            record.Priority = "Critical";
 
             _context.ComplianceRecords.Update(record);
             await _context.SaveChangesAsync();
@@ -351,7 +346,6 @@ namespace WelfareLinkApi.Controllers
                 {
                     c.RecordID,
                     c.ViolationType,
-                    c.Priority,
                     c.Description,
                     c.Status,
                     c.CreatedDate,
@@ -373,8 +367,6 @@ namespace WelfareLinkApi.Controllers
             var totalIssues = await _context.ComplianceRecords.CountAsync();
             var openIssues = await _context.ComplianceRecords.CountAsync(c => c.Status == "Open");
             var resolvedIssues = await _context.ComplianceRecords.CountAsync(c => c.Status == "Resolved");
-            var criticalIssues = await _context.ComplianceRecords.CountAsync(c => c.Status == "Open" && c.Priority == "Critical");
-            var highPriorityIssues = await _context.ComplianceRecords.CountAsync(c => c.Status == "Open" && c.Priority == "High");
 
             var issuesByType = await _context.ComplianceRecords
                 .Where(c => c.Status == "Open")
@@ -387,8 +379,6 @@ namespace WelfareLinkApi.Controllers
                 Total = totalIssues,
                 Open = openIssues,
                 Resolved = resolvedIssues,
-                Critical = criticalIssues,
-                HighPriority = highPriorityIssues,
                 IssuesByType = issuesByType
             });
         }
@@ -400,20 +390,18 @@ namespace WelfareLinkApi.Controllers
         public async Task<IActionResult> GetFilteredComplianceIssues(
             [FromQuery] string? status = null,
             [FromQuery] string? violationType = null,
-            [FromQuery] string? priority = null,
             [FromQuery] int? citizenID = null,
             [FromQuery] int? benefitID = null)
         {
             try
             {
                 var issues = await _complianceService.GetComplianceIssuesWithFiltersAsync(
-                    status, violationType, priority, citizenID, benefitID);
+                    status, violationType, citizenID, benefitID);
 
                 var result = issues.Select(i => new
                 {
                     i.RecordID,
                     i.ViolationType,
-                    i.Priority,
                     i.Description,
                     i.Status,
                     i.CreatedDate,
@@ -517,7 +505,6 @@ namespace WelfareLinkApi.Controllers
                 {
                     h.RecordID,
                     h.ViolationType,
-                    h.Priority,
                     h.Description,
                     h.Status,
                     h.CreatedDate,
@@ -610,7 +597,6 @@ namespace WelfareLinkApi.Controllers
     {
         public string ViolationType { get; set; }
         public string Description { get; set; }
-        public string? Priority { get; set; }
     }
 
     public class ComplianceResolveRequest

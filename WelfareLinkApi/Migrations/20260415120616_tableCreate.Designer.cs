@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using WelfareLink.Data;
+using WelfareLinkApi.Data;
 
 #nullable disable
 
-namespace WelfareLink.Migrations
+namespace WelfareLinkApi.Migrations
 {
     [DbContext(typeof(WelfareLinkDbContext))]
-    [Migration("20260331114147_RenameCitizenIdToCitizenId")]
-    partial class RenameCitizenIdToCitizenId
+    [Migration("20260415120616_tableCreate")]
+    partial class tableCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,107 @@ namespace WelfareLink.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.Audit", b =>
+                {
+                    b.Property<int>("AuditID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AuditID"));
+
+                    b.Property<DateTime>("AuditDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("AuditedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FindingType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("ProgramID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ResolvedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("AuditID");
+
+                    b.HasIndex("AuditedByUserId");
+
+                    b.HasIndex("ProgramID");
+
+                    b.ToTable("Audits");
+                });
+
+            modelBuilder.Entity("WelfareLinkApi.Models.AuditLog", b =>
+                {
+                    b.Property<int>("LogID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LogID"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("IPAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<string>("NewValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("LogID");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AuditLogs");
+                });
+
+            modelBuilder.Entity("WelfareLinkApi.Models.Benefit", b =>
                 {
                     b.Property<int>("BenefitID")
                         .ValueGeneratedOnAdd()
@@ -57,7 +157,7 @@ namespace WelfareLink.Migrations
                     b.ToTable("Benefits");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.Citizen", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.Citizen", b =>
                 {
                     b.Property<int>("CitizenId")
                         .ValueGeneratedOnAdd()
@@ -66,12 +166,10 @@ namespace WelfareLink.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CitizenId"));
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("ContactInfo")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -81,13 +179,16 @@ namespace WelfareLink.Migrations
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Gender")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Status")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -99,7 +200,7 @@ namespace WelfareLink.Migrations
                     b.ToTable("Citizens");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.CitizenDocument", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.CitizenDocument", b =>
                 {
                     b.Property<int>("DocumentID")
                         .ValueGeneratedOnAdd()
@@ -139,7 +240,78 @@ namespace WelfareLink.Migrations
                     b.ToTable("CitizenDocuments");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.Disbursement", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.ComplainceRecord", b =>
+                {
+                    b.Property<int>("RecordID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RecordID"));
+
+                    b.Property<int?>("ApplicationID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("BenefitID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CitizenID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("DisbursementID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int?>("RaisedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ResolvedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ResolvedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ViolationType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("RecordID");
+
+                    b.HasIndex("RaisedByUserId");
+
+                    b.HasIndex("ResolvedByUserId");
+
+                    b.ToTable("ComplianceRecords");
+                });
+
+            modelBuilder.Entity("WelfareLinkApi.Models.Disbursement", b =>
                 {
                     b.Property<int>("DisbursementID")
                         .ValueGeneratedOnAdd()
@@ -173,7 +345,7 @@ namespace WelfareLink.Migrations
                     b.ToTable("Disbursements");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.EligibilityCheck", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.EligibilityCheck", b =>
                 {
                     b.Property<int>("CheckID")
                         .ValueGeneratedOnAdd()
@@ -209,7 +381,7 @@ namespace WelfareLink.Migrations
                     b.ToTable("EligibilityChecks");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.Resource", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.Resource", b =>
                 {
                     b.Property<int>("ResourceID")
                         .ValueGeneratedOnAdd()
@@ -239,7 +411,7 @@ namespace WelfareLink.Migrations
                     b.ToTable("Resources");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.User", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.User", b =>
                 {
                     b.Property<int>("UserId")
                         .ValueGeneratedOnAdd()
@@ -286,7 +458,7 @@ namespace WelfareLink.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.WelfareApplication", b =>
                 {
                     b.Property<int>("ApplicationID")
                         .ValueGeneratedOnAdd()
@@ -316,7 +488,7 @@ namespace WelfareLink.Migrations
                     b.ToTable("WelfareApplications");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.WelfareApplicationDocument", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.WelfareApplicationDocument", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -339,7 +511,7 @@ namespace WelfareLink.Migrations
                     b.ToTable("WelfareApplicationDocuments");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.WelfareProgram", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.WelfareProgram", b =>
                 {
                     b.Property<int>("ProgramID")
                         .ValueGeneratedOnAdd()
@@ -354,8 +526,19 @@ namespace WelfareLink.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EligibleGender")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<decimal>("MaxBenefitPerCitizen")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("RequiredDocuments")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
@@ -374,9 +557,37 @@ namespace WelfareLink.Migrations
                     b.ToTable("Programs");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.Audit", b =>
                 {
-                    b.HasOne("WelfareLink.Models.WelfareApplication", "WelfareApplication")
+                    b.HasOne("WelfareLinkApi.Models.User", "AuditedByUser")
+                        .WithMany()
+                        .HasForeignKey("AuditedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WelfareLinkApi.Models.WelfareProgram", "WelfareProgram")
+                        .WithMany()
+                        .HasForeignKey("ProgramID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AuditedByUser");
+
+                    b.Navigation("WelfareProgram");
+                });
+
+            modelBuilder.Entity("WelfareLinkApi.Models.AuditLog", b =>
+                {
+                    b.HasOne("WelfareLinkApi.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("WelfareLinkApi.Models.Benefit", b =>
+                {
+                    b.HasOne("WelfareLinkApi.Models.WelfareApplication", "WelfareApplication")
                         .WithMany("Benefits")
                         .HasForeignKey("ApplicationID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -385,9 +596,9 @@ namespace WelfareLink.Migrations
                     b.Navigation("WelfareApplication");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.CitizenDocument", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.CitizenDocument", b =>
                 {
-                    b.HasOne("WelfareLink.Models.Citizen", "Citizen")
+                    b.HasOne("WelfareLinkApi.Models.Citizen", "Citizen")
                         .WithMany("CitizenDocuments")
                         .HasForeignKey("CitizenId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -396,9 +607,26 @@ namespace WelfareLink.Migrations
                     b.Navigation("Citizen");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.Disbursement", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.ComplainceRecord", b =>
                 {
-                    b.HasOne("WelfareLink.Models.Benefit", "Benefit")
+                    b.HasOne("WelfareLinkApi.Models.User", "RaisedByUser")
+                        .WithMany()
+                        .HasForeignKey("RaisedByUserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("WelfareLinkApi.Models.User", "ResolvedByUser")
+                        .WithMany()
+                        .HasForeignKey("ResolvedByUserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("RaisedByUser");
+
+                    b.Navigation("ResolvedByUser");
+                });
+
+            modelBuilder.Entity("WelfareLinkApi.Models.Disbursement", b =>
+                {
+                    b.HasOne("WelfareLinkApi.Models.Benefit", "Benefit")
                         .WithMany("Disbursements")
                         .HasForeignKey("BenefitID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -407,9 +635,9 @@ namespace WelfareLink.Migrations
                     b.Navigation("Benefit");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.EligibilityCheck", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.EligibilityCheck", b =>
                 {
-                    b.HasOne("WelfareLink.Models.WelfareApplication", "WelfareApplication")
+                    b.HasOne("WelfareLinkApi.Models.WelfareApplication", "WelfareApplication")
                         .WithMany("EligibilityChecks")
                         .HasForeignKey("ApplicationID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -418,9 +646,9 @@ namespace WelfareLink.Migrations
                     b.Navigation("WelfareApplication");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.Resource", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.Resource", b =>
                 {
-                    b.HasOne("WelfareLink.Models.WelfareProgram", "Program")
+                    b.HasOne("WelfareLinkApi.Models.WelfareProgram", "Program")
                         .WithMany("Resources")
                         .HasForeignKey("ProgramID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -429,24 +657,24 @@ namespace WelfareLink.Migrations
                     b.Navigation("Program");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.User", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.User", b =>
                 {
-                    b.HasOne("WelfareLink.Models.Citizen", "Citizen")
+                    b.HasOne("WelfareLinkApi.Models.Citizen", "Citizen")
                         .WithMany()
                         .HasForeignKey("CitizenId");
 
                     b.Navigation("Citizen");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.WelfareApplication", b =>
                 {
-                    b.HasOne("WelfareLink.Models.Citizen", "Citizen")
+                    b.HasOne("WelfareLinkApi.Models.Citizen", "Citizen")
                         .WithMany()
                         .HasForeignKey("CitizenID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WelfareLink.Models.WelfareProgram", "Program")
+                    b.HasOne("WelfareLinkApi.Models.WelfareProgram", "Program")
                         .WithMany("WelfareApplications")
                         .HasForeignKey("ProgramID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -457,15 +685,15 @@ namespace WelfareLink.Migrations
                     b.Navigation("Program");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.WelfareApplicationDocument", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.WelfareApplicationDocument", b =>
                 {
-                    b.HasOne("WelfareLink.Models.WelfareApplication", "WelfareApplication")
+                    b.HasOne("WelfareLinkApi.Models.WelfareApplication", "WelfareApplication")
                         .WithMany("ApplicationDocuments")
                         .HasForeignKey("ApplicationID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("WelfareLink.Models.CitizenDocument", "CitizenDocument")
+                    b.HasOne("WelfareLinkApi.Models.CitizenDocument", "CitizenDocument")
                         .WithMany()
                         .HasForeignKey("DocumentID")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -476,17 +704,17 @@ namespace WelfareLink.Migrations
                     b.Navigation("WelfareApplication");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.Benefit", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.Benefit", b =>
                 {
                     b.Navigation("Disbursements");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.Citizen", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.Citizen", b =>
                 {
                     b.Navigation("CitizenDocuments");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.WelfareApplication", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.WelfareApplication", b =>
                 {
                     b.Navigation("ApplicationDocuments");
 
@@ -495,7 +723,7 @@ namespace WelfareLink.Migrations
                     b.Navigation("EligibilityChecks");
                 });
 
-            modelBuilder.Entity("WelfareLink.Models.WelfareProgram", b =>
+            modelBuilder.Entity("WelfareLinkApi.Models.WelfareProgram", b =>
                 {
                     b.Navigation("Resources");
 

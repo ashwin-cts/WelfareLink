@@ -56,9 +56,42 @@ namespace WelfareLink.Controllers
             try
             {
                 var client = _httpClientFactory.CreateClient("DashboardClient");
-                // Fetch application as strongly typed model to avoid dynamic binder issues
-                var application = await client.GetFromJsonAsync<WelfareLink.Models.WelfareApplication>($"api/welfareapplicationapi/{id}");
-                if (application == null) return NotFound();
+
+                // Configure JSON options for case-insensitive deserialization
+                var jsonOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
+                };
+
+                // Fetch application as strongly typed model with case-insensitive deserialization
+                var response = await client.GetAsync($"api/welfareapplicationapi/{id}");
+                if (!response.IsSuccessStatusCode) 
+                {
+                    ViewBag.Error = $"API returned status: {response.StatusCode}";
+                    return NotFound();
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"API Response: {content}");
+
+                var application = System.Text.Json.JsonSerializer.Deserialize<WelfareLink.Models.WelfareApplication>(content, jsonOptions);
+                if (application == null) 
+                {
+                    ViewBag.Error = "Failed to deserialize application data";
+                    return NotFound();
+                }
+
+                // Debug: Check if Benefits were loaded
+                System.Diagnostics.Debug.WriteLine($"Application ID: {application.ApplicationID}");
+                System.Diagnostics.Debug.WriteLine($"Benefits Count: {application.Benefits?.Count ?? 0}");
+                if (application.Benefits != null)
+                {
+                    foreach (var b in application.Benefits)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Benefit {b.BenefitID}: Type={b.Type}, Disbursements={b.Disbursements?.Count ?? 0}");
+                    }
+                }
 
                 // Fetch program-level resources if program id exists
                 WelfareLink.Models.ProgramResourcesDto resources = null;
@@ -67,10 +100,18 @@ namespace WelfareLink.Controllers
                     var programId = application.ProgramID;
                     if (programId != 0)
                     {
-                        resources = await client.GetFromJsonAsync<WelfareLink.Models.ProgramResourcesDto>($"api/resourceapi/program/{programId}");
+                        var resourceResponse = await client.GetAsync($"api/resourceapi/program/{programId}");
+                        if (resourceResponse.IsSuccessStatusCode)
+                        {
+                            var resourceContent = await resourceResponse.Content.ReadAsStringAsync();
+                            resources = System.Text.Json.JsonSerializer.Deserialize<WelfareLink.Models.ProgramResourcesDto>(resourceContent, jsonOptions);
+                        }
                     }
                 }
-                catch { /* ignore resource errors */ }
+                catch (Exception ex) 
+                { 
+                    System.Diagnostics.Debug.WriteLine($"Error fetching resources: {ex.Message}");
+                }
 
                 // Build and pass a view model instead of a raw application model so the Razor
                 // strongly-typed view receives the expected shape.
@@ -85,6 +126,7 @@ namespace WelfareLink.Controllers
             catch (Exception ex)
             {
                 ViewBag.Error = $"Error loading application details: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine($"Exception: {ex}");
                 return View();
             }
         }

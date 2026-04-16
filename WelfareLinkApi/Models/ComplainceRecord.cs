@@ -39,10 +39,6 @@ namespace WelfareLinkApi.Models
 
         public string? Notes { get; set; }
 
-        // Priority level: Low, Medium, High, Critical
-        [StringLength(20)]
-        public string Priority { get; set; } = "Medium";
-
         [ForeignKey("RaisedByUserId")]
         [JsonIgnore]
         public virtual User? RaisedByUser { get; set; }

@@ -20,7 +20,6 @@ namespace WelfareLinkApi.Models
         [JsonIgnore]
         public virtual WelfareApplication? WelfareApplication { get; set; }
 
-        [JsonIgnore]
         public virtual CitizenDocument? CitizenDocument { get; set; }
     }
 }

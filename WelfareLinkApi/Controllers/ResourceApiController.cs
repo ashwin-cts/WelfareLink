@@ -43,9 +43,17 @@ namespace WelfareLinkApi.Controllers
                 .Where(r => r.Type.Equals("Funds", StringComparison.OrdinalIgnoreCase))
                 .Sum(r => r.Quantity);
 
+            // Map resources to DTOs with correct property names for the view
+            var resourceDtos = resources.Select(r => new
+            {
+                ResourceID = r.ResourceID,
+                Name = r.Type,  // Map Type to Name
+                AmountAllocated = r.Quantity  // Map Quantity to AmountAllocated
+            }).ToList();
+
             return Ok(new
             {
-                Resources = resources,
+                Resources = resourceDtos,
                 ProgramTitle = program.Title,
                 ProgramBudget = program.Budget,
                 TotalAllocated = totalAllocated,

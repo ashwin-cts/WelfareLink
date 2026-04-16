@@ -33,7 +33,6 @@ namespace WelfareLinkApi.Models
 
         // Navigation property for one-to-many relationship
         // One WelfareApplication can have many Benefits
-        [JsonIgnore]
         public virtual ICollection<Benefit>? Benefits { get; set; }
 
         // Navigation property

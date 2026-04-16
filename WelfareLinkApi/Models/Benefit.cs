@@ -21,11 +21,11 @@ namespace WelfareLinkApi.Models
 
         //navigation property for one-to-many relationship
         //means one benefit can have many disbursements
-        [JsonIgnore]
         public virtual ICollection<Disbursement>? Disbursements { get; set; }
 
         // Navigation property
         // One Benefit belongs to one WelfareApplication
+        [JsonIgnore]
         public virtual WelfareApplication? WelfareApplication { get; set; }
     }
 }

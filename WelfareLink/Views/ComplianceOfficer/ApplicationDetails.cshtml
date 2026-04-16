@@ -28,23 +28,48 @@
                 <div class="detail-item"><label>Application ID</label><p>#@Model.Application.ApplicationID</p></div>
                 <div class="detail-item"><label>Citizen ID</label><p>#@Model.Application.CitizenID</p></div>
                 <div class="detail-item"><label>Citizen Name</label><p>@(Model.Application.Citizen?.Name ?? "-")</p></div>
-                <div class="detail-item"><label>Program</label><p>@(Model.Application.Program?.Title ?? "-")</p></div>
+                <div class="detail-item"><label>Program Name</label><p>@(Model.Application.Program?.Title ?? "-")</p></div>
                 <div class="detail-item"><label>Submitted Date</label><p>@Model.Application.SubmittedDate.ToString("dd MMM yyyy")</p></div>
                 <div class="detail-item"><label>Status</label><p>@(Model.Application.Status ?? "-")</p></div>
                 <div class="detail-item" style="grid-column:span 2;"><label>Application Documents</label>
-                    <p>
-                        @if (Model.Application.ApplicationDocuments != null)
-                        {
-                            <ul>
-                                @foreach (var docLink in Model.Application.ApplicationDocuments)
-                                {
-                                    var doc = docLink.CitizenDocument;
-                                    <li>@(doc?.DocumentName ?? "Document")</li>
-                                }
-                            </ul>
-                        }
-                        else { <span class="text-muted">No documents</span> }
-                    </p>
+                    @if (Model.Application.ApplicationDocuments != null && Model.Application.ApplicationDocuments.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Document Type</th>
+                                        <th>Name</th>
+                                        <th>Uploaded Date</th>
+                                        <th style="width: 80px;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var docLink in Model.Application.ApplicationDocuments)
+                                    {
+                                        var doc = docLink.CitizenDocument;
+                                        @if (doc != null)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <span class="badge bg-info">@(doc.DocType ?? "Document")</span>
+                                                </td>
+                                                <td>@(doc.DocumentName ?? "-")</td>
+                                                <td>@doc.UploadedDate.ToString("dd MMM yyyy")</td>
+                                                <td>
+                                                    <a asp-controller="CitizenDocument" asp-action="ViewDocument" asp-route-id="@doc.DocumentID" 
+                                                       target="_blank" class="btn btn-sm btn-outline-primary" title="View Document">
+                                                        <i class="bi bi-eye"></i> View
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else { <span class="text-muted">No documents</span> }
                 </div>
             </div>
         </div>
@@ -98,7 +123,7 @@
                 <p><strong>Total Allocated:</strong> ₹@pr.TotalAllocated</p>
                 <p><strong>Remaining:</strong> ₹@pr.RemainingBudget</p>
 
-                if (pr.Resources != null)
+                @if (pr.Resources != null && pr.Resources.Count > 0)
                 {
                     <table class="table table-sm">
                         <thead><tr><th>Resource ID</th><th>Name</th><th>Allocated</th></tr></thead>
@@ -114,6 +139,7 @@
                         </tbody>
                     </table>
                 }
+                else { <p class="text-muted">No resources allocated</p> }
             }
             else { <p class="text-muted">No resource information available</p> }
         </div>
@@ -123,9 +149,10 @@
         <div class="content-card mb-3">
             <h5>Quick Actions</h5>
             <div class="d-grid gap-2">
-                <a asp-controller="ComplainceRecord" asp-action="Create" asp-route-entityType="Application" asp-route-entityId="@Model.Application.ApplicationID" class="btn btn-outline-danger">Flag Application</a>
-                @* <a asp-controller="WelfareApplication" asp-action="Edit" asp-route-id="@Model.Application.ApplicationID" class="btn btn-outline-primary">Edit Application</a> *@
-            </div>
+                <a asp-controller="ComplainceRecord" asp-action="Create" asp-route-applicationId="@Model.Application.ApplicationID" class="btn btn-outline-danger">
+                    <i class="bi bi-flag-fill"></i> Flag Application
+                </a>
+          </div>
         </div>
 
         <div class="content-card">

@@ -45,6 +45,7 @@ namespace WelfareLinkApi.Controllers
         {
             var application = await _welfareApplicationService.GetApplicationByIdAsync(id);
             if (application == null) return NotFound();
+
             return Ok(application);
         }
 

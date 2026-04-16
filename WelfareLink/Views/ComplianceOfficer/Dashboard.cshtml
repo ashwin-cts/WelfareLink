@@ -11,6 +11,14 @@
     </div>
 </div>
 
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 @if (!string.IsNullOrEmpty(ViewBag.Error))
 {
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -80,17 +88,18 @@
                     <th>Application ID</th>
                     <th>Citizen Name</th>
                     <th>Program</th>
-                    <th>Status</th>
+                    <th>Application Status</th>
                     <th>Max Benefit</th>
                     <th>Allocated</th>
                     <th>Disbursed</th>
                     <th>Remaining</th>
+                    <th>Compliance Flag Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="applicationsTableBody">
                 <tr>
-                    <td colspan="9" class="text-center text-muted py-4">Loading applications...</td>
+                    <td colspan="10" class="text-center text-muted py-4">Loading applications...</td>
                 </tr>
             </tbody>
         </table>
@@ -100,12 +109,100 @@
 @section Scripts {
     <script>
         const apiBaseUrl = '@Configuration["ApiSettings:BaseUrl"]';
+        let complianceRecordsMap = {};
+
+        // Fetch all compliance records and create a map for quick lookup
+        async function loadComplianceRecords() {
+            try {
+                const complianceUrl = apiBaseUrl + '/api/complaincerecordapi';
+                console.log('Fetching from:', complianceUrl);
+
+                const response = await fetch(complianceUrl, { credentials: 'include' });
+                console.log('Response Status:', response.status);
+
+                if (!response.ok) {
+                    console.error('API Error:', response.status);
+                    return;
+                }
+
+                const records = await response.json();
+                console.log('Raw API Response:', records);
+
+                // Handle both array and wrapped response
+                const recordsArray = Array.isArray(records) ? records : (records.data || records.records || []);
+                console.log('Records Array:', recordsArray);
+
+                complianceRecordsMap = {};
+
+                recordsArray.forEach(record => {
+                    console.log('Processing record:', record);
+
+                    // Check if this is an application compliance record
+                    // Handle both EntityType and entityType (case variations)
+                    const entityType = record.EntityType || record.entityType;
+                    const entityId = record.EntityId || record.entityId;
+
+                    console.log('EntityType:', entityType, 'EntityId:', entityId);
+
+                    if (entityType && entityId) {
+                        // Store by EntityId (ApplicationID)
+                        if (!complianceRecordsMap[entityId]) {
+                            complianceRecordsMap[entityId] = record;
+                        } else {
+                            // Keep the most recent record
+                            const existingDate = new Date(complianceRecordsMap[entityId].CreatedDate || complianceRecordsMap[entityId].createdDate);
+                            const newDate = new Date(record.CreatedDate || record.createdDate);
+                            if (newDate > existingDate) {
+                                complianceRecordsMap[entityId] = record;
+                            }
+                        }
+                    }
+                });
+
+                console.log('Final Compliance Records Map:', complianceRecordsMap);
+            } catch (error) {
+                console.error('Error loading compliance records:', error);
+            }
+        }
+
+        // Get compliance status badge HTML for an application
+        function getComplianceStatusBadge(applicationId) {
+            const record = complianceRecordsMap[applicationId];
+            console.log('Looking up compliance for app:', applicationId, 'Found:', record);
+
+            if (!record) {
+                return '<span class="badge bg-light text-dark">No compliance raised</span>';
+            }
+
+            const status = record.Status || record.status || 'Unknown';
+            let badgeClass = 'bg-secondary';
+
+            switch(status.toLowerCase()) {
+                case 'open':
+                    badgeClass = 'bg-danger';
+                    break;
+                case 'under investigation':
+                    badgeClass = 'bg-warning text-dark';
+                    break;
+                case 'resolved':
+                    badgeClass = 'bg-success';
+                    break;
+                case 'dismissed':
+                    badgeClass = 'bg-info';
+                    break;
+                default:
+                    badgeClass = 'bg-secondary';
+            }
+
+            return `<span class="badge ${badgeClass}">${status}</span>`;
+        }
 
         async function loadApplicationsData() {
             try {
+                // First load compliance records
+                await loadComplianceRecords();
+
                 const response = await fetch(apiBaseUrl + '/api/complianceofficerdashboardapi/dashboard/applications-list', { credentials: 'include' });
-                console.log('API Response Status:', response.status);
-                console.log('API Response OK:', response.ok);
 
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -114,10 +211,9 @@
                 }
 
                 const result = await response.json();
-                console.log('API Response Data:', result);
+                console.log('Applications Data:', result);
 
                 const rawApps = result.data || result || [];
-                // Normalize property names to be resilient to casing/shape differences
                 const applications = (Array.isArray(rawApps) ? rawApps : []).map(a => {
                     const benefitsRaw = a.Benefits || a.benefits || [];
                     const benefits = (Array.isArray(benefitsRaw) ? benefitsRaw : []).map(b => {
@@ -156,14 +252,13 @@
                         IsFlagged: a.IsFlagged ?? a.isFlagged ?? false
                     };
                 });
-                console.log('Normalized Applications:', applications);
 
                 displayApplicationsTable(applications);
                 updateDashboardStats(applications);
             } catch (error) {
                 console.error('Error loading applications:', error);
                 document.getElementById('applicationsTableBody').innerHTML = 
-                    '<tr><td colspan="9" class="text-center text-danger"><strong>Error:</strong> ' + error.message + '</td></tr>';
+                    '<tr><td colspan="10" class="text-center text-danger"><strong>Error:</strong> ' + error.message + '</td></tr>';
             }
         }
 
@@ -171,13 +266,14 @@
             const tbody = document.getElementById('applicationsTableBody');
 
             if (!applications || applications.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">No applications found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">No applications found</td></tr>';
                 return;
             }
 
             let html = '';
             applications.forEach(app => {
                 const statusClass = getStatusClass(app.ApplicationStatus);
+                const complianceStatusHtml = getComplianceStatusBadge(app.ApplicationID);
 
                 html += `
                     <tr>
@@ -189,6 +285,7 @@
                         <td>₹${parseFloat(app.TotalBenefitAllocated || 0).toFixed(2)}</td>
                         <td>₹${parseFloat(app.TotalDisbursed || 0).toFixed(2)}</td>
                         <td>₹${parseFloat(app.RemainingToDisborse || 0).toFixed(2)}</td>
+                        <td>${complianceStatusHtml}</td>
                         <td>
                             <div class="btn-group btn-group-sm" role="group">
                                 <button type="button" class="btn btn-outline-info" title="View Details" onclick="viewApplicationDetails(${app.ApplicationID})">
@@ -201,7 +298,7 @@
                         </td>
                     </tr>
                     <tr id="details-${app.ApplicationID}" class="detail-row" style="display: none;">
-                        <td colspan="9">
+                        <td colspan="10">
                             <div class="details-container p-3">
                                 <h6>Allocated Benefits & Disbursements</h6>
                                 <div id="benefit-details-${app.ApplicationID}">
@@ -302,7 +399,6 @@
         }
 
         function viewApplicationDetails(applicationID) {
-            // Open the compliance-specific application view for officers
             window.location.href = `/ComplianceOfficer/ApplicationDetails/${applicationID}`;
         }
 

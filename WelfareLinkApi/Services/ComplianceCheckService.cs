@@ -63,8 +63,7 @@ namespace WelfareLinkApi.Services
                             EntityId = benefitID,
                             ViolationType = "MaxBenefitExceeded",
                             Description = $"Citizen {citizenID} total benefit (Rs. {totalBenefit}) exceeds max allowed (Rs. {program.MaxBenefitPerCitizen}) in program {program.Title}",
-                            Status = "Open",
-                            Priority = "High"
+                            Status = "Open"
                         };
 
                         _context.ComplianceRecords.Add(compliance);
@@ -113,8 +112,7 @@ namespace WelfareLinkApi.Services
                             EntityId = benefit.BenefitID,
                             ViolationType = "DisbursementDelayed",
                             Description = $"Benefit #{benefit.BenefitID} (Rs. {benefit.Amount}) created on {benefit.Date:yyyy-MM-dd} not completed within 2 days. Disbursed: Rs. {totalDisbursed}",
-                            Status = "Open",
-                            Priority = "Critical"
+                            Status = "Open"
                         };
 
                         _context.ComplianceRecords.Add(compliance);
@@ -140,9 +138,7 @@ namespace WelfareLinkApi.Services
             }
 
             return await query
-                .OrderByDescending(c => c.Priority == "Critical")
-                .ThenByDescending(c => c.Priority == "High")
-                .ThenByDescending(c => c.CreatedDate)
+                .OrderByDescending(c => c.CreatedDate)
                 .ToListAsync();
         }
 
@@ -152,7 +148,6 @@ namespace WelfareLinkApi.Services
         public async Task<List<ComplainceRecord>> GetComplianceIssuesWithFiltersAsync(
             string? status = null, 
             string? violationType = null,
-            string? priority = null,
             int? citizenID = null,
             int? benefitID = null)
         {
@@ -164,9 +159,6 @@ namespace WelfareLinkApi.Services
             if (!string.IsNullOrEmpty(violationType))
                 query = query.Where(c => c.ViolationType == violationType);
 
-            if (!string.IsNullOrEmpty(priority))
-                query = query.Where(c => c.Priority == priority);
-
             if (citizenID.HasValue)
                 query = query.Where(c => c.CitizenID == citizenID);
 
@@ -174,9 +166,7 @@ namespace WelfareLinkApi.Services
                 query = query.Where(c => c.BenefitID == benefitID);
 
             return await query
-                .OrderByDescending(c => c.Priority == "Critical")
-                .ThenByDescending(c => c.Priority == "High")
-                .ThenByDescending(c => c.CreatedDate)
+                .OrderByDescending(c => c.CreatedDate)
                 .ToListAsync();
         }
 
@@ -257,7 +247,6 @@ namespace WelfareLinkApi.Services
                 ViolationType = "OfficerFlagged",
                 Description = reason,
                 Status = "Open",
-                Priority = "High",
                 CreatedDate = DateTime.UtcNow
             };
 

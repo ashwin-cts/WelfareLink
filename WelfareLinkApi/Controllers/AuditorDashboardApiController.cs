@@ -131,9 +131,6 @@ namespace WelfareLinkApi.Controllers
             var totalComplianceIssues = await _context.ComplianceRecords
                 .CountAsync(c => c.Status == "Open");
 
-            var criticalIssues = await _context.ComplianceRecords
-                .CountAsync(c => c.Status == "Open" && c.Priority == "Critical");
-
             var totalProgramBudget = await _context.Programs
                 .SumAsync(p => p.Budget);
 
@@ -143,7 +140,7 @@ namespace WelfareLinkApi.Controllers
                 Applications = new { Total = totalApplications, Approved = approvedApplications },
                 Benefits = new { Total = totalBenefits, TotalAmount = totalBenefitAmount },
                 Disbursements = new { Total = totalDisbursements, TotalAmount = totalDisbursedAmount },
-                Compliance = new { OpenIssues = totalComplianceIssues, CriticalIssues = criticalIssues },
+                Compliance = new { OpenIssues = totalComplianceIssues },
                 Budget = new { Total = totalProgramBudget, Allocated = totalBenefitAmount }
             };
 

@@ -32,5 +32,35 @@ namespace WelfareLink.Models
         public int? ResolvedByUserId { get; set; }
         public string? ResolvedByUserName { get; set; }
         public string? Notes { get; set; }
+
+        // Application context for cascading form
+        public int? ApplicationId { get; set; }
+        public string? ApplicationName { get; set; }
+        public string? CitizenName { get; set; }
+        public List<BenefitOption> BenefitsList { get; set; } = new();
+        public List<DisbursementOption> DisbursementsList { get; set; } = new();
+        public List<EligibilityCheckOption> EligibilityChecksList { get; set; } = new();
+    }
+
+    public class BenefitOption
+    {
+        public int BenefitID { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public double Amount { get; set; }
+        public string Status { get; set; } = string.Empty;
+    }
+
+    public class DisbursementOption
+    {
+        public int DisbursementID { get; set; }
+        public int BenefitID { get; set; }
+        public double Amount { get; set; }
+        public string Status { get; set; } = string.Empty;
+    }
+
+    public class EligibilityCheckOption
+    {
+        public int CheckID { get; set; }
+        public string Status { get; set; } = string.Empty;
     }
 }

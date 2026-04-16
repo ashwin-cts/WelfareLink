@@ -29,6 +29,8 @@ public class WelfareApplicationRepository : Repository<WelfareApplication> ,IWel
             .Include(a => a.EligibilityChecks)
             .Include(a => a.ApplicationDocuments)
                 .ThenInclude(ad => ad.CitizenDocument)
+            .Include(a => a.Benefits)
+                .ThenInclude(b => b.Disbursements)
             .FirstOrDefaultAsync(a => a.ApplicationID == id);
     }
     public async Task<IEnumerable<WelfareApplication>> GetByStatusAsync(string status)
