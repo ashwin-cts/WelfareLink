@@ -84,7 +84,7 @@ namespace WelfareLinkApi
             {
                 options.AddPolicy("AllowWelfareLinkMvc", policy =>
                 {
-                    policy.WithOrigins("https://localhost:7100", "http://localhost:5100")
+                    policy.WithOrigins("https://localhost:7100", "https://localhost:7141")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials();
