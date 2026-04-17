@@ -115,12 +115,12 @@ namespace WelfareLinkApi.Controllers
             var result = issues.Select(i => new
             {
                 i.RecordID,
+                i.EntityType,
+                i.EntityId,
                 i.ViolationType,
                 i.Description,
                 i.Status,
                 i.CreatedDate,
-                BenefitID = i.BenefitID,
-                DisbursementID = i.DisbursementID,
                 ApplicationID = i.ApplicationID,
                 CitizenID = i.CitizenID,
                 RaisedBy = i.RaisedByUser != null ? new { i.RaisedByUser.UserId, i.RaisedByUser.Username } : null
@@ -153,11 +153,10 @@ namespace WelfareLinkApi.Controllers
 
                 compliance = new ComplainceRecord
                 {
-                    BenefitID = benefitID.Value,
-                    ApplicationID = benefit.ApplicationID,
-                    CitizenID = benefit.WelfareApplication?.CitizenID,
                     EntityType = "Benefit",
                     EntityId = benefitID.Value,
+                    ApplicationID = benefit.ApplicationID,
+                    CitizenID = benefit.WelfareApplication?.CitizenID,
                     ViolationType = request.ViolationType,
                     Description = request.Description,
                     Status = "Open",
@@ -226,8 +225,6 @@ namespace WelfareLinkApi.Controllers
 
             var compliance = new ComplainceRecord
             {
-                DisbursementID = disbursementID,
-                BenefitID = disbursement.BenefitID,
                 EntityType = "Disbursement",
                 EntityId = disbursementID,
                 ViolationType = request.ViolationType,
@@ -401,13 +398,13 @@ namespace WelfareLinkApi.Controllers
                 var result = issues.Select(i => new
                 {
                     i.RecordID,
+                    i.EntityType,
+                    i.EntityId,
                     i.ViolationType,
                     i.Description,
                     i.Status,
                     i.CreatedDate,
                     i.ResolvedDate,
-                    BenefitID = i.BenefitID,
-                    DisbursementID = i.DisbursementID,
                     ApplicationID = i.ApplicationID,
                     CitizenID = i.CitizenID,
                     RaisedBy = i.RaisedByUser != null ? new { i.RaisedByUser.UserId, i.RaisedByUser.Username } : null,

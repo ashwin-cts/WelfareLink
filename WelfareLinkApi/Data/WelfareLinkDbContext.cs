@@ -64,13 +64,13 @@ namespace WelfareLinkApi.Data
                 .HasOne(r => r.RaisedByUser)
                 .WithMany()
                 .HasForeignKey(r => r.RaisedByUserId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ComplainceRecord>()
                 .HasOne(r => r.ResolvedByUser)
                 .WithMany()
                 .HasForeignKey(r => r.ResolvedByUserId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Restrict);
 
             // AuditLog → User
             modelBuilder.Entity<AuditLog>()

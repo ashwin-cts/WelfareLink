@@ -45,31 +45,31 @@ namespace WelfareLinkApi.Services
                     .SumAsync(b => b.Amount);
 
                 if (totalBenefit > (double)program.MaxBenefitPerCitizen)
-                {
-                    // Create compliance record
-                    var existingRecord = await _context.ComplianceRecords
-                        .FirstOrDefaultAsync(c => c.BenefitID == benefitID && 
-                                                   c.ViolationType == "MaxBenefitExceeded" &&
-                                                   c.Status == "Open");
-
-                    if (existingRecord == null)
                     {
-                        var compliance = new ComplainceRecord
-                        {
-                            BenefitID = benefitID,
-                            ApplicationID = benefit.ApplicationID,
-                            CitizenID = citizenID,
-                            EntityType = "Benefit",
-                            EntityId = benefitID,
-                            ViolationType = "MaxBenefitExceeded",
-                            Description = $"Citizen {citizenID} total benefit (Rs. {totalBenefit}) exceeds max allowed (Rs. {program.MaxBenefitPerCitizen}) in program {program.Title}",
-                            Status = "Open"
-                        };
+                        // Create compliance record
+                        var existingRecord = await _context.ComplianceRecords
+                            .FirstOrDefaultAsync(c => c.EntityType == "Benefit" &&
+                                                       c.EntityId == benefitID && 
+                                                       c.ViolationType == "MaxBenefitExceeded" &&
+                                                       c.Status == "Open");
 
-                        _context.ComplianceRecords.Add(compliance);
-                        await _context.SaveChangesAsync();
+                        if (existingRecord == null)
+                        {
+                            var compliance = new ComplainceRecord
+                            {
+                                EntityType = "Benefit",
+                                EntityId = benefitID,
+                                ApplicationID = benefit.ApplicationID,
+                                CitizenID = citizenID,
+                                ViolationType = "MaxBenefitExceeded",
+                                Description = $"Citizen {citizenID} total benefit (Rs. {totalBenefit}) exceeds max allowed (Rs. {program.MaxBenefitPerCitizen}) in program {program.Title}",
+                                Status = "Open"
+                            };
+
+                            _context.ComplianceRecords.Add(compliance);
+                            await _context.SaveChangesAsync();
+                        }
                     }
-                }
             }
         }
 
@@ -94,30 +94,30 @@ namespace WelfareLinkApi.Services
                 var isFullyDisbursed = totalDisbursed >= benefit.Amount;
 
                 if (!isFullyDisbursed)
-                {
-                    // Check if compliance record already exists
-                    var existingRecord = await _context.ComplianceRecords
-                        .FirstOrDefaultAsync(c => c.BenefitID == benefit.BenefitID &&
-                                                   c.ViolationType == "DisbursementDelayed" &&
-                                                   c.Status == "Open");
-
-                    if (existingRecord == null)
                     {
-                        var compliance = new ComplainceRecord
-                        {
-                            BenefitID = benefit.BenefitID,
-                            ApplicationID = benefit.ApplicationID,
-                            CitizenID = benefit.WelfareApplication?.CitizenID,
-                            EntityType = "Benefit",
-                            EntityId = benefit.BenefitID,
-                            ViolationType = "DisbursementDelayed",
-                            Description = $"Benefit #{benefit.BenefitID} (Rs. {benefit.Amount}) created on {benefit.Date:yyyy-MM-dd} not completed within 2 days. Disbursed: Rs. {totalDisbursed}",
-                            Status = "Open"
-                        };
+                        // Check if compliance record already exists
+                        var existingRecord = await _context.ComplianceRecords
+                            .FirstOrDefaultAsync(c => c.EntityType == "Benefit" &&
+                                                       c.EntityId == benefit.BenefitID &&
+                                                       c.ViolationType == "DisbursementDelayed" &&
+                                                       c.Status == "Open");
 
-                        _context.ComplianceRecords.Add(compliance);
+                        if (existingRecord == null)
+                        {
+                            var compliance = new ComplainceRecord
+                            {
+                                EntityType = "Benefit",
+                                EntityId = benefit.BenefitID,
+                                ApplicationID = benefit.ApplicationID,
+                                CitizenID = benefit.WelfareApplication?.CitizenID,
+                                ViolationType = "DisbursementDelayed",
+                                Description = $"Benefit #{benefit.BenefitID} (Rs. {benefit.Amount}) created on {benefit.Date:yyyy-MM-dd} not completed within 2 days. Disbursed: Rs. {totalDisbursed}",
+                                Status = "Open"
+                            };
+
+                            _context.ComplianceRecords.Add(compliance);
+                        }
                     }
-                }
             }
 
             await _context.SaveChangesAsync();
@@ -163,7 +163,7 @@ namespace WelfareLinkApi.Services
                 query = query.Where(c => c.CitizenID == citizenID);
 
             if (benefitID.HasValue)
-                query = query.Where(c => c.BenefitID == benefitID);
+                query = query.Where(c => c.EntityType == "Benefit" && c.EntityId == benefitID);
 
             return await query
                 .OrderByDescending(c => c.CreatedDate)
@@ -277,7 +277,7 @@ namespace WelfareLinkApi.Services
                 query = query.Where(c => c.CitizenID == citizenID);
 
             if (benefitID.HasValue)
-                query = query.Where(c => c.BenefitID == benefitID);
+                query = query.Where(c => c.EntityType == "Benefit" && c.EntityId == benefitID);
 
             return await query
                 .OrderByDescending(c => c.CreatedDate)

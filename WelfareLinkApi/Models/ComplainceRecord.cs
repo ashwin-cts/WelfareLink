@@ -16,9 +16,7 @@ namespace WelfareLinkApi.Models
 
         public int EntityId { get; set; }
 
-        // Specific entity details for tracking
-        public int? BenefitID { get; set; }
-        public int? DisbursementID { get; set; }
+        // Automatically populated based on EntityType and EntityId
         public int? ApplicationID { get; set; }
         public int? CitizenID { get; set; }
 

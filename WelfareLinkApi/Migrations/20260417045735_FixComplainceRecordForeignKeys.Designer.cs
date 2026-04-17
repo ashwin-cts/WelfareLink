@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WelfareLinkApi.Data;
 
@@ -11,9 +12,11 @@ using WelfareLinkApi.Data;
 namespace WelfareLinkApi.Migrations
 {
     [DbContext(typeof(WelfareLinkDbContext))]
-    partial class WelfareLinkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260417045735_FixComplainceRecordForeignKeys")]
+    partial class FixComplainceRecordForeignKeys
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -248,6 +251,9 @@ namespace WelfareLinkApi.Migrations
                     b.Property<int?>("ApplicationID")
                         .HasColumnType("int");
 
+                    b.Property<int?>("BenefitID")
+                        .HasColumnType("int");
+
                     b.Property<int?>("CitizenID")
                         .HasColumnType("int");
 
@@ -257,6 +263,9 @@ namespace WelfareLinkApi.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("DisbursementID")
+                        .HasColumnType("int");
 
                     b.Property<int>("EntityId")
                         .HasColumnType("int");
