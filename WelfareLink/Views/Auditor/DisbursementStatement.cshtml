@@ -1,0 +1,359 @@
+@using System.Dynamic
+@{
+    ViewData["Title"] = "Budget Monitoring - Disbursement Statement";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-3">Budget Monitoring - Disbursement Statement</h1>
+            <hr />
+        </div>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <strong>Error:</strong> @ViewBag.Error
+        </div>
+    }
+
+    <!-- Navigation Tabs -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs" id="auditorTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Dashboard", "Auditor")">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("BudgetMonitoring", "Auditor")">Budget Monitoring</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("ResourceStatement", "Auditor")">Resource Statement</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="@Url.Action("DisbursementStatement", "Auditor")">Disbursement Statement</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Filters</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="@Url.Action("DisbursementStatement", "Auditor")" class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="filterDate">Filter by Date:</label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="filterDate" 
+                                   name="filterDate" 
+                                   value="@(ViewBag.FilterDate?.ToString("yyyy-MM-dd") ?? "")">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="filterCitizenId">Filter by Citizen ID:</label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="filterCitizenId" 
+                                   name="filterCitizenId" 
+                                   placeholder="Enter Citizen ID"
+                                   value="@(ViewBag.FilterCitizenId ?? "")">
+                        </div>
+                        <div class="form-group col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Apply Filters
+                            </button>
+                            <a href="@Url.Action("DisbursementStatement", "Auditor")" class="btn btn-secondary w-100 ml-2">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disbursement History Table -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Section 3: Disbursement History</h5>
+                    <small class="text-muted">Disbursement History Statement for each application</small>
+                </div>
+                <div class="card-body">
+                    @if (Model != null && Model.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Citizen ID</th>
+                                        <th>Citizen Name</th>
+                                        <th>Max Benefit of Program</th>
+                                        <th>Benefit Allocated</th>
+                                        <th>Disbursed</th>
+                                        <th>Remain Disburse</th>
+                                        <th>Disbursement %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model != null && Model.Count > 0)
+                                    {
+                                        @foreach (var record in Model)
+                                        {
+                                            var dict = (IDictionary<string, object>)record;
+                                            <tr>
+                                                <td>
+                                                    <span class="badge badge-secondary">@dict["CitizenID"]</span>
+                                                </td>
+                                                <td>
+                                                    <strong>@dict["CitizenName"]</strong>
+                                                </td>
+                                                <td>
+                                                    ₹ @string.Format("{0:N2}", (decimal)dict["MaxBenefit"])
+                                                </td>
+                                                <td>
+                                                    ₹ @string.Format("{0:N2}", (decimal)dict["BenefitAllocated"])
+                                                </td>
+                                                <td>
+                                                    <span class="text-success font-weight-bold">
+                                                        ₹ @string.Format("{0:N2}", (decimal)dict["Disbursed"])
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    @{
+                                                        decimal remaining = (decimal)dict["RemainDisburse"];
+                                                        var remainingClass = remaining > 0 ? "text-warning" : "text-success";
+                                                    }
+                                                    <span class="@remainingClass font-weight-bold">
+                                                        ₹ @string.Format("{0:N2}", remaining)
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    @{
+                                                        decimal benefitAllocated = (decimal)dict["BenefitAllocated"];
+                                                        decimal disbursed = (decimal)dict["Disbursed"];
+                                                        decimal percentage = benefitAllocated > 0 ? (disbursed / benefitAllocated) * 100 : 0;
+                                                    }
+                                                    <div class="progress">
+                                                        <div class="progress-bar @(percentage >= 75 ? "bg-success" : percentage >= 50 ? "bg-warning" : "bg-info")" 
+                                                             role="progressbar" 
+                                                             style="width: @(Math.Min(percentage, 100))%;" 
+                                                             aria-valuenow="@percentage" 
+                                                             aria-valuemin="0" 
+                                                             aria-valuemax="100">
+                                                            @string.Format("{0:F1}", percentage)%
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="7" class="text-center">
+                                                <em>No disbursement records found</em>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <em>No disbursement records found matching the selected filters.</em>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Records</h6>
+                    <h3>@(Model?.Count ?? 0)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Disbursed Amount</h6>
+                    <h3>
+                        ₹ 
+                        @{
+                            decimal totalDisbursed = 0;
+                            if (Model != null)
+                            {
+                                foreach (var r in Model)
+                                {
+                                    totalDisbursed += (decimal)((IDictionary<string, object>)r)["Disbursed"];
+                                }
+                            }
+                            @string.Format("{0:N2}", totalDisbursed)
+                        }
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export/Print Options -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <button class="btn btn-secondary" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                    <button class="btn btn-success" onclick="exportToCSV()">
+                        <i class="fas fa-download"></i> Export to CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .badge {
+        padding: 0.35rem 0.65rem;
+        border-radius: 0.25rem;
+    }
+
+    .badge-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .text-success {
+        color: #28a745;
+    }
+
+    .text-warning {
+        color: #ffc107;
+    }
+
+    .text-info {
+        color: #17a2b8;
+    }
+
+    .font-weight-bold {
+        font-weight: 700;
+    }
+
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 0.25rem;
+        display: flex;
+        height: 1rem;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        text-align: center;
+        transition: width 0.6s ease;
+        font-size: 0.75rem;
+    }
+
+    .bg-success {
+        background-color: #28a745 !important;
+    }
+
+    .bg-warning {
+        background-color: #ffc107 !important;
+    }
+
+    .bg-info {
+        background-color: #17a2b8 !important;
+    }
+
+    .form-row {
+        display: flex;
+        margin-right: -5px;
+        margin-left: -5px;
+        flex-wrap: wrap;
+    }
+
+    .form-row > .form-group {
+        margin-right: 5px;
+        margin-left: 5px;
+    }
+
+    .d-flex {
+        display: flex;
+    }
+
+    .align-items-end {
+        align-items: flex-end;
+    }
+
+    .w-100 {
+        width: 100%;
+    }
+
+    .ml-2 {
+        margin-left: 0.5rem;
+    }
+</style>
+
+<script>
+    function exportToCSV() {
+        var table = document.querySelector('table');
+        if (!table) {
+            alert('No data to export');
+            return;
+        }
+
+        var rows = [];
+        
+        // Get headers
+        var headers = [];
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
+        rows.push(headers.join(','));
+        
+        // Get rows
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            var cells = [];
+            tr.querySelectorAll('td').forEach(td => {
+                cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+            });
+            rows.push(cells.join(','));
+        });
+        
+        // Create and download file
+        var csv = rows.join('\n');
+        var blob = new Blob([csv], { type: 'text/csv' });
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'disbursement-statement-' + new Date().toISOString().split('T')[0] + '.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+</script>

@@ -68,7 +68,6 @@ wwwroot\uploads\documents\ID Proof_20260405105214_35bf0060-b06d-459b-9e62-3753ad
 wwwroot\uploads\documents\ID Proof_20260405221116_39f3e637-d003-4d92-9132-4dc5cb08edc8_udemy_GIT.pdf
 wwwroot\uploads\documents\Income Certificate_20260405105243_c2ededf9-16e9-4a47-afa0-5c7e4061cb19_ADO.Net_Learning.pdf
 wwwroot\uploads\documents\Residence Proof_20260405104946_5411e421-de5f-4342-9532-4f85bcd497b9_ADO.Net_Learning.pdf
-C:\Users\2481864\OneDrive - Cognizant\Documents\Project Welfare Link\DEMO\WelfareLinkApi_subapi\WelfareLink\WelfareLink\wwwroot\css\site.css
 C:\Users\2481864\OneDrive - Cognizant\Documents\Project Welfare Link\DEMO\WelfareLinkApi_subapi\WelfareLink\WelfareLink\wwwroot\css\welfareProgram.css
 C:\Users\2481864\OneDrive - Cognizant\Documents\Project Welfare Link\DEMO\WelfareLinkApi_subapi\WelfareLink\WelfareLink\wwwroot\favicon.ico
 C:\Users\2481864\OneDrive - Cognizant\Documents\Project Welfare Link\DEMO\WelfareLinkApi_subapi\WelfareLink\WelfareLink\wwwroot\js\site.js
@@ -131,3 +130,4 @@ C:\Users\2481864\OneDrive - Cognizant\Documents\Project Welfare Link\DEMO\Welfar
 C:\Users\2481864\OneDrive - Cognizant\Documents\Project Welfare Link\DEMO\WelfareLinkApi_subapi\WelfareLink\WelfareLink\wwwroot\lib\jquery\dist\jquery.slim.min.js
 C:\Users\2481864\OneDrive - Cognizant\Documents\Project Welfare Link\DEMO\WelfareLinkApi_subapi\WelfareLink\WelfareLink\wwwroot\lib\jquery\dist\jquery.slim.min.map
 C:\Users\2481864\OneDrive - Cognizant\Documents\Project Welfare Link\DEMO\WelfareLinkApi_subapi\WelfareLink\WelfareLink\wwwroot\lib\jquery\LICENSE.txt
+C:\Users\2481864\OneDrive - Cognizant\Documents\Project Welfare Link\DEMO\WelfareLinkApi_subapi\WelfareLink\WelfareLink\wwwroot\css\site.css

@@ -1,180 +1,240 @@
+@using System.Dynamic
 @{
-    ViewData["Title"] = "Budget Monitoring";
+    ViewData["Title"] = "Budget Monitoring - Program Breakdown";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="page-header">
-    <div>
-        <h1><i class="bi bi-graph-up"></i> Budget Monitoring Report</h1>
-        <p class="text-muted">Detailed budget analysis and resource allocation</p>
-    </div>
-</div>
-
-@if (!string.IsNullOrEmpty(ViewBag.Error))
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-triangle"></i> @ViewBag.Error
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="content-card">
-            <p class="text-muted mb-1">Total Allocated</p>
-            <h3 id="totalAllocated" class="text-success">$0.00</h3>
-            <small class="text-muted">Across all programs</small>
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-3">Budget Monitoring - Program Breakdown</h1>
+            <hr />
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="content-card">
-            <p class="text-muted mb-1">Disbursed</p>
-            <h3 id="totalDisbursed" class="text-info">$0.00</h3>
-            <small class="text-muted">Funds released to beneficiaries</small>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <strong>Error:</strong> @ViewBag.Error
+        </div>
+    }
+
+    <!-- Navigation Tabs -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs" id="auditorTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Dashboard", "Auditor")">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="@Url.Action("BudgetMonitoring", "Auditor")">Budget Monitoring</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("ResourceStatement", "Auditor")">Resource Statement</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("DisbursementStatement", "Auditor")">Disbursement Statement</a>
+                </li>
+            </ul>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="content-card">
-            <p class="text-muted mb-1">Pending</p>
-            <h3 id="totalPending" class="text-warning">$0.00</h3>
-            <small class="text-muted">Awaiting disbursement</small>
+
+    <!-- Program Breakdown Table -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Section 1: Program Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Program Name</th>
+                                    <th>Program Status</th>
+                                    <th>Program Budget</th>
+                                    <th>Allocated Resource</th>
+                                    <th>Citizens Applied</th>
+                                    <th>Total Disbursed</th>
+                                    <th>Remaining Resource</th>
+                                    <th>Utilization %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Count > 0)
+                                {
+                                    @foreach (var program in Model)
+                                    {
+                                        var dict = (IDictionary<string, object>)program;
+                                        <tr>
+                                            <td>
+                                                <strong>@dict["ProgramName"]</strong>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var status = dict["ProgramStatus"]?.ToString() ?? "Unknown";
+                                                    var statusClass = status == "Active" ? "badge-success" : 
+                                                                     status == "Inactive" ? "badge-danger" : 
+                                                                     "badge-warning";
+                                                }
+                                                <span class="badge @statusClass">@status</span>
+                                            </td>
+                                            <td>
+                                                ₹ @string.Format("{0:N2}", (decimal)dict["ProgramBudget"])
+                                            </td>
+                                            <td>
+                                                ₹ @string.Format("{0:N2}", (decimal)dict["AllocatedResource"])
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-info">@dict["CitizensApplied"]</span>
+                                            </td>
+                                            <td>
+                                                ₹ @string.Format("{0:N2}", (decimal)dict["TotalDisbursed"])
+                                            </td>
+                                            <td>
+                                                <span style="color: @((decimal)dict["RemainingResource"] > 0 ? "#28a745" : "#dc3545");">
+                                                    ₹ @string.Format("{0:N2}", (decimal)dict["RemainingResource"])
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    decimal utilPercent = (decimal)dict["UtilizationPercent"];
+                                                    var percentClass = utilPercent >= 75 ? "table-danger" : 
+                                                                      utilPercent >= 50 ? "table-warning" : 
+                                                                      "table-success";
+                                                }
+                                                <div class="progress">
+                                                    <div class="progress-bar @(utilPercent >= 75 ? "bg-danger" : utilPercent >= 50 ? "bg-warning" : "bg-success")" 
+                                                         role="progressbar" 
+                                                         style="width: @(Math.Min(utilPercent, 100))%;" 
+                                                         aria-valuenow="@utilPercent" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                        @string.Format("{0:F1}", utilPercent)%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="8" class="text-center">
+                                            <em>No programs found</em>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Programs</h6>
+                    <h3>@(Model?.Count ?? 0)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Budget</h6>
+                    <h3>
+                        ₹ 
+                        @{
+                            decimal totalBudget = 0;
+                            if (Model != null)
+                            {
+                                foreach (var p in Model)
+                                {
+                                    totalBudget += (decimal)((IDictionary<string, object>)p)["ProgramBudget"];
+                                }
+                            }
+                            @string.Format("{0:N2}", totalBudget)
+                        }
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Disbursed</h6>
+                    <h3>
+                        ₹ 
+                        @{
+                            decimal totalDisbursed = 0;
+                            if (Model != null)
+                            {
+                                foreach (var p in Model)
+                                {
+                                    totalDisbursed += (decimal)((IDictionary<string, object>)p)["TotalDisbursed"];
+                                }
+                            }
+                            @string.Format("{0:N2}", totalDisbursed)
+                        }
+                    </h3>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="content-card">
-    <h5 class="mb-4"><i class="bi bi-diagram-3"></i> Program Budget Breakdown</h5>
-    <div class="table-responsive">
-        <table class="table table-modern">
-            <thead>
-                <tr>
-                    <th>Program</th>
-                    <th>Budget</th>
-                    <th>Allocated</th>
-                    <th>Disbursed</th>
-                    <th>Remaining</th>
-                    <th>Utilization</th>
-                </tr>
-            </thead>
-            <tbody id="budgetTableBody">
-                <tr>
-                    <td colspan="6" class="text-center text-muted py-4">Loading budget data...</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+<style>
+    .table-responsive {
+        overflow-x: auto;
+    }
 
-<div class="content-card mt-4">
-    <h5 class="mb-4"><i class="bi bi-box-seam"></i> Resource Allocation Summary</h5>
-    <div class="table-responsive">
-        <table class="table table-modern">
-            <thead>
-                <tr>
-                    <th>Resource Type</th>
-                    <th>Quantity</th>
-                    <th>Unit Cost</th>
-                    <th>Total Value</th>
-                    <th>Allocated</th>
-                </tr>
-            </thead>
-            <tbody id="resourceTableBody">
-                <tr>
-                    <td colspan="5" class="text-center text-muted py-4">Loading resource data...</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 0.25rem;
+        display: flex;
+        height: 1rem;
+        overflow: hidden;
+    }
 
-@section Scripts {
-    <script>
-        async function loadBudgetData() {
-            try {
-                // Load budget monitoring data
-                const response = await fetch('/api/AuditorDashboard/budget-monitoring');
-                const data = await response.json();
-                const programs = Array.isArray(data) ? data : (data.data || []);
-                displayBudgetData(programs);
+    .progress-bar {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        text-align: center;
+        transition: width 0.6s ease;
+        font-size: 0.75rem;
+    }
 
-                // Load resource utilization
-                const resourceResponse = await fetch('/api/AuditorDashboard/resource-utilization');
-                const resources = await resourceResponse.json();
-                const resourceList = Array.isArray(resources) ? resources : (resources.data || []);
-                displayResourceAllocation(resourceList);
-            } catch (error) {
-                console.error('Error loading budget data:', error);
-                document.getElementById('budgetTableBody').innerHTML = 
-                    '<tr><td colspan="6" class="text-center text-danger">Error loading data</td></tr>';
-            }
-        }
+    .badge {
+        padding: 0.35rem 0.65rem;
+        border-radius: 0.25rem;
+    }
 
-        function displayBudgetData(programs) {
-            // Calculate and update summary
-            let totalAllocated = 0;
-            let totalPending = 0;
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+    }
 
-            if (programs && programs.length > 0) {
-                totalAllocated = programs.reduce((sum, p) => sum + (p.totalAllocated || 0), 0);
-                totalPending = programs.reduce((sum, p) => sum + ((p.budget || 0) - (p.totalAllocated || 0)), 0);
-            }
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+    }
 
-            document.getElementById('totalAllocated').textContent = '₹' + totalAllocated.toLocaleString('en-IN', {minimumFractionDigits: 2});
-            document.getElementById('totalDisbursed').textContent = '₹' + totalAllocated.toLocaleString('en-IN', {minimumFractionDigits: 2});
-            document.getElementById('totalPending').textContent = '₹' + totalPending.toLocaleString('en-IN', {minimumFractionDigits: 2});
+    .badge-warning {
+        background-color: #ffc107;
+        color: black;
+    }
 
-            // Display program breakdown
-            const tbody = document.getElementById('budgetTableBody');
-
-            if (!programs || programs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No budget data</td></tr>';
-                return;
-            }
-
-            let html = '';
-            programs.forEach(p => {
-                const remaining = (p.budget || 0) - (p.totalAllocated || 0);
-                const utilization = (p.budget > 0 ? ((p.totalAllocated || 0) / p.budget) * 100 : 0).toFixed(1);
-                const utilizationClass = utilization > 80 ? 'bg-danger' : 
-                                        utilization > 50 ? 'bg-warning' : 'bg-success';
-
-                html += `
-                    <tr>
-                        <td><strong>${p.title || 'Program'}</strong></td>
-                        <td class="text-info">₹${(p.budget || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                        <td class="text-primary">₹${(p.totalAllocated || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                        <td class="text-success">₹${(p.totalAllocated || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                        <td class="text-warning">₹${remaining.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                        <td><span class="badge ${utilizationClass}">${utilization}%</span></td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
-        }
-
-        function displayResourceAllocation(resources) {
-            const tbody = document.getElementById('resourceTableBody');
-
-            if (!resources || resources.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No resource data</td></tr>';
-                return;
-            }
-
-            let html = '';
-            resources.forEach(r => {
-                const totalBenefitAmount = r.totalBenefitAmount || 0;
-                html += `
-                    <tr>
-                        <td><strong>${r.type || 'Resource'}</strong></td>
-                        <td>${r.quantity || 0}</td>
-                        <td>₹${(totalBenefitAmount / (r.quantity || 1)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                        <td class="text-primary">₹${totalBenefitAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                        <td>${r.allocatedBenefits || 0}</td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
-        }
-
-        document.addEventListener('DOMContentLoaded', loadBudgetData);
-    </script>
-}
+    .badge-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+</style>

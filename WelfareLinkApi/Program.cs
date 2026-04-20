@@ -37,7 +37,6 @@ namespace WelfareLinkApi
             builder.Services.AddDbContext<WelfareLinkDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             //DI Container
             builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
             builder.Services.AddScoped<ICitizenRepository, CitizenRepository>();
             builder.Services.AddScoped<ICitizenDocumentRepository, CitizenDocumentRepository>();
             builder.Services.AddScoped<IWelfareApplicationRepository, WelfareApplicationRepository>();
@@ -47,15 +46,12 @@ namespace WelfareLinkApi
             builder.Services.AddScoped<IWelfareProgramRepository, WelfareProgramRespository>();
             builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
             builder.Services.AddScoped<IComplainceRecordRepository, ComplainceRecordRepository>();
-            builder.Services.AddScoped<IAuditRepository, AuditRepository>();
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 
             // Service registrations
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IAuditLogServiceEnhanced, AuditLogService>();
-            builder.Services.AddScoped<IAuditLogService>(sp => sp.GetRequiredService<IAuditLogServiceEnhanced>());
             builder.Services.AddScoped<IComplianceCheckService, ComplianceCheckService>();
             builder.Services.AddScoped<ICitizenService, CitizenService>();
             builder.Services.AddScoped<ICitizenDocumentService, CitizenDocumentService>();
@@ -66,15 +62,11 @@ namespace WelfareLinkApi
             builder.Services.AddScoped<IWelfareProgramService, WelfareProgramService>();
             builder.Services.AddScoped<IResourceService, ResourceService>();
             builder.Services.AddScoped<IComplainceRecordService, ComplainceRecordService>();
-            builder.Services.AddScoped<IAuditService, AuditService>();
             builder.Services.AddScoped<IReportService, ReportService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<IBenefitAnalyticsService, BenefitAnalyticsService>();
             builder.Services.AddScoped<IWelfareApplicationAnalyticsService, WelfareApplicationAnalyticsService>();
             builder.Services.AddScoped<IWelfareApplicationDocumentService, WelfareApplicationDocumentService>();
-
-            // Audit monitoring service for government auditors
-            builder.Services.AddScoped<IAuditMonitoringService, AuditMonitoringService>();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();

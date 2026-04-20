@@ -11,12 +11,10 @@ namespace WelfareLinkApi.Services
     public class ComplianceCheckService : IComplianceCheckService
     {
         private readonly WelfareLinkDbContext _context;
-        private readonly IAuditLogServiceEnhanced _auditLogService;
 
-        public ComplianceCheckService(WelfareLinkDbContext context, IAuditLogServiceEnhanced auditLogService)
+        public ComplianceCheckService(WelfareLinkDbContext context)
         {
             _context = context;
-            _auditLogService = auditLogService;
         }
 
         /// <summary>
@@ -215,22 +213,6 @@ namespace WelfareLinkApi.Services
 
                 _context.ComplianceRecords.Update(record);
                 await _context.SaveChangesAsync();
-
-                // Log this resolution
-                if (resolvedByUserId.HasValue)
-                {
-                    await _auditLogService.LogUserActionAsync(
-                        resolvedByUserId,
-                        "RESOLVE",
-                        "ComplianceRecord",
-                        recordID,
-                        $"Compliance issue resolved: {record.ViolationType}",
-                        record.Status,
-                        "Resolved",
-                        null,
-                        notes
-                    );
-                }
             }
         }
 
@@ -252,18 +234,6 @@ namespace WelfareLinkApi.Services
 
             _context.ComplianceRecords.Add(flag);
             await _context.SaveChangesAsync();
-
-            // Log the flag
-            if (flaggedByUserId.HasValue)
-            {
-                await _auditLogService.LogUserActionAsync(
-                    flaggedByUserId,
-                    "FLAG",
-                    "Officer",
-                    officerID,
-                    $"Officer flagged for: {reason}"
-                );
-            }
         }
 
         /// <summary>

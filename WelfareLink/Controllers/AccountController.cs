@@ -180,7 +180,8 @@ namespace WelfareLink.Controllers
                 "ProgramManager" => RedirectToAction("Dashboard", "WelfareProgram"),
                 "Admin" => RedirectToAction("Index", "Admin"),
                 "ComplianceOfficer" => RedirectToAction("Dashboard", "ComplianceOfficer"),
-                "GovernmentAuditor" => RedirectToAction("Dashboard", "Audit"),
+                "Auditor" => RedirectToAction("Dashboard", "Auditor"),
+                "GovernmentAuditor" => RedirectToAction("Dashboard", "Auditor"),
                 _ => RedirectToAction("Login", "Account")
             };
         }

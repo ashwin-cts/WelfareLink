@@ -12,16 +12,13 @@ namespace WelfareLinkApi.Controllers
     {
         private readonly WelfareLinkDbContext _context;
         private readonly IComplianceCheckService _complianceService;
-        private readonly IAuditLogServiceEnhanced _auditLogService;
 
         public ComplianceOfficerDashboardApiController(
             WelfareLinkDbContext context,
-            IComplianceCheckService complianceService,
-            IAuditLogServiceEnhanced auditLogService)
+            IComplianceCheckService complianceService)
         {
             _context = context;
             _complianceService = complianceService;
-            _auditLogService = auditLogService;
         }
 
         /// <summary>
@@ -191,17 +188,6 @@ namespace WelfareLinkApi.Controllers
             _context.ComplianceRecords.Add(compliance);
             await _context.SaveChangesAsync();
 
-            // Log the action
-            await _auditLogService.LogUserActionAsync(
-                userId > 0 ? userId : null,
-                "CREATE",
-                "ComplianceRecord",
-                compliance.RecordID,
-                $"Compliance record raised for benefit #{benefitID}: {request.ViolationType}",
-                null,
-                request.Description
-            );
-
             return Ok(new { Message = "Compliance record raised successfully", RecordID = compliance.RecordID });
         }
 
@@ -237,17 +223,6 @@ namespace WelfareLinkApi.Controllers
             _context.ComplianceRecords.Add(compliance);
             await _context.SaveChangesAsync();
 
-            // Log the action
-            await _auditLogService.LogUserActionAsync(
-                userId > 0 ? userId : null,
-                "CREATE",
-                "ComplianceRecord",
-                compliance.RecordID,
-                $"Compliance record raised for disbursement #{disbursementID}: {request.ViolationType}",
-                null,
-                request.Description
-            );
-
             return Ok(new { Message = "Compliance record raised successfully", RecordID = compliance.RecordID });
         }
 
@@ -270,17 +245,6 @@ namespace WelfareLinkApi.Controllers
 
             _context.ComplianceRecords.Update(record);
             await _context.SaveChangesAsync();
-
-            // Log the action
-            await _auditLogService.LogUserActionAsync(
-                userId > 0 ? userId : null,
-                "UPDATE",
-                "ComplianceRecord",
-                recordID,
-                $"Compliance record #{recordID} resolved",
-                "Status: Open",
-                $"Status: Resolved, Notes: {request.Notes}"
-            );
 
             return Ok(new { Message = "Compliance record resolved successfully" });
         }
@@ -315,17 +279,6 @@ namespace WelfareLinkApi.Controllers
 
             _context.ComplianceRecords.Update(record);
             await _context.SaveChangesAsync();
-
-            // Log the flagging action
-            await _auditLogService.LogUserActionAsync(
-                userId > 0 ? userId : null,
-                "FLAG_OFFICER",
-                "ComplianceRecord",
-                recordID,
-                $"Welfare officer (ID: {record.RaisedByUserId}) flagged for non-compliance",
-                record.Notes,
-                $"Flagged - Reason: {request.Reason}"
-            );
 
             return Ok(new { Message = "Welfare officer flagged successfully", RecordID = recordID });
         }
