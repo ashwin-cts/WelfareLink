@@ -507,6 +507,7 @@ namespace WelfareLink.Services
         public int ProgramID { get; set; }
         public string ProgramTitle { get; set; } = string.Empty;
         public string ProgramDesc { get; set; } = string.Empty;
+        public decimal? ProgramMaxBenefit { get; set; }
         public decimal? ProgramBudget { get; set; }
         public string ProgramStatus { get; set; } = string.Empty;
         public string SubmittedDate { get; set; } = string.Empty;
@@ -518,6 +519,7 @@ namespace WelfareLink.Services
         public double TotalResource { get; set; }
         public double AlreadyAllocated { get; set; }
         public double RemainingResource { get; set; }
+        public double MaxBenefitPerCitizen { get; set; }
         public bool HasResource { get; set; }
     }
 
