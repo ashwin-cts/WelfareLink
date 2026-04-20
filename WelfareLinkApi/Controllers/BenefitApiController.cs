@@ -131,6 +131,7 @@ namespace WelfareLinkApi.Controllers
                 a.ProgramID,
                 ProgramTitle = a.Program?.Title ?? $"Program #{a.ProgramID}",
                 ProgramDesc = a.Program?.Description ?? "-",
+                ProgramMaxBenefit=a.Program?.MaxBenefitPerCitizen,
                 ProgramBudget = a.Program?.Budget,
                 ProgramStatus = a.Program?.Status ?? "-",
                 SubmittedDate = a.SubmittedDate.ToString("dd MMM yyyy"),

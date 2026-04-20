@@ -32,7 +32,8 @@
                     <div class="col-sm-6 col-md-3"><span class="text-muted">Program ID</span><br /><strong id="d-prog-id"></strong></div>
                     <div class="col-sm-6 col-md-6"><span class="text-muted">Program Title</span><br /><strong id="d-prog-title"></strong></div>
                     <div class="col-sm-6 col-md-3"><span class="text-muted">Program Status</span><br /><strong id="d-prog-status"></strong></div>
-                    <div class="col-sm-12 col-md-9"><span class="text-muted">Description</span><br /><span id="d-prog-desc"></span></div>
+                    <div class="col-sm-12 col-md-3"><span class="text-muted">Description</span><br /><span id="d-prog-desc"></span></div>
+                    <div class="col-sm-12 col-md-6"><span class="text-muted">Max Benefit</span><br /><span id="d-prog-MaxBenefit"></span></div>
                     <div class="col-sm-6 col-md-3"><span class="text-muted">Budget</span><br /><strong id="d-prog-budget"></strong></div>
                 </div>
                 <hr class="my-2" />
@@ -148,6 +149,7 @@
             document.getElementById('d-prog-title').textContent   = app.ProgramTitle;
             document.getElementById('d-prog-status').textContent  = app.ProgramStatus;
             document.getElementById('d-prog-desc').textContent    = app.ProgramDesc;
+           document.getElementById('d-prog-MaxBenefit').textContent = app.ProgramMaxBenefit;
             document.getElementById('d-prog-budget').textContent  = app.ProgramBudget != null
                 ? '₹' + Number(app.ProgramBudget).toLocaleString('en-IN') : '-';
 

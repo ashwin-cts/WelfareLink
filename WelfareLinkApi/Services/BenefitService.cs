@@ -315,6 +315,14 @@ namespace WelfareLinkApi.Services
                         $"Please reduce the benefit amount or contact the Programme Manager.");
                 }
             }
+            //Check if the Max Benefit exceeds.
+            if ((decimal)benefit.Amount > program.MaxBenefitPerCitizen)
+            {
+                throw new InvalidOperationException(
+                    $"Budget Exceeded: Benefit amount \u20B9{benefit.Amount:N2} exceeds the Max budget per citizen of \u20B9{(double)program.MaxBenefitPerCitizen:N2}. " +
+                    $"Programme '{program.Title}' has a Max budget per citizen of \u20B9{(double)program.MaxBenefitPerCitizen:N2}. " +
+                    $"Please reduce the benefit amount or contact the Programme Manager");
+            }
         }
 
         private async Task ValidateEligibilityCheckAsync(int applicationId)
