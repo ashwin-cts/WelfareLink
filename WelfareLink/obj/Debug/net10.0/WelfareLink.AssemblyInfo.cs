@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WelfareLink")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9d9fc4679965f5a6d1ddd111888ca5d82359280f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+718c74f0623af49d2ea2d7e00390c616df6f5ea0")]
 [assembly: System.Reflection.AssemblyProductAttribute("WelfareLink")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WelfareLink")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
