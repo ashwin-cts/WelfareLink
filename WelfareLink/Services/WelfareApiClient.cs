@@ -493,6 +493,93 @@ namespace WelfareLink.Services
             var response = await _http.PatchAsync($"api/complaincerecordapi/{id}/status", content);
             return response.IsSuccessStatusCode;
         }
+
+        // ──────────────────────────────────────────────
+        // USER
+        // ──────────────────────────────────────────────
+        public async Task<(User? user, string? error)> CreateUserAsync(User user)
+        {
+            var response = await _http.PostAsJsonAsync("api/userapi", user);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<User>(_json);
+                return (result, null);
+            }
+            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return (null, err?.Error ?? "Failed to create user.");
+        }
+
+        public async Task<(User? user, string? error)> LoginAsync(string username, string password, string userType)
+        {
+            var loginRequest = new { Username = username, Password = password, UserType = userType };
+            var response = await _http.PostAsJsonAsync("api/userapi/login", loginRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<User>(_json);
+                return (result, null);
+            }
+            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return (null, err?.Error ?? "Invalid username or password");
+        }
+
+        public async Task<(User? user, string? error)> GetUserAsync(int userId)
+        {
+            var response = await _http.GetAsync($"api/userapi/{userId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<User>(_json);
+                return (result, null);
+            }
+            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return (null, err?.Error ?? "User not found");
+        }
+
+        public async Task<(User? user, string? error)> UpdateProfileAsync(int userId, string? fullName, string? email)
+        {
+            var updateRequest = new { FullName = fullName, Email = email };
+            var response = await _http.PutAsJsonAsync($"api/userapi/{userId}/profile", updateRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<User>(_json);
+                return (result, null);
+            }
+            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return (null, err?.Error ?? "Failed to update profile");
+        }
+
+        public async Task<(bool success, string? error)> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
+        {
+            var changePasswordRequest = new { CurrentPassword = currentPassword, NewPassword = newPassword };
+            var response = await _http.PutAsJsonAsync($"api/userapi/{userId}/password", changePasswordRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, null);
+            }
+            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return (false, err?.Error ?? "Failed to change password");
+        }
+
+        public async Task<(bool success, string? error)> BlockUserAsync(int userId)
+        {
+            var response = await _http.PutAsJsonAsync($"api/userapi/{userId}/block", new { });
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, null);
+            }
+            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return (false, err?.Error ?? "Failed to block user");
+        }
+
+        public async Task<(bool success, string? error)> UnblockUserAsync(int userId)
+        {
+            var response = await _http.PutAsJsonAsync($"api/userapi/{userId}/unblock", new { });
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, null);
+            }
+            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return (false, err?.Error ?? "Failed to unblock user");
+        }
     }
 
     // ──────────────────────────────────────────────

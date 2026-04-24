@@ -2,16 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WelfareLink.Data;
 using WelfareLink.Models;
+using WelfareLink.Services;
 
 namespace WelfareLink.Controllers
 {
     public class AdminController : Controller
     {
         private readonly WelfareLinkDbContext _context;
+        private readonly WelfareApiClient _apiClient;
 
-        public AdminController(WelfareLinkDbContext context)
+        public AdminController(WelfareLinkDbContext context, WelfareApiClient apiClient)
         {
             _context = context;
+            _apiClient = apiClient;
         }
 
         public async Task<IActionResult> Index()
@@ -68,10 +71,15 @@ namespace WelfareLink.Controllers
 
             user.IsActive = true;
             user.CreatedAt = DateTime.UtcNow;
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
 
-            // Log will be created by API through database triggers or background service
+            // Call API to create user and log audit trail
+            var (createdUser, error) = await _apiClient.CreateUserAsync(user);
+            if (error != null)
+            {
+                ModelState.AddModelError("", error);
+                return View(user);
+            }
+
             TempData["Success"] = "Officer created successfully";
             return RedirectToAction("Index");
         }
@@ -107,10 +115,15 @@ namespace WelfareLink.Controllers
             user.Role = "Admin";
             user.IsActive = true;
             user.CreatedAt = DateTime.UtcNow;
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
 
-            // Log will be created by API through database triggers or background service
+            // Call API to create user and log audit trail
+            var (createdUser, error) = await _apiClient.CreateUserAsync(user);
+            if (error != null)
+            {
+                ModelState.AddModelError("", error);
+                return View(user);
+            }
+
             TempData["Success"] = "Admin created successfully";
             return RedirectToAction("Index");
         }
@@ -131,21 +144,14 @@ namespace WelfareLink.Controllers
                 return RedirectToAction("Index");
             }
 
-            var user = await _context.Users.FindAsync(userId);
-            if (user != null)
+            var (success, error) = await _apiClient.BlockUserAsync(userId);
+            if (success)
             {
-                if (user.Role == "Admin")
-                {
-                    var adminCount = await _context.Users.CountAsync(u => u.Role == "Admin" && u.IsActive);
-                    if (adminCount <= 1)
-                    {
-                        TempData["Error"] = "Cannot block the last active admin account.";
-                        return RedirectToAction("Index");
-                    }
-                }
-                user.IsActive = false;
-                await _context.SaveChangesAsync();
                 TempData["Success"] = "User blocked successfully";
+            }
+            else
+            {
+                TempData["Error"] = error ?? "Failed to block user";
             }
 
             return RedirectToAction("Index");
@@ -160,12 +166,14 @@ namespace WelfareLink.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var user = await _context.Users.FindAsync(userId);
-            if (user != null)
+            var (success, error) = await _apiClient.UnblockUserAsync(userId);
+            if (success)
             {
-                user.IsActive = true;
-                await _context.SaveChangesAsync();
                 TempData["Success"] = "User unblocked successfully";
+            }
+            else
+            {
+                TempData["Error"] = error ?? "Failed to unblock user";
             }
 
             return RedirectToAction("Index");

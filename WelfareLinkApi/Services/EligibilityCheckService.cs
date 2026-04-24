@@ -66,7 +66,7 @@ public class EligibilityCheckService : IEligibilityCheckService
             action: "Create",
             entityType: "EligibilityCheck",
             entityId: createdCheck.CheckID,
-            description: $"Created eligibility check: {createdCheck.Result}",
+            description: $"Created eligibility check: {createdCheck.Result} for the application {applicationId}",
             newValue: createdCheck.Result,
             status: "Success"
         );
@@ -109,7 +109,7 @@ public class EligibilityCheckService : IEligibilityCheckService
             action: "Update",
             entityType: "EligibilityCheck",
             entityId: check.CheckID,
-            description: $"Updated eligibility check result",
+            description: $"Updated eligibility check result from {oldResult} to {check.Result}",
             oldValue: oldResult,
             newValue: check.Result,
             status: "Success"

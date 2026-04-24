@@ -1,24 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using WelfareLink.Data;
 using WelfareLink.Models;
+using WelfareLink.Services;
 using WelfareLink.ViewModels;
 
 namespace WelfareLink.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly WelfareLinkDbContext _context;
+        private readonly WelfareApiClient _apiClient;
 
-        public AccountController(WelfareLinkDbContext context)
+        public AccountController(WelfareApiClient apiClient)
         {
-            _context = context;
+            _apiClient = apiClient;
         }
 
         [HttpGet]
         public IActionResult Login()
         {
-            // If already logged in, redirect based on role
             var userRole = HttpContext.Session.GetString("UserRole");
             if (!string.IsNullOrEmpty(userRole))
             {
@@ -28,53 +27,37 @@ namespace WelfareLink.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(string username, string password, string userType)
+        public async Task<IActionResult> Login(string username, string password, string userType)
         {
-            var user = _context.Users.FirstOrDefault(u => 
-                u.Username == username && 
-                u.Password == password && 
-                u.Role == userType );
+            var (user, error) = await _apiClient.LoginAsync(username, password, userType);
+
             if (user == null)
             {
-                TempData["Error"] = "Invalid username or password";
+                TempData["Error"] = error ?? "Invalid username or password";
                 return RedirectToAction("Login");
             }
 
-            if (!user.IsActive)
+            HttpContext.Session.Clear();
+            HttpContext.Session.SetInt32("UserId", user.UserId);
+            HttpContext.Session.SetString("Username", user.Username);
+            HttpContext.Session.SetString("UserRole", user.Role);
+            HttpContext.Session.SetString("FullName", user.FullName ?? user.Username);
+
+            if (user.CitizenId.HasValue)
             {
-                TempData["Error"] = "Your account is blocked. Please contact Admin.";
-                return RedirectToAction("Login");
-
-            }
-            
-            if (user != null)
-            {
-                HttpContext.Session.Clear();
-                HttpContext.Session.SetInt32("UserId", user.UserId);
-                HttpContext.Session.SetString("Username", user.Username);
-                HttpContext.Session.SetString("UserRole", user.Role);
-                HttpContext.Session.SetString("FullName", user.FullName ?? user.Username);
-
-                if (user.CitizenId.HasValue)
-                {
-                    HttpContext.Session.SetInt32("CitizenId", user.CitizenId.Value);
-                    var citizen = _context.Citizens.FirstOrDefault(c => c.CitizenId == user.CitizenId.Value);
-                    if (!string.IsNullOrEmpty(citizen?.Gender))
-                        HttpContext.Session.SetString("CitizenGender", citizen.Gender);
-                }
-
-                return RedirectBasedOnRole(user.Role);
+                HttpContext.Session.SetInt32("CitizenId", user.CitizenId.Value);
+                var citizen = await _apiClient.GetCitizenByIdAsync(user.CitizenId.Value);
+                if (!string.IsNullOrEmpty(citizen?.Gender))
+                    HttpContext.Session.SetString("CitizenGender", citizen.Gender);
             }
 
-            TempData["Error"] = "Unknown Error";
-            return RedirectToAction("Login");
+            return RedirectBasedOnRole(user.Role);
         }
 
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
 
-            // Prevent browser from caching authenticated pages
             Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
             Response.Headers["Pragma"] = "no-cache";
             Response.Headers["Expires"] = "0";
@@ -82,7 +65,6 @@ namespace WelfareLink.Controllers
             return RedirectToAction("Login");
         }
 
-        // Used by the client-side session timer to verify session is still alive
         [HttpGet]
         public IActionResult CheckSession()
         {
@@ -91,27 +73,27 @@ namespace WelfareLink.Controllers
         }
 
         [HttpGet]
-        public IActionResult EditProfile()
+        public async Task<IActionResult> EditProfile()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
                 return RedirectToAction("Login");
 
-            var user = _context.Users.FirstOrDefault(u => u.UserId == userId.Value);
+            var (user, error) = await _apiClient.GetUserAsync(userId.Value);
             if (user == null)
                 return RedirectToAction("Login");
 
             var model = new EditProfileViewModel
             {
                 FullName = user.FullName ?? string.Empty,
-                Email    = user.Email    ?? string.Empty
+                Email = user.Email ?? string.Empty
             };
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EditProfile(EditProfileViewModel model)
+        public async Task<IActionResult> EditProfile(EditProfileViewModel model)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
@@ -120,13 +102,12 @@ namespace WelfareLink.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var user = _context.Users.FirstOrDefault(u => u.UserId == userId.Value);
+            var (user, error) = await _apiClient.UpdateProfileAsync(userId.Value, model.FullName, model.Email);
             if (user == null)
-                return RedirectToAction("Login");
-
-            user.FullName = model.FullName;
-            user.Email    = model.Email;
-            _context.SaveChanges();
+            {
+                ModelState.AddModelError(string.Empty, error ?? "Failed to update profile.");
+                return View(model);
+            }
 
             HttpContext.Session.SetString("FullName", user.FullName ?? user.Username);
 
@@ -144,7 +125,7 @@ namespace WelfareLink.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ChangePassword(ChangePasswordViewModel model)
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
@@ -153,18 +134,12 @@ namespace WelfareLink.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var user = _context.Users.FirstOrDefault(u => u.UserId == userId.Value);
-            if (user == null)
-                return RedirectToAction("Login");
-
-            if (user.Password != model.CurrentPassword)
+            var (success, error) = await _apiClient.ChangePasswordAsync(userId.Value, model.CurrentPassword, model.NewPassword);
+            if (!success)
             {
-                ModelState.AddModelError("CurrentPassword", "Current password is incorrect.");
+                ModelState.AddModelError("CurrentPassword", error ?? "Failed to change password.");
                 return View(model);
             }
-
-            user.Password = model.NewPassword;
-            _context.SaveChanges();
 
             TempData["SuccessMessage"] = "Password changed successfully!";
             return RedirectToAction("ChangePassword");

@@ -53,7 +53,7 @@ public class CitizenDocumentService : ICitizenDocumentService
                 action: "Upload",
                 entityType: "CitizenDocument",
                 entityId: document.DocumentID,
-                description: $"Uploaded document '{document.DocType}' for citizen",
+                description: $"Doc Id {document.DocumentID} Uploaded document '{document.DocType}' for user ID of citizen:{userId}",
                 status: "Success"
             );
 
@@ -91,7 +91,7 @@ public class CitizenDocumentService : ICitizenDocumentService
                     action: "Delete",
                     entityType: "CitizenDocument",
                     entityId: documentId,
-                    description: $"Deleted document '{document.DocType}' for citizen",
+                    description: $"Doc Id {documentId} Deleted document '{document.DocType}' for user ID of citizen:{userId}",
                     status: "Success"
                 );
             }

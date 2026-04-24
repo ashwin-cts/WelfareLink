@@ -49,7 +49,7 @@ public class ResourceService : IResourceService
             action: "Create",
             entityType: "Resource",
             entityId: resource.ResourceID,
-            description: $"Added resource '{resource.Name}' ({resource.Type}) - Quantity: {resource.Quantity}",
+            description: $"Added resource '{resource.ResourceID}' ({resource.Type}) - Quantity: {resource.Quantity}",
             status: "Success"
         );
     }
@@ -68,7 +68,7 @@ public class ResourceService : IResourceService
             action: "Update",
             entityType: "Resource",
             entityId: resource.ResourceID,
-            description: $"Updated resource '{resource.Name}' - Quantity: {resource.Quantity}",
+            description: $"Updated resource '{resource.ResourceID}' - Quantity: {resource.Quantity}",
             status: "Success"
         );
     }
