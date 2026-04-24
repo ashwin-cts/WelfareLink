@@ -11,15 +11,24 @@ namespace WelfareLinkApi.Services
         private readonly IWelfareApplicationRepository _applicationRepository;
         private readonly IEligibilityCheckRepository _eligibilityCheckRepository;
         private readonly IResourceRepository _resourceRepository;
+        private readonly IAuditLogService _auditLogService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly string[] _validStatuses = { "Completed", "Pending", "Disbursement Pending", "Failed" };
 
-        public DisbursementService(IDisbursementRepository disbursementRepository, IBenefitRepository benefitRepository, IWelfareApplicationRepository applicationRepository, IEligibilityCheckRepository eligibilityCheckRepository, IResourceRepository resourceRepository)
+        public DisbursementService(IDisbursementRepository disbursementRepository, IBenefitRepository benefitRepository, IWelfareApplicationRepository applicationRepository, IEligibilityCheckRepository eligibilityCheckRepository, IResourceRepository resourceRepository, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
         {
             _disbursementRepository = disbursementRepository;
             _benefitRepository = benefitRepository;
             _applicationRepository = applicationRepository;
             _eligibilityCheckRepository = eligibilityCheckRepository;
             _resourceRepository = resourceRepository;
+            _auditLogService = auditLogService;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        private int? GetCurrentUserId()
+        {
+            return _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
         }
 
         public async Task<IEnumerable<Disbursement>> GetAllDisbursementsAsync()
@@ -52,6 +61,17 @@ namespace WelfareLinkApi.Services
             }
 
             var createdDisbursement = await _disbursementRepository.AddAsync(disbursement);
+
+            var userId = GetCurrentUserId();
+            await _auditLogService.LogActionAsync(
+                userId: userId,
+                action: "Create",
+                entityType: "Disbursement",
+                entityId: createdDisbursement.DisbursementID,
+                description: $"Created disbursement - Amount: \u20b9{createdDisbursement.Amount:N2}, Status: {createdDisbursement.Status}",
+                newValue: createdDisbursement.Status,
+                status: "Success"
+            );
 
             // If disbursement is completed and amount is less than benefit amount, create pending record for balance
             if (disbursement.Status == "Completed")

@@ -8,15 +8,26 @@ public class EligibilityCheckService : IEligibilityCheckService
     private readonly IEligibilityCheckRepository _eligibilityCheckRepository;
     private readonly IWelfareApplicationRepository _applicationRepository;
     private readonly IBenefitService _benefitService;
+    private readonly IAuditLogService _auditLogService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public EligibilityCheckService(
         IEligibilityCheckRepository eligibilityCheckRepository,
         IWelfareApplicationRepository applicationRepository,
-        IBenefitService benefitService)
+        IBenefitService benefitService,
+        IAuditLogService auditLogService,
+        IHttpContextAccessor httpContextAccessor)
     {
         _eligibilityCheckRepository = eligibilityCheckRepository;
         _applicationRepository = applicationRepository;
         _benefitService = benefitService;
+        _auditLogService = auditLogService;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private int? GetCurrentUserId()
+    {
+        return _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
     }
 
     public async Task<IEnumerable<EligibilityCheck>> GetAllChecksAsync()
@@ -49,6 +60,17 @@ public class EligibilityCheckService : IEligibilityCheckService
         // Create the eligibility check
         var createdCheck = await _eligibilityCheckRepository.AddAsync(check);
 
+        var userId = GetCurrentUserId();
+        await _auditLogService.LogActionAsync(
+            userId: userId,
+            action: "Create",
+            entityType: "EligibilityCheck",
+            entityId: createdCheck.CheckID,
+            description: $"Created eligibility check: {createdCheck.Result}",
+            newValue: createdCheck.Result,
+            status: "Success"
+        );
+
         // Update application status if applicationId is provided
         if (applicationId.HasValue)
         {
@@ -77,7 +99,21 @@ public class EligibilityCheckService : IEligibilityCheckService
             throw new InvalidOperationException($"Eligibility check with ID {check.CheckID} not found.");
         }
 
+        var oldResult = existingCheck.Result;
+
         await _eligibilityCheckRepository.UpdateAsync(check);
+
+        var userId = GetCurrentUserId();
+        await _auditLogService.LogActionAsync(
+            userId: userId,
+            action: "Update",
+            entityType: "EligibilityCheck",
+            entityId: check.CheckID,
+            description: $"Updated eligibility check result",
+            oldValue: oldResult,
+            newValue: check.Result,
+            status: "Success"
+        );
 
         // Sync application status based on updated result
         string newStatus = check.Result.ToLower() == "eligible" ? "Approved" : "Rejected";

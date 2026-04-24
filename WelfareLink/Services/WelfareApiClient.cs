@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Linq;
+using Microsoft.AspNetCore.Http;
 using WelfareLink.Models;
 using WelfareLink.ViewModels;
 
@@ -27,7 +29,7 @@ namespace WelfareLink.Services
         // BENEFIT
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<Benefit>> GetAllBenefitsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<Benefit>>("api/benefitapi") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<Benefit>>("api/benefitapi") ?? Enumerable.Empty<Benefit>();
 
         public async Task<Benefit?> GetBenefitByIdAsync(int id)
             => await _http.GetFromJsonAsync<Benefit>($"api/benefitapi/{id}");
@@ -77,7 +79,7 @@ namespace WelfareLink.Services
         // DISBURSEMENT
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<Disbursement>> GetAllDisbursementsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<Disbursement>>("api/disbursementapi") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<Disbursement>>("api/disbursementapi") ?? Enumerable.Empty<Disbursement>();
 
         public async Task<DisbursementDetail?> GetDisbursementByIdAsync(int id)
             => await _http.GetFromJsonAsync<DisbursementDetail>($"api/disbursementapi/{id}");
@@ -130,7 +132,7 @@ namespace WelfareLink.Services
         // ELIGIBILITY CHECK
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<EligibilityCheck>> GetAllChecksAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<EligibilityCheck>>("api/eligibilitycheckapi") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<EligibilityCheck>>("api/eligibilitycheckapi") ?? Enumerable.Empty<EligibilityCheck>();
 
         public async Task<EligibilityCheck?> GetCheckByIdAsync(int id)
             => await _http.GetFromJsonAsync<EligibilityCheck>($"api/eligibilitycheckapi/{id}");
@@ -159,13 +161,13 @@ namespace WelfareLink.Services
         // RESOURCE
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<Resource>> GetAllResourcesAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<Resource>>("api/resourceapi") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<Resource>>("api/resourceapi") ?? Enumerable.Empty<Resource>();
 
         public async Task<ProgramResourceDetail?> GetResourcesByProgramIdAsync(int programId)
             => await _http.GetFromJsonAsync<ProgramResourceDetail>($"api/resourceapi/program/{programId}");
 
         public async Task<IEnumerable<ResourceUtilisationViewModel>> GetResourceUtilisationAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ResourceUtilisationViewModel>>("api/resourceapi/utilisation") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<ResourceUtilisationViewModel>>("api/resourceapi/utilisation") ?? Enumerable.Empty<ResourceUtilisationViewModel>();
 
         public async Task<string?> AddResourceAsync(Resource resource)
         {
@@ -191,7 +193,7 @@ namespace WelfareLink.Services
             var url = string.IsNullOrEmpty(status)
                 ? "api/welfareapplicationapi"
                 : $"api/welfareapplicationapi?status={status}";
-            return await _http.GetFromJsonAsync<IEnumerable<WelfareApplication>>(url) ?? [];
+            return await _http.GetFromJsonAsync<IEnumerable<WelfareApplication>>(url) ?? Enumerable.Empty<WelfareApplication>();
         }
 
         public async Task<IEnumerable<WelfareApplication>> GetPendingApplicationsAsync()
@@ -239,7 +241,7 @@ namespace WelfareLink.Services
         // WELFARE PROGRAM
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<WelfareProgram>> GetAllProgramsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<WelfareProgram>>("api/welfareprogramapi") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<WelfareProgram>>("api/welfareprogramapi") ?? Enumerable.Empty<WelfareProgram>();
 
         public async Task<ProgramDetailViewModel?> GetProgramByIdAsync(int id)
             => await _http.GetFromJsonAsync<ProgramDetailViewModel>($"api/welfareprogramapi/{id}");
@@ -248,7 +250,7 @@ namespace WelfareLink.Services
             => await _http.GetFromJsonAsync<BudgetDashboardViewModel>("api/welfareprogramapi/budget-monitoring");
 
         public async Task<IEnumerable<ProgramPerformanceViewModel>> GetProgramPerformanceAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ProgramPerformanceViewModel>>("api/welfareprogramapi/performance") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<ProgramPerformanceViewModel>>("api/welfareprogramapi/performance") ?? Enumerable.Empty<ProgramPerformanceViewModel>();
 
         public async Task<string?> AddProgramAsync(WelfareProgram program)
         {
@@ -328,7 +330,7 @@ namespace WelfareLink.Services
             var url = string.IsNullOrEmpty(status)
                 ? $"api/citizendocumentapi/citizen/{citizenId}"
                 : $"api/citizendocumentapi/citizen/{citizenId}?status={status}";
-            return await _http.GetFromJsonAsync<IEnumerable<CitizenDocument>>(url) ?? [];
+            return await _http.GetFromJsonAsync<IEnumerable<CitizenDocument>>(url) ?? Enumerable.Empty<CitizenDocument>();
         }
 
         public async Task<CitizenDocument?> GetDocumentByIdAsync(int id)
@@ -398,7 +400,7 @@ namespace WelfareLink.Services
             => await _http.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/dashboard");
 
         public async Task<IEnumerable<StatusBreakdownItem>> GetApplicationStatusBreakdownAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<StatusBreakdownItem>>("api/welfareapplicationanalyticsapi/status-breakdown") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<StatusBreakdownItem>>("api/welfareapplicationanalyticsapi/status-breakdown") ?? Enumerable.Empty<StatusBreakdownItem>();
 
         public async Task<Dictionary<string, object>?> GetApplicationMonthlyTrendsAsync(int year)
             => await _http.GetFromJsonAsync<Dictionary<string, object>>($"api/welfareapplicationanalyticsapi/monthly-trends?year={year}");
@@ -410,7 +412,23 @@ namespace WelfareLink.Services
         // AUDIT LOG
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<AuditLog>> GetAllAuditLogsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<AuditLog>>("api/auditlogapi") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<AuditLog>>("api/auditlogapi") ?? Enumerable.Empty<AuditLog>();
+
+        public async Task<AuditLogPagedResponse?> GetPagedAuditLogsAsync(int pageNumber = 1, int pageSize = 10)
+            => await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged?pageNumber={pageNumber}&pageSize={pageSize}");
+
+        public async Task<AuditLogPagedResponse?> GetPagedAuditLogsByEntityTypeAsync(string entityType, int pageNumber = 1, int pageSize = 10)
+            => await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/entity/{entityType}?pageNumber={pageNumber}&pageSize={pageSize}");
+
+        public async Task<AuditLogPagedResponse?> GetPagedAuditLogsByActionAsync(string action, int pageNumber = 1, int pageSize = 10)
+            => await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/action/{action}?pageNumber={pageNumber}&pageSize={pageSize}");
+
+        public async Task<AuditLogPagedResponse?> GetPagedAuditLogsByDateRangeAsync(DateTime startDate, DateTime endDate, int pageNumber = 1, int pageSize = 10)
+        {
+            var start = startDate.ToString("yyyy-MM-dd");
+            var end = endDate.ToString("yyyy-MM-dd");
+            return await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/date-range?startDate={start}&endDate={end}&pageNumber={pageNumber}&pageSize={pageSize}");
+        }
 
         public async Task<bool> CreateAuditLogAsync(int? userId, string action, string entityType, int entityId, string description)
         {
@@ -423,10 +441,10 @@ namespace WelfareLink.Services
         // AUDIT (Government Auditor)
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<ProgramAuditSummary>> GetGovernmentAuditorDashboardAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ProgramAuditSummary>>("api/auditapi/dashboard") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<ProgramAuditSummary>>("api/auditapi/dashboard") ?? Enumerable.Empty<ProgramAuditSummary>();
 
         public async Task<IEnumerable<Audit>> GetAllAuditsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<Audit>>("api/auditapi") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<Audit>>("api/auditapi") ?? Enumerable.Empty<Audit>();
 
         public async Task<Audit?> GetAuditByIdAsync(int id)
             => await _http.GetFromJsonAsync<Audit>($"api/auditapi/{id}");
@@ -451,10 +469,10 @@ namespace WelfareLink.Services
         // COMPLIANCE RECORD
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<ComplianceRecord>> GetAllComplianceRecordsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi") ?? Enumerable.Empty<ComplianceRecord>();
 
         public async Task<IEnumerable<ComplianceRecord>> GetOpenComplianceRecordsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi/open") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi/open") ?? Enumerable.Empty<ComplianceRecord>();
 
         public async Task<ComplianceRecord?> GetComplianceRecordByIdAsync(int id)
             => await _http.GetFromJsonAsync<ComplianceRecord>($"api/complaincerecordapi/{id}");
@@ -488,8 +506,8 @@ namespace WelfareLink.Services
 
     public class DropdownData
     {
-        public IEnumerable<DropdownItem> Dropdown { get; set; } = [];
-        public IEnumerable<ApplicationDropdownDetail> Applications { get; set; } = [];
+        public IEnumerable<DropdownItem> Dropdown { get; set; } = Enumerable.Empty<DropdownItem>();
+        public IEnumerable<ApplicationDropdownDetail> Applications { get; set; } = Enumerable.Empty<ApplicationDropdownDetail>();
     }
 
     public class DropdownItem
@@ -529,7 +547,7 @@ namespace WelfareLink.Services
         public double BenefitTotalAmount { get; set; }
         public double TotalDisbursed { get; set; }
         public double PendingBalance { get; set; }
-        public IEnumerable<Disbursement> SiblingDisbursements { get; set; } = [];
+        public IEnumerable<Disbursement> SiblingDisbursements { get; set; } = Enumerable.Empty<Disbursement>();
     }
 
     public class BenefitDetails
@@ -549,7 +567,7 @@ namespace WelfareLink.Services
 
     public class ProgramResourceDetail
     {
-        public IEnumerable<Resource> Resources { get; set; } = [];
+        public IEnumerable<Resource> Resources { get; set; } = Enumerable.Empty<Resource>();
         public string ProgramTitle { get; set; } = string.Empty;
         public decimal ProgramBudget { get; set; }
         public decimal TotalAllocated { get; set; }
@@ -561,13 +579,13 @@ namespace WelfareLink.Services
     {
         public WelfareApplication? Application { get; set; }
         public Citizen? Citizen { get; set; }
-        public IEnumerable<CitizenDocument> Documents { get; set; } = [];
+        public IEnumerable<CitizenDocument> Documents { get; set; } = Enumerable.Empty<CitizenDocument>();
     }
 
     public class CitizenDashboardData
     {
         public Citizen? CitizenProfile { get; set; }
-        public IEnumerable<CitizenDocument> Documents { get; set; } = [];
+        public IEnumerable<CitizenDocument> Documents { get; set; } = Enumerable.Empty<CitizenDocument>();
         public int PendingDocuments { get; set; }
         public int ApprovedDocuments { get; set; }
         public int RejectedDocuments { get; set; }
@@ -641,5 +659,17 @@ namespace WelfareLink.Services
         public double RemainingBudget { get; set; }
         public int TotalResources { get; set; }
         public int OpenAudits { get; set; }
+    }
+
+    // ──────────────────────────────────────────────
+    // Paged Audit Log Response
+    // ──────────────────────────────────────────────
+    public class AuditLogPagedResponse
+    {
+        public IEnumerable<AuditLog> Data { get; set; } = Enumerable.Empty<AuditLog>();
+        public int TotalCount { get; set; }
+        public int PageNumber { get; set; }
+        public int PageSize { get; set; }
+        public int TotalPages { get; set; }
     }
 }

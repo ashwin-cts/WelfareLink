@@ -11,16 +11,25 @@ namespace WelfareLinkApi.Services
         private readonly IWelfareApplicationRepository _applicationRepository;
         private readonly IEligibilityCheckRepository _eligibilityCheckRepository;
         private readonly IResourceRepository _resourceRepository;
+        private readonly IAuditLogService _auditLogService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly string[] _validBenefitTypes = { "Cash", "Food", "Medical", "Education", "Housing" };
         private readonly string[] _validStatuses = { "Allocation Pending", "Allocated", "Partially Disbursed", "Fully Disbursed", "Failed" };
 
-        public BenefitService(IBenefitRepository benefitRepository, IDisbursementRepository disbursementRepository, IWelfareApplicationRepository applicationRepository, IEligibilityCheckRepository eligibilityCheckRepository, IResourceRepository resourceRepository)
+        public BenefitService(IBenefitRepository benefitRepository, IDisbursementRepository disbursementRepository, IWelfareApplicationRepository applicationRepository, IEligibilityCheckRepository eligibilityCheckRepository, IResourceRepository resourceRepository, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
         {
             _benefitRepository = benefitRepository;
             _disbursementRepository = disbursementRepository;
             _applicationRepository = applicationRepository;
             _eligibilityCheckRepository = eligibilityCheckRepository;
             _resourceRepository = resourceRepository;
+            _auditLogService = auditLogService;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        private int? GetCurrentUserId()
+        {
+            return _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
         }
 
         public async Task<IEnumerable<Benefit>> GetAllBenefitsAsync()
@@ -48,6 +57,17 @@ namespace WelfareLinkApi.Services
             await ValidateBudgetAndResourcesAsync(benefit);
 
             var createdBenefit = await _benefitRepository.AddAsync(benefit);
+
+            var userId = GetCurrentUserId();
+            await _auditLogService.LogActionAsync(
+                userId: userId,
+                action: "Create",
+                entityType: "Benefit",
+                entityId: createdBenefit.BenefitID,
+                description: $"Created benefit '{createdBenefit.Type}' - Amount: \u20b9{createdBenefit.Amount:N2}",
+                newValue: createdBenefit.Status,
+                status: "Success"
+            );
 
             // When benefit is created with "Allocated" status, auto-create a disbursement
             if (createdBenefit.Status.Equals("Allocated", StringComparison.OrdinalIgnoreCase))
@@ -87,6 +107,18 @@ namespace WelfareLinkApi.Services
             await ValidateBudgetAndResourcesAsync(benefit);
 
             var updatedBenefit = await _benefitRepository.UpdateAsync(benefit);
+
+            var userId = GetCurrentUserId();
+            await _auditLogService.LogActionAsync(
+                userId: userId,
+                action: "Update",
+                entityType: "Benefit",
+                entityId: benefit.BenefitID,
+                description: $"Updated benefit status",
+                oldValue: existingBenefit.Status,
+                newValue: benefit.Status,
+                status: "Success"
+            );
 
             // When status transitions to "Allocated", auto-create a disbursement with "Disbursement Pending"
             if (!existingBenefit.Status.Equals("Allocated", StringComparison.OrdinalIgnoreCase) &&

@@ -725,6 +725,40 @@
                 </div>
             </nav>
         }
+        <!-- Sub-Navigation for Admin -->
+        @if (userRole == "Admin" && ViewContext.RouteData.Values["controller"]?.ToString() == "Admin")
+        {
+            <nav class="sub-navbar">
+                <div class="container">
+                    <ul class="sub-nav-list">
+                        <li>
+                            <a asp-controller="Admin" asp-action="Index" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                <i class="bi bi-people-fill"></i> User Management
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Admin" asp-action="CreateOfficer" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "CreateOfficer" ? "active" : "")">
+                                <i class="bi bi-person-plus"></i> Create Officer
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Admin" asp-action="CreateAdmin" 
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "CreateAdmin" ? "active" : "")">
+                                <i class="bi bi-shield-plus"></i> Create Admin
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="AuditLog" asp-action="SystemLog" 
+                               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "AuditLog" ? "active" : "")">
+                                <i class="bi bi-clock-history"></i> System Log
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        }
         <!-- Sub-Navigation for Citizen -->
         @if (userRole == "Citizen" && (ViewContext.RouteData.Values["controller"]?.ToString() == "Citizen" || ViewContext.RouteData.Values["controller"]?.ToString() == "CitizenDocument"))
         {

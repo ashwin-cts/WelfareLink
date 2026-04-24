@@ -7,11 +7,20 @@ public class ResourceService : IResourceService
 {
     private readonly IResourceRepository _resourceRepository;
     private readonly IWelfareProgramRepository _programRepository;
+    private readonly IAuditLogService _auditLogService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ResourceService(IResourceRepository resourceRepository, IWelfareProgramRepository programRepository)
+    public ResourceService(IResourceRepository resourceRepository, IWelfareProgramRepository programRepository, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
     {
         _resourceRepository = resourceRepository;
         _programRepository = programRepository;
+        _auditLogService = auditLogService;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private int? GetCurrentUserId()
+    {
+        return _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
     }
 
     public async Task<IEnumerable<Resource>> GetAllResourcesAsync()
@@ -33,6 +42,16 @@ public class ResourceService : IResourceService
         resource.Status = "Available";
 
         await _resourceRepository.AddResourcesAsync(resource);
+
+        var userId = GetCurrentUserId();
+        await _auditLogService.LogActionAsync(
+            userId: userId,
+            action: "Create",
+            entityType: "Resource",
+            entityId: resource.ResourceID,
+            description: $"Added resource '{resource.Name}' ({resource.Type}) - Quantity: {resource.Quantity}",
+            status: "Success"
+        );
     }
 
     public async Task UpdateResourceAsync(Resource resource)
@@ -42,6 +61,16 @@ public class ResourceService : IResourceService
         await ValidateResourceAgainstBudget(resource, excludeResourceId: resource.ResourceID); // Exclude current resource from calculation
 
         await _resourceRepository.UpdateResourceAsync(resource);
+
+        var userId = GetCurrentUserId();
+        await _auditLogService.LogActionAsync(
+            userId: userId,
+            action: "Update",
+            entityType: "Resource",
+            entityId: resource.ResourceID,
+            description: $"Updated resource '{resource.Name}' - Quantity: {resource.Quantity}",
+            status: "Success"
+        );
     }
 
     private async Task ValidateProgramExists(int programId)

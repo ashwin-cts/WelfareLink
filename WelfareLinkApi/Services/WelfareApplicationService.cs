@@ -7,11 +7,20 @@ public class WelfareApplicationService : IWelfareApplicationService
 {
     private readonly IWelfareApplicationRepository _applicationRepository;
     private readonly IBenefitService _benefitService;
+    private readonly IAuditLogService _auditLogService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public WelfareApplicationService(IWelfareApplicationRepository applicationRepository, IBenefitService benefitService)
+    public WelfareApplicationService(IWelfareApplicationRepository applicationRepository, IBenefitService benefitService, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
     {
         _applicationRepository = applicationRepository;
         _benefitService = benefitService;
+        _auditLogService = auditLogService;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private int? GetCurrentUserId()
+    {
+        return _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
     }
 
     public async Task<IEnumerable<WelfareApplication>> GetAllApplicationsAsync()
@@ -36,7 +45,19 @@ public class WelfareApplicationService : IWelfareApplicationService
         application.SubmittedDate = DateOnly.FromDateTime(DateTime.Now);
         application.Status = "Pending";
 
-        return await _applicationRepository.AddAsync(application);
+        var result = await _applicationRepository.AddAsync(application);
+
+        var userId = GetCurrentUserId();
+        await _auditLogService.LogActionAsync(
+            userId: userId,
+            action: "Create",
+            entityType: "WelfareApplication",
+            entityId: result.ApplicationID,
+            description: $"Citizen applied to welfare program",
+            status: "Success"
+        );
+
+        return result;
     }
 
     public async Task UpdateApplicationAsync(WelfareApplication application)
@@ -51,7 +72,21 @@ public class WelfareApplicationService : IWelfareApplicationService
             throw new InvalidOperationException($"Application with ID {application.ApplicationID} not found.");
         }
 
+        var oldStatus = (await _applicationRepository.GetByIdAsync(application.ApplicationID))?.Status;
+
         await _applicationRepository.UpdateAsync(application);
+
+        var userId = GetCurrentUserId();
+        await _auditLogService.LogActionAsync(
+            userId: userId,
+            action: "Update",
+            entityType: "WelfareApplication",
+            entityId: application.ApplicationID,
+            description: $"Updated welfare application status to {application.Status}",
+            oldValue: oldStatus,
+            newValue: application.Status,
+            status: "Success"
+        );
 
         if (application.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
         {
@@ -68,6 +103,16 @@ public class WelfareApplicationService : IWelfareApplicationService
         }
 
         await _applicationRepository.DeleteAsync(id);
+
+        var userId = GetCurrentUserId();
+        await _auditLogService.LogActionAsync(
+            userId: userId,
+            action: "Delete",
+            entityType: "WelfareApplication",
+            entityId: id,
+            description: $"Deleted welfare application",
+            status: "Success"
+        );
     }
 
     public async Task<bool> ApplicationExistsAsync(int id)

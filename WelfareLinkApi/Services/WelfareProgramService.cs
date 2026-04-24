@@ -6,10 +6,19 @@ namespace WelfareLinkApi.Services;
 public class WelfareProgramService : IWelfareProgramService
 {
     private readonly IWelfareProgramRepository _programRepository;
+    private readonly IAuditLogService _auditLogService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public WelfareProgramService(IWelfareProgramRepository programRepository)
+    public WelfareProgramService(IWelfareProgramRepository programRepository, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
     {
         _programRepository = programRepository;
+        _auditLogService = auditLogService;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private int? GetCurrentUserId()
+    {
+        return _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
     }
 
     public async Task<IEnumerable<WelfareProgram>> GetAllProgramsAsync()
@@ -46,6 +55,16 @@ public class WelfareProgramService : IWelfareProgramService
         program.Status = "Active";
 
         await _programRepository.AddProgramAsync(program);
+
+        var userId = GetCurrentUserId();
+        await _auditLogService.LogActionAsync(
+            userId: userId,
+            action: "Create",
+            entityType: "Program",
+            entityId: program.ProgramID,
+            description: $"Created program '{program.Title}' with budget ₹{program.Budget:N2}",
+            status: "Success"
+        );
     }
 
     public async Task UpdateProgramAsync(WelfareProgram program)
@@ -55,6 +74,16 @@ public class WelfareProgramService : IWelfareProgramService
         await ValidateDuplicateTitle(program.Title, program.ProgramID);
 
         await _programRepository.UpdateProgramAsync(program);
+
+        var userId = GetCurrentUserId();
+        await _auditLogService.LogActionAsync(
+            userId: userId,
+            action: "Update",
+            entityType: "Program",
+            entityId: program.ProgramID,
+            description: $"Updated program '{program.Title}'",
+            status: "Success"
+        );
     }
 
     public async Task SuspendProgramAsync(int id)
@@ -67,6 +96,16 @@ public class WelfareProgramService : IWelfareProgramService
         if (program.Status == "Suspended")
             throw new InvalidOperationException("Programme is already suspended.");
         await _programRepository.UpdateStatusAsync(id, "Suspended");
+
+        var userId = GetCurrentUserId();
+        await _auditLogService.LogActionAsync(
+            userId: userId,
+            action: "Update",
+            entityType: "Program",
+            entityId: id,
+            description: $"Suspended program '{program.Title}'",
+            status: "Success"
+        );
     }
 
     public async Task DeleteProgramAsync(int id)

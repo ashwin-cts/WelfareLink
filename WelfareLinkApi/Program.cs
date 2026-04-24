@@ -48,6 +48,7 @@ namespace WelfareLinkApi
             builder.Services.AddScoped<IComplainceRecordRepository, ComplainceRecordRepository>();
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+            builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
 
             // Service registrations
@@ -67,6 +68,7 @@ namespace WelfareLinkApi
             builder.Services.AddScoped<IBenefitAnalyticsService, BenefitAnalyticsService>();
             builder.Services.AddScoped<IWelfareApplicationAnalyticsService, WelfareApplicationAnalyticsService>();
             builder.Services.AddScoped<IWelfareApplicationDocumentService, WelfareApplicationDocumentService>();
+            builder.Services.AddScoped<IAuditLogService, AuditLogService>();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();

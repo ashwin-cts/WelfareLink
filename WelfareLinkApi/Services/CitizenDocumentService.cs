@@ -7,11 +7,20 @@ public class CitizenDocumentService : ICitizenDocumentService
 {
     private readonly ICitizenDocumentRepository _documentRepository;
     private readonly IWebHostEnvironment _environment;
+    private readonly IAuditLogService _auditLogService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public CitizenDocumentService(ICitizenDocumentRepository documentRepository, IWebHostEnvironment environment)
+    public CitizenDocumentService(ICitizenDocumentRepository documentRepository, IWebHostEnvironment environment, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
     {
         _documentRepository = documentRepository;
         _environment = environment;
+        _auditLogService = auditLogService;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private int? GetCurrentUserId()
+    {
+        return _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
     }
 
     public async Task<IEnumerable<CitizenDocument>> GetDocumentsByCitizenIdAsync(int citizenId)
@@ -37,6 +46,17 @@ public class CitizenDocumentService : ICitizenDocumentService
             document.VerificationStatus = "Pending";
 
             await _documentRepository.AddAsync(document);
+
+            var userId = GetCurrentUserId();
+            await _auditLogService.LogActionAsync(
+                userId: userId,
+                action: "Upload",
+                entityType: "CitizenDocument",
+                entityId: document.DocumentID,
+                description: $"Uploaded document '{document.DocType}' for citizen",
+                status: "Success"
+            );
+
             return true;
         }
         catch
@@ -64,6 +84,16 @@ public class CitizenDocumentService : ICitizenDocumentService
                 }
 
                 await _documentRepository.DeleteAsync(documentId);
+
+                var userId = GetCurrentUserId();
+                await _auditLogService.LogActionAsync(
+                    userId: userId,
+                    action: "Delete",
+                    entityType: "CitizenDocument",
+                    entityId: documentId,
+                    description: $"Deleted document '{document.DocType}' for citizen",
+                    status: "Success"
+                );
             }
             return true;
         }
@@ -115,6 +145,17 @@ public class CitizenDocumentService : ICitizenDocumentService
             document.VerificationStatus = "Pending";
 
             await _documentRepository.UpdateAsync(document);
+
+            var userId = GetCurrentUserId();
+            await _auditLogService.LogActionAsync(
+                userId: userId,
+                action: "Upload",
+                entityType: "CitizenDocument",
+                entityId: documentId,
+                description: $"Re-uploaded document '{document.DocType}' for citizen",
+                status: "Success"
+            );
+
             return true;
         }
         catch
