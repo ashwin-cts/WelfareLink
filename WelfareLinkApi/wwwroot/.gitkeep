@@ -1,0 +1,4 @@
+mkdir -p wwwroot WelfareLink/wwwroot WelfareLinkApi/wwwroot
+touch wwwroot/.gitkeep
+touch WelfareLink/wwwroot/.gitkeep
+touch WelfareLinkApi/wwwroot/.gitkeep

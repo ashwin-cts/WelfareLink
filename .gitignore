@@ -7,7 +7,7 @@ bin/
 obj/
 Debug/
 Release/
-wwwroot/*
+
 
 # User-specific files
 *.user
@@ -20,7 +20,7 @@ WelfareLink/obj/
 WelfareLinkApi/bin/
 WelfareLinkApi/obj/
 WelfareLinkApi/wwwroot/*
-WelfareLink/wwwroot/*
+
 
 # But keep the folder itself via .gitkeep
 !wwwroot/.gitkeep
