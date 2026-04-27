@@ -1,15 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Json;
+using WelfareLink.Services;
 
 namespace WelfareLink.Controllers
 {
     public class ComplianceOfficerController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly WelfareApiClient _api;
 
-        public ComplianceOfficerController(IHttpClientFactory httpClientFactory)
+        public ComplianceOfficerController(IHttpClientFactory httpClientFactory, WelfareApiClient api)
         {
             _httpClientFactory = httpClientFactory;
+            _api = api;
         }
 
         private bool CheckAuthorization()
@@ -29,7 +32,7 @@ namespace WelfareLink.Controllers
 
             try
             {
-                var client = _httpClientFactory.CreateClient("DashboardClient");
+                var client = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
                 var allocations = await client.GetFromJsonAsync<dynamic>("api/complianceofficerdashboardapi/allocations");
                 var issues = await client.GetFromJsonAsync<dynamic>("api/complianceofficerdashboardapi/issues");
                 var metrics = await client.GetFromJsonAsync<dynamic>("api/complianceofficerdashboardapi/metrics");
@@ -139,7 +142,7 @@ namespace WelfareLink.Controllers
 
             try
             {
-                var client = _httpClientFactory.CreateClient("DashboardClient");
+                var client = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
                 var allocations = await client.GetFromJsonAsync<dynamic>("api/complianceofficerdashboardapi/allocations");
                 ViewBag.AllocationsJson = allocations;
                 return View();
@@ -158,7 +161,7 @@ namespace WelfareLink.Controllers
 
             try
             {
-                var client = _httpClientFactory.CreateClient("DashboardClient");
+                var client = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
                 var issues = await client.GetFromJsonAsync<dynamic>("api/complianceofficerdashboardapi/issues");
                 ViewBag.IssuesJson = issues;
                 return View();
@@ -187,7 +190,7 @@ namespace WelfareLink.Controllers
 
             try
             {
-                var client = _httpClientFactory.CreateClient("DashboardClient");
+                var client = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
                 var payload = new { benefitId, issue };
                 var response = await client.PostAsJsonAsync("api/ComplianceOfficerDashboard/raise-issue", payload);
 

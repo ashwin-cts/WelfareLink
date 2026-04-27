@@ -114,11 +114,11 @@ namespace WelfareLink
                         HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 });
 
-            builder.Services.AddHttpClient("AnalyticsAndReporting", client =>
+            builder.Services.AddHttpClient("ComplianceAndAuditLog", client =>
             {
                 client.BaseAddress = new Uri(
-                    builder.Configuration["ApiSettings:AnalyticsAndReporting"]
-                    ?? throw new InvalidOperationException("ApiSettings:AnalyticsAndReporting is not configured."));
+                    builder.Configuration["ApiSettings:ComplianceAndAuditLog"]
+                    ?? throw new InvalidOperationException("ApiSettings:ComplianceAndAuditLog is not configured."));
             }).ConfigurePrimaryHttpMessageHandler(() =>
                 new HttpClientHandler
                 {
@@ -126,11 +126,11 @@ namespace WelfareLink
                         HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 });
 
-            builder.Services.AddHttpClient("DashboardClient", client =>
+            builder.Services.AddHttpClient("AnalyticsAndReporting", client =>
             {
                 client.BaseAddress = new Uri(
-                    builder.Configuration["ApiSettings:ComplianceAndAuditLog"]
-                    ?? throw new InvalidOperationException("ApiSettings:ComplianceAndAuditLog is not configured."));
+                    builder.Configuration["ApiSettings:AnalyticsAndReporting"]
+                    ?? throw new InvalidOperationException("ApiSettings:AnalyticsAndReporting is not configured."));
             }).ConfigurePrimaryHttpMessageHandler(() =>
                 new HttpClientHandler
                 {

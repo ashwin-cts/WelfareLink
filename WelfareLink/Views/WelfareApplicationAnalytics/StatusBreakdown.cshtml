@@ -19,7 +19,7 @@
                     <h5>Application Status Distribution</h5>
                 </div>
                 <div class="card-body">
-                    @if (ViewBag.StatusBreakdown != null && ViewBag.StatusBreakdown.Count > 0)
+                    @if (ViewBag.HasStatusBreakdown == true)
                     {
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">

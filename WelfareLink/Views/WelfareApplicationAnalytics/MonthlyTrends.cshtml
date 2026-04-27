@@ -8,10 +8,18 @@
         <div class="col-md-12">
             <h1 class="display-4">@ViewData["Title"]</h1>
             <p class="lead">Application trends for @currentYear</p>
-                </div>
-            </div>
+        </div>
+    </div>
 
-            @await Html.PartialAsync("_AnalyticsNav")
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Error:</strong> @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @await Html.PartialAsync("_AnalyticsNav")
 
             <div class="row mb-3">
                 <div class="col-md-12 text-end">
@@ -34,8 +42,11 @@
                     <h5>Monthly Application Statistics - @currentYear</h5>
                 </div>
                 <div class="card-body">
-                    @if (ViewBag.MonthlyData != null && ViewBag.MonthlyData.Count > 0)
+                    @if (ViewBag.MonthlyData != null && (ViewBag.MonthlyData is System.Collections.IEnumerable))
                     {
+                        var monthlyList = ViewBag.MonthlyData as System.Collections.IEnumerable;
+                        int monthCount = 0;
+
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
                                 <thead class="table-dark">
@@ -49,17 +60,40 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var month in ViewBag.MonthlyData)
-                                    {
-                                        <tr>
-                                            <td><strong>@month.Month</strong></td>
-                                            <td><span class="badge bg-primary">@month.Total</span></td>
-                                            <td><span class="badge bg-warning text-dark">@month.Pending</span></td>
-                                            <td><span class="badge bg-success">@month.Approved</span></td>
-                                            <td><span class="badge bg-danger">@month.Rejected</span></td>
-                                            <td><span class="badge bg-info">@month.UnderReview</span></td>
-                                        </tr>
-                                    }
+                        @foreach (var month in monthlyList)
+                        {
+                            monthCount++;
+                            // For each item, use reflection to safely get properties
+                            var monthProp = month.GetType().GetProperty("Month", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                            var totalProp = month.GetType().GetProperty("Total", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                            var pendingProp = month.GetType().GetProperty("Pending", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                            var approvedProp = month.GetType().GetProperty("Approved", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                            var rejectedProp = month.GetType().GetProperty("Rejected", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                            var underReviewProp = month.GetType().GetProperty("UnderReview", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+
+                            var monthName = monthProp?.GetValue(month)?.ToString() ?? "N/A";
+                            var total = totalProp?.GetValue(month) ?? 0;
+                            var pending = pendingProp?.GetValue(month) ?? 0;
+                            var approved = approvedProp?.GetValue(month) ?? 0;
+                            var rejected = rejectedProp?.GetValue(month) ?? 0;
+                            var underReview = underReviewProp?.GetValue(month) ?? 0;
+
+                            <tr>
+                                <td><strong>@monthName</strong></td>
+                                <td><span class="badge bg-primary">@total</span></td>
+                                <td><span class="badge bg-warning text-dark">@pending</span></td>
+                                <td><span class="badge bg-success">@approved</span></td>
+                                <td><span class="badge bg-danger">@rejected</span></td>
+                                <td><span class="badge bg-info">@underReview</span></td>
+                            </tr>
+                        }
+
+                        @if (monthCount == 0)
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No data available for @currentYear</td>
+                            </tr>
+                        }
                                 </tbody>
                             </table>
                         </div>

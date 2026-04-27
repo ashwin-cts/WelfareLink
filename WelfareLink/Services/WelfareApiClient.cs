@@ -270,8 +270,38 @@ namespace WelfareLink.Services
 
         public async Task<ApplicationInfo?> GetEligibilityApplicationInfoAsync(int applicationId)
         {
-            var eligibilityClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
-            return await eligibilityClient.GetFromJsonAsync<ApplicationInfo>($"api/eligibilitycheckapi/application-info/{applicationId}", _json);
+            try
+            {
+                var eligibilityClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
+                var response = await eligibilityClient.GetAsync($"api/eligibilitycheckapi/application-info/{applicationId}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Application {applicationId} not found in Benefits API");
+                        return null;
+                    }
+                    System.Diagnostics.Debug.WriteLine($"Error fetching application info: {response.StatusCode}");
+                    return null;
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return null;
+
+                return JsonSerializer.Deserialize<ApplicationInfo>(content, _json);
+            }
+            catch (HttpRequestException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Connection error fetching application info: {ex.Message}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching application info: {ex.Message}");
+                return null;
+            }
         }
 
         public async Task<EligibilityCheck?> CreateCheckAsync(EligibilityCheck check, int? applicationId)
@@ -422,24 +452,32 @@ namespace WelfareLink.Services
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<WelfareApplication>> GetAllApplicationsAsync(string? status = null)
         {
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
             var url = string.IsNullOrEmpty(status)
                 ? "api/welfareapplicationapi"
                 : $"api/welfareapplicationapi?status={status}";
-            return await _http.GetFromJsonAsync<IEnumerable<WelfareApplication>>(url, _json) ?? Enumerable.Empty<WelfareApplication>();
+            return await wAppClient.GetFromJsonAsync<IEnumerable<WelfareApplication>>(url, _json) ?? Enumerable.Empty<WelfareApplication>();
         }
 
         public async Task<IEnumerable<WelfareApplication>> GetPendingApplicationsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<WelfareApplication>>("api/welfareapplicationapi/pending", _json) ?? [];
+        {
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            return await wAppClient.GetFromJsonAsync<IEnumerable<WelfareApplication>>("api/welfareapplicationapi/pending", _json) ?? [];
+        }
 
         public async Task<WelfareApplication?> GetApplicationByIdAsync(int id)
-            => await _http.GetFromJsonAsync<WelfareApplication>($"api/welfareapplicationapi/{id}", _json);
+        {
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            return await wAppClient.GetFromJsonAsync<WelfareApplication>($"api/welfareapplicationapi/{id}", _json);
+        }
 
         public async Task<bool> ApplicationExistsAsync(int id)
             => (await GetApplicationByIdAsync(id)) != null;
 
         public async Task<WelfareApplication?> CreateApplicationAsync(WelfareApplication application)
         {
-            var response = await _http.PostAsJsonAsync("api/welfareapplicationapi", application);
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            var response = await wAppClient.PostAsJsonAsync("api/welfareapplicationapi", application);
             if (!response.IsSuccessStatusCode) return null;
             try
             {
@@ -456,16 +494,23 @@ namespace WelfareLink.Services
         }
 
         public async Task UpdateApplicationAsync(WelfareApplication application)
-            => await _http.PutAsJsonAsync($"api/welfareapplicationapi/{application.ApplicationID}", application);
+        {
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            await wAppClient.PutAsJsonAsync($"api/welfareapplicationapi/{application.ApplicationID}", application);
+        }
 
         public async Task<bool> UpdateApplicationStatusAsync(int id, string status)
         {
-            var response = await _http.PatchAsJsonAsync($"api/welfareapplicationapi/{id}/status", status);
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            var response = await wAppClient.PatchAsJsonAsync($"api/welfareapplicationapi/{id}/status", status);
             return response.IsSuccessStatusCode;
         }
 
         public async Task DeleteApplicationAsync(int id)
-            => await _http.DeleteAsync($"api/welfareapplicationapi/{id}");
+        {
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            await wAppClient.DeleteAsync($"api/welfareapplicationapi/{id}");
+        }
 
         public async Task<IEnumerable<WelfareApplication>> GetApplicationsByCitizenIdAsync(int citizenId)
         {
@@ -524,20 +569,33 @@ namespace WelfareLink.Services
         // WELFARE PROGRAM
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<WelfareProgram>> GetAllProgramsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<WelfareProgram>>("api/welfareprogramapi", _json) ?? Enumerable.Empty<WelfareProgram>();
+        {
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            return await wAppClient.GetFromJsonAsync<IEnumerable<WelfareProgram>>("api/welfareprogramapi", _json) ?? Enumerable.Empty<WelfareProgram>();
+        }
 
         public async Task<ProgramDetailViewModel?> GetProgramByIdAsync(int id)
-            => await _http.GetFromJsonAsync<ProgramDetailViewModel>($"api/welfareprogramapi/{id}", _json);
+        {
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            return await wAppClient.GetFromJsonAsync<ProgramDetailViewModel>($"api/welfareprogramapi/{id}", _json);
+        }
 
         public async Task<BudgetDashboardViewModel?> GetBudgetMonitoringAsync()
-            => await _http.GetFromJsonAsync<BudgetDashboardViewModel>("api/welfareprogramapi/budget-monitoring", _json);
+        {
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            return await wAppClient.GetFromJsonAsync<BudgetDashboardViewModel>("api/welfareprogramapi/budget-monitoring", _json);
+        }
 
         public async Task<IEnumerable<ProgramPerformanceViewModel>> GetProgramPerformanceAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ProgramPerformanceViewModel>>("api/welfareprogramapi/performance", _json) ?? Enumerable.Empty<ProgramPerformanceViewModel>();
+        {
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            return await wAppClient.GetFromJsonAsync<IEnumerable<ProgramPerformanceViewModel>>("api/welfareprogramapi/performance", _json) ?? Enumerable.Empty<ProgramPerformanceViewModel>();
+        }
 
         public async Task<string?> AddProgramAsync(WelfareProgram program)
         {
-            var response = await _http.PostAsJsonAsync("api/welfareprogramapi", program);
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            var response = await wAppClient.PostAsJsonAsync("api/welfareprogramapi", program);
 
             try
             {
@@ -580,7 +638,8 @@ namespace WelfareLink.Services
 
         public async Task<string?> UpdateProgramAsync(WelfareProgram program)
         {
-            var response = await _http.PutAsJsonAsync($"api/welfareprogramapi/{program.ProgramID}", program);
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            var response = await wAppClient.PutAsJsonAsync($"api/welfareprogramapi/{program.ProgramID}", program);
 
             try
             {
@@ -623,7 +682,8 @@ namespace WelfareLink.Services
 
         public async Task<string?> SuspendProgramAsync(int id)
         {
-            var response = await _http.PatchAsync($"api/welfareprogramapi/{id}/suspend", null);
+            var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+            var response = await wAppClient.PatchAsync($"api/welfareprogramapi/{id}/suspend", null);
 
             try
             {

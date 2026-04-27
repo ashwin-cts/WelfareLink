@@ -52,7 +52,11 @@ public class EligibilityCheckController : Controller
         }
 
         var info = await _api.GetEligibilityApplicationInfoAsync(applicationId.Value);
-        if (info?.Application == null) return NotFound();
+        if (info?.Application == null)
+        {
+            TempData["ErrorMessage"] = $"Application with ID {applicationId.Value} not found. Please ensure the application exists and try again.";
+            return RedirectToAction("Index", "WelfareApplication");
+        }
 
         ViewBag.Application = info.Application;
         ViewBag.Citizen = info.Citizen;

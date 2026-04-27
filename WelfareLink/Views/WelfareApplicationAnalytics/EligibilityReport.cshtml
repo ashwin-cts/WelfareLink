@@ -1,5 +1,124 @@
 @{
     ViewData["Title"] = "Eligibility Report";
+
+    // Helper function to safely convert dynamic values to boolean
+    Func<dynamic, bool> SafeConvertToBool = (dynamic val) =>
+    {
+        try
+        {
+            if (val == null)
+                return false;
+            if (val is bool boolVal)
+                return boolVal;
+            if (val is int intVal)
+                return intVal != 0;
+            if (bool.TryParse(val.ToString(), out bool result))
+                return result;
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    };
+
+    // Helper function to safely convert dynamic values to int
+    Func<dynamic, int> SafeConvertToInt = (dynamic val) =>
+    {
+        try
+        {
+            if (val == null)
+                return 0;
+            if (val is int intVal)
+                return intVal;
+            if (int.TryParse(val.ToString(), out int result))
+                return result;
+            return 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    };
+
+    // Helper function to safely convert dynamic values to double
+    Func<dynamic, double> SafeConvertToDouble = (dynamic val) =>
+    {
+        try
+        {
+            if (val == null)
+                return 0.0;
+            if (val is double doubleVal)
+                return doubleVal;
+            if (val is int intVal)
+                return (double)intVal;
+            if (double.TryParse(val.ToString(), out double result))
+                return result;
+            return 0.0;
+        }
+        catch
+        {
+            return 0.0;
+        }
+    };
+
+    // Helper function to safely convert dynamic values to string
+    Func<dynamic, string> SafeConvertToString = (dynamic val) =>
+    {
+        try
+        {
+            if (val == null)
+                return string.Empty;
+            return val.ToString();
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    };
+
+    // Helper to safely extract property value from dynamic/JsonElement object
+    Func<dynamic, string, object> SafeGetProperty = (dynamic obj, string propName) =>
+    {
+        try
+        {
+            if (obj == null) return null;
+
+            // If it's a JsonElement
+            if (obj is System.Text.Json.JsonElement je)
+            {
+                try
+                {
+                    var prop = je.GetProperty(propName);
+                    if (prop.ValueKind == System.Text.Json.JsonValueKind.String)
+                        return prop.GetString();
+                    if (prop.ValueKind == System.Text.Json.JsonValueKind.Number)
+                    {
+                        if (prop.TryGetInt32(out int intVal))
+                            return intVal;
+                        if (prop.TryGetDouble(out double dblVal))
+                            return dblVal;
+                    }
+                    return prop.GetRawText().Trim('"');
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            // If it's an anonymous object or regular object, use reflection
+            var reflProp = obj.GetType().GetProperty(propName, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+            if (reflProp != null)
+                return reflProp.GetValue(obj);
+
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    };
 }
 
 <div class="container">
@@ -7,22 +126,30 @@
         <div class="col-md-12">
             <h1 class="display-4">@ViewData["Title"]</h1>
             <p class="lead">Final eligibility outcome per application &mdash; re-checked applications show their latest result only</p>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Error:</strong> @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (SafeConvertToInt(ViewBag.TotalApplicationsChecked) > 0)
+    {
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="alert alert-info d-inline-flex align-items-center gap-2 mb-0">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span>Based on <strong>@ViewBag.TotalApplicationsChecked</strong> application(s) assessed &mdash; each counted once using its most recent eligibility check.</span>
                 </div>
             </div>
+        </div>
+    }
 
-            @if (ViewBag.TotalApplicationsChecked != null)
-            {
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <div class="alert alert-info d-inline-flex align-items-center gap-2 mb-0">
-                            <i class="bi bi-info-circle-fill"></i>
-                            <span>Based on <strong>@ViewBag.TotalApplicationsChecked</strong> application(s) assessed &mdash; each counted once using its most recent eligibility check.</span>
-                        </div>
-                    </div>
-                </div>
-            }
-
-            @await Html.PartialAsync("_AnalyticsNav")
+    @await Html.PartialAsync("_AnalyticsNav")
 
     <!-- Result Breakdown -->
     <div class="row mb-4">
@@ -32,7 +159,7 @@
                     <h5>Final Eligibility Result per Application</h5>
                 </div>
                 <div class="card-body">
-                    @if (ViewBag.ResultBreakdown != null && ViewBag.ResultBreakdown.Count > 0)
+                    @if (SafeConvertToBool(ViewBag.HasResultBreakdown))
                     {
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
@@ -47,28 +174,31 @@
                                 <tbody>
                                     @foreach (var item in ViewBag.ResultBreakdown)
                                     {
+                                        var resultText = SafeConvertToString(SafeGetProperty(item, "Result"));
+                                        var countValue = SafeConvertToInt(SafeGetProperty(item, "Count"));
+                                        var percentageValue = SafeConvertToDouble(SafeGetProperty(item, "Percentage"));
                                         <tr>
                                             <td>
-                                                @if (item.Result.ToLower() == "eligible")
+                                                @if (resultText.ToLower() == "eligible")
                                                 {
-                                                    <span class="badge bg-success">@item.Result</span>
+                                                    <span class="badge bg-success">@resultText</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-danger">@item.Result</span>
+                                                    <span class="badge bg-danger">@resultText</span>
                                                 }
                                             </td>
-                                            <td><strong>@item.Count</strong></td>
-                                            <td>@Math.Round(item.Percentage, 2)%</td>
+                                            <td><strong>@countValue</strong></td>
+                                            <td>@Math.Round(percentageValue, 2)%</td>
                                             <td>
                                                 <div class="progress" style="height: 25px;">
                                                     @{
-                                                        var bgClass = item.Result.ToLower() == "eligible" ? "bg-success" : "bg-danger";
+                                                        var bgClass = resultText.ToLower() == "eligible" ? "bg-success" : "bg-danger";
                                                     }
                                                     <div class="progress-bar @bgClass" role="progressbar" 
-                                                         style="width: @item.Percentage%" 
-                                                         aria-valuenow="@item.Percentage" aria-valuemin="0" aria-valuemax="100">
-                                                        @Math.Round(item.Percentage, 1)%
+                                                         style="width: @percentageValue%" 
+                                                         aria-valuenow="@percentageValue" aria-valuemin="0" aria-valuemax="100">
+                                                        @Math.Round(percentageValue, 1)%
                                                     </div>
                                                 </div>
                                             </td>
@@ -97,7 +227,7 @@
                     <h5>Applications by Month (Final Eligibility Status)</h5>
                 </div>
                 <div class="card-body">
-                    @if (ViewBag.ChecksByMonth != null && ViewBag.ChecksByMonth.Count > 0)
+                    @if (SafeConvertToBool(ViewBag.HasChecksByMonth))
                     {
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
@@ -113,12 +243,14 @@
                                 <tbody>
                                     @foreach (var month in ViewBag.ChecksByMonth)
                                     {
-                                        var eligibilityRate = month.Total > 0 ? (month.Eligible * 100.0 / month.Total) : 0;
+                                        var monthTotal = SafeConvertToInt(SafeGetProperty(month, "Total"));
+                                        var monthEligible = SafeConvertToInt(SafeGetProperty(month, "Eligible"));
+                                        var eligibilityRate = monthTotal > 0 ? (monthEligible * 100.0 / monthTotal) : 0;
                                         <tr>
-                                            <td><strong>@month.Month</strong></td>
-                                            <td><span class="badge bg-primary">@month.Total</span></td>
-                                            <td><span class="badge bg-success">@month.Eligible</span></td>
-                                            <td><span class="badge bg-danger">@month.Ineligible</span></td>
+                                            <td><strong>@SafeConvertToString(SafeGetProperty(month, "Month"))</strong></td>
+                                            <td><span class="badge bg-primary">@monthTotal</span></td>
+                                            <td><span class="badge bg-success">@monthEligible</span></td>
+                                            <td><span class="badge bg-danger">@(monthTotal - monthEligible)</span></td>
                                             <td>
                                                 <div class="progress" style="height: 25px;">
                                                     <div class="progress-bar bg-success" role="progressbar" 

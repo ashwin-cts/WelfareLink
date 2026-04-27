@@ -10,6 +10,14 @@
         </div>
     </div>
 
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Error:</strong> @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     @await Html.PartialAsync("_AnalyticsNav")
 
     <!-- Summary Cards -->
@@ -185,7 +193,11 @@
                     <h5><i class="bi bi-calendar3"></i> Applications by Month</h5>
                 </div>
                 <div class="card-body">
-                    @if (ViewBag.ApplicationsByMonth != null && ViewBag.ApplicationsByMonth.Count > 0)
+                    @{
+                        var applicationsByMonth = ViewBag.ApplicationsByMonth as System.Collections.IEnumerable;
+                        int monthDataCount = 0;
+                    }
+                    @if (applicationsByMonth != null)
                     {
                         <div class="table-responsive">
                             <table class="table table-striped">
@@ -196,13 +208,26 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var month in ViewBag.ApplicationsByMonth)
+                                    @foreach (var month in applicationsByMonth)
+                                    {
+                                        monthDataCount++;
+                                        var monthProp = month.GetType().GetProperty("Month", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                                        var countProp = month.GetType().GetProperty("Count", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+
+                                        var monthName = monthProp?.GetValue(month)?.ToString() ?? "N/A";
+                                        var count = countProp?.GetValue(month) ?? 0;
+
+                                        <tr>
+                                            <td>@monthName</td>
+                                            <td>
+                                                <span class="badge bg-primary">@count</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                    @if (monthDataCount == 0)
                                     {
                                         <tr>
-                                            <td>@month.Month</td>
-                                            <td>
-                                                <span class="badge bg-primary">@month.Count</span>
-                                            </td>
+                                            <td colspan="2" class="text-center text-muted">No monthly data available</td>
                                         </tr>
                                     }
                                 </tbody>
