@@ -946,28 +946,42 @@ namespace WelfareLink.Services
         // AUDIT LOG
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<AuditLog>> GetAllAuditLogsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<AuditLog>>("api/auditlogapi", _json) ?? Enumerable.Empty<AuditLog>();
+        {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
+            return await complianceClient.GetFromJsonAsync<IEnumerable<AuditLog>>("api/auditlogapi", _json) ?? Enumerable.Empty<AuditLog>();
+        }
 
         public async Task<AuditLogPagedResponse?> GetPagedAuditLogsAsync(int pageNumber = 1, int pageSize = 10)
-            => await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged?pageNumber={pageNumber}&pageSize={pageSize}", _json);
+        {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
+            return await complianceClient.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged?pageNumber={pageNumber}&pageSize={pageSize}", _json);
+        }
 
         public async Task<AuditLogPagedResponse?> GetPagedAuditLogsByEntityTypeAsync(string entityType, int pageNumber = 1, int pageSize = 10)
-            => await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/entity/{entityType}?pageNumber={pageNumber}&pageSize={pageSize}", _json);
+        {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
+            return await complianceClient.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/entity/{entityType}?pageNumber={pageNumber}&pageSize={pageSize}", _json);
+        }
 
         public async Task<AuditLogPagedResponse?> GetPagedAuditLogsByActionAsync(string action, int pageNumber = 1, int pageSize = 10)
-            => await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/action/{action}?pageNumber={pageNumber}&pageSize={pageSize}", _json);
+        {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
+            return await complianceClient.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/action/{action}?pageNumber={pageNumber}&pageSize={pageSize}", _json);
+        }
 
         public async Task<AuditLogPagedResponse?> GetPagedAuditLogsByDateRangeAsync(DateTime startDate, DateTime endDate, int pageNumber = 1, int pageSize = 10)
         {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
             var start = startDate.ToString("yyyy-MM-dd");
             var end = endDate.ToString("yyyy-MM-dd");
-            return await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/date-range?startDate={start}&endDate={end}&pageNumber={pageNumber}&pageSize={pageSize}", _json);
+            return await complianceClient.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/date-range?startDate={start}&endDate={end}&pageNumber={pageNumber}&pageSize={pageSize}", _json);
         }
 
         public async Task<bool> CreateAuditLogAsync(int? userId, string action, string entityType, int entityId, string description)
         {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
             var payload = new { UserId = userId, Action = action, EntityType = entityType, EntityId = entityId, Description = description };
-            var response = await _http.PostAsJsonAsync("api/auditlogapi", payload);
+            var response = await complianceClient.PostAsJsonAsync("api/auditlogapi", payload);
             return response.IsSuccessStatusCode;
         }
 
@@ -975,17 +989,27 @@ namespace WelfareLink.Services
         // AUDIT (Government Auditor)
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<ProgramAuditSummary>> GetGovernmentAuditorDashboardAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ProgramAuditSummary>>("api/auditapi/dashboard", _json) ?? Enumerable.Empty<ProgramAuditSummary>();
+        {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
+            return await complianceClient.GetFromJsonAsync<IEnumerable<ProgramAuditSummary>>("api/auditapi/dashboard", _json) ?? Enumerable.Empty<ProgramAuditSummary>();
+        }
 
         public async Task<IEnumerable<Audit>> GetAllAuditsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<Audit>>("api/auditapi", _json) ?? Enumerable.Empty<Audit>();
+        {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
+            return await complianceClient.GetFromJsonAsync<IEnumerable<Audit>>("api/auditapi", _json) ?? Enumerable.Empty<Audit>();
+        }
 
         public async Task<Audit?> GetAuditByIdAsync(int id)
-            => await _http.GetFromJsonAsync<Audit>($"api/auditapi/{id}", _json);
+        {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
+            return await complianceClient.GetFromJsonAsync<Audit>($"api/auditapi/{id}", _json);
+        }
 
         public async Task<(Audit? audit, string? error)> CreateAuditAsync(Audit audit)
         {
-            var response = await _http.PostAsJsonAsync("api/auditapi", audit);
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
+            var response = await complianceClient.PostAsJsonAsync("api/auditapi", audit);
             if (response.IsSuccessStatusCode)
             {
                 try
@@ -1017,8 +1041,9 @@ namespace WelfareLink.Services
 
         public async Task<bool> UpdateAuditStatusAsync(int id, string status)
         {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
             var content = new StringContent(JsonSerializer.Serialize(status), Encoding.UTF8, "application/json");
-            var response = await _http.PatchAsync($"api/auditapi/{id}/status", content);
+            var response = await complianceClient.PatchAsync($"api/auditapi/{id}/status", content);
             return response.IsSuccessStatusCode;
         }
 
@@ -1026,17 +1051,27 @@ namespace WelfareLink.Services
         // COMPLIANCE RECORD
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<ComplianceRecord>> GetAllComplianceRecordsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi", _json) ?? Enumerable.Empty<ComplianceRecord>();
+        {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
+            return await complianceClient.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi", _json) ?? Enumerable.Empty<ComplianceRecord>();
+        }
 
         public async Task<IEnumerable<ComplianceRecord>> GetOpenComplianceRecordsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi/open", _json) ?? Enumerable.Empty<ComplianceRecord>();
+        {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
+            return await complianceClient.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi/open", _json) ?? Enumerable.Empty<ComplianceRecord>();
+        }
 
         public async Task<ComplianceRecord?> GetComplianceRecordByIdAsync(int id)
-            => await _http.GetFromJsonAsync<ComplianceRecord>($"api/complaincerecordapi/{id}", _json);
+        {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
+            return await complianceClient.GetFromJsonAsync<ComplianceRecord>($"api/complaincerecordapi/{id}", _json);
+        }
 
         public async Task<(ComplianceRecord? record, string? error)> CreateComplianceRecordAsync(ComplianceRecord record)
         {
-            var response = await _http.PostAsJsonAsync("api/complaincerecordapi", record);
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
+            var response = await complianceClient.PostAsJsonAsync("api/complaincerecordapi", record);
             if (response.IsSuccessStatusCode)
             {
                 try
@@ -1068,9 +1103,10 @@ namespace WelfareLink.Services
 
         public async Task<bool> UpdateComplianceStatusAsync(int id, string status, int? resolvedByUserId, string? notes)
         {
+            var complianceClient = _httpClientFactory.CreateClient("ComplianceAndAuditLog");
             var payload = new { Status = status, ResolvedByUserId = resolvedByUserId, Notes = notes };
             var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-            var response = await _http.PatchAsync($"api/complaincerecordapi/{id}/status", content);
+            var response = await complianceClient.PatchAsync($"api/complaincerecordapi/{id}/status", content);
             return response.IsSuccessStatusCode;
         }
 
