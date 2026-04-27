@@ -117,11 +117,43 @@
                 <div class="card-body">
                     <div class="progress" style="height: 30px;">
                         @{
-                            var total = ViewBag.TotalApplications > 0 ? ViewBag.TotalApplications : 1;
-                            var pendingPercent = (ViewBag.PendingApplications * 100.0 / total);
-                            var approvedPercent = (ViewBag.ApprovedApplications * 100.0 / total);
-                            var rejectedPercent = (ViewBag.RejectedApplications * 100.0 / total);
-                            var reviewPercent = (ViewBag.UnderReviewApplications * 100.0 / total);
+                            int totalApps = 0;
+                            int pendingApps = 0;
+                            int approvedApps = 0;
+                            int rejectedApps = 0;
+                            int underReviewApps = 0;
+
+                            // Helper function to safely convert dynamic ViewBag values to int
+                            Func<dynamic, int> SafeConvertToInt = (dynamic val) =>
+                            {
+                                try
+                                {
+                                    if (val == null)
+                                        return 0;
+                                    if (val is int intVal)
+                                        return intVal;
+                                    if (int.TryParse(val.ToString(), out int result))
+                                        return result;
+                                    return 0;
+                                }
+                                catch
+                                {
+                                    return 0;
+                                }
+                            };
+
+                            // Convert ViewBag values to int, handling both direct values and JsonElement types
+                            totalApps = SafeConvertToInt(ViewBag.TotalApplications);
+                            pendingApps = SafeConvertToInt(ViewBag.PendingApplications);
+                            approvedApps = SafeConvertToInt(ViewBag.ApprovedApplications);
+                            rejectedApps = SafeConvertToInt(ViewBag.RejectedApplications);
+                            underReviewApps = SafeConvertToInt(ViewBag.UnderReviewApplications);
+
+                            var total = totalApps > 0 ? totalApps : 1;
+                            var pendingPercent = (pendingApps * 100.0 / total);
+                            var approvedPercent = (approvedApps * 100.0 / total);
+                            var rejectedPercent = (rejectedApps * 100.0 / total);
+                            var reviewPercent = (underReviewApps * 100.0 / total);
                         }
                         <div class="progress-bar bg-warning" role="progressbar" style="width: @pendingPercent%" 
                              aria-valuenow="@pendingPercent" aria-valuemin="0" aria-valuemax="100">

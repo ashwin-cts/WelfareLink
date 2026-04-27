@@ -126,6 +126,18 @@ namespace WelfareLink
                         HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 });
 
+            builder.Services.AddHttpClient("DashboardClient", client =>
+            {
+                client.BaseAddress = new Uri(
+                    builder.Configuration["ApiSettings:ComplianceAndAuditLog"]
+                    ?? throw new InvalidOperationException("ApiSettings:ComplianceAndAuditLog is not configured."));
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                });
+
             var app = builder.Build();
 
             // Middleware

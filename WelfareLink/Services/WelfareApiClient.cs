@@ -34,17 +34,24 @@ namespace WelfareLink.Services
         // BENEFIT
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<Benefit>> GetAllBenefitsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<Benefit>>("api/benefitapi", _json) ?? Enumerable.Empty<Benefit>();
+        {
+            var benefitsClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
+            return await benefitsClient.GetFromJsonAsync<IEnumerable<Benefit>>("api/benefitapi", _json) ?? Enumerable.Empty<Benefit>();
+        }
 
         public async Task<Benefit?> GetBenefitByIdAsync(int id)
-            => await _http.GetFromJsonAsync<Benefit>($"api/benefitapi/{id}", _json);
+        {
+            var benefitsClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
+            return await benefitsClient.GetFromJsonAsync<Benefit>($"api/benefitapi/{id}", _json);
+        }
 
         public async Task<bool> BenefitExistsAsync(int id)
             => (await GetBenefitByIdAsync(id)) != null;
 
         public async Task<(Benefit? benefit, string? error)> CreateBenefitAsync(Benefit benefit, int userId)
         {
-            var response = await _http.PostAsJsonAsync($"api/benefitapi?officerId={userId}", benefit);
+            var benefitsClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
+            var response = await benefitsClient.PostAsJsonAsync($"api/benefitapi?officerId={userId}", benefit);
             if (response.IsSuccessStatusCode)
             {
                 try
@@ -76,7 +83,8 @@ namespace WelfareLink.Services
 
         public async Task<(Benefit? benefit, string? error)> UpdateBenefitAsync(Benefit benefit, int userId)
         {
-            var response = await _http.PutAsJsonAsync($"api/benefitapi/{benefit.BenefitID}?officerId={userId}", benefit);
+            var benefitsClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
+            var response = await benefitsClient.PutAsJsonAsync($"api/benefitapi/{benefit.BenefitID}?officerId={userId}", benefit);
             if (response.IsSuccessStatusCode)
             {
                 try
@@ -107,37 +115,57 @@ namespace WelfareLink.Services
         }
 
         public async Task DeleteBenefitAsync(int id)
-            => await _http.DeleteAsync($"api/benefitapi/{id}");
+        {
+            var benefitsClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
+            await benefitsClient.DeleteAsync($"api/benefitapi/{id}");
+        }
 
         public async Task<DropdownData?> GetBenefitDropdownAsync(int? selectedId = null)
         {
+            var benefitsClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
             var url = selectedId.HasValue
                 ? $"api/benefitapi/dropdown?selectedId={selectedId}"
                 : "api/benefitapi/dropdown";
-            return await _http.GetFromJsonAsync<DropdownData>(url, _json);
+            return await benefitsClient.GetFromJsonAsync<DropdownData>(url, _json);
         }
 
         public async Task<ProgramResourceInfo?> GetProgramResourceInfoAsync(int programId)
-            => await _http.GetFromJsonAsync<ProgramResourceInfo>($"api/benefitapi/program-resource-info/{programId}", _json);
+        {
+            var benefitsClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
+            return await benefitsClient.GetFromJsonAsync<ProgramResourceInfo>($"api/benefitapi/program-resource-info/{programId}", _json);
+        }
 
         // ──────────────────────────────────────────────
         // DISBURSEMENT
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<Disbursement>> GetAllDisbursementsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<Disbursement>>("api/disbursementapi", _json) ?? Enumerable.Empty<Disbursement>();
+        {
+            var operationsClient = _httpClientFactory.CreateClient("Operations");
+            return await operationsClient.GetFromJsonAsync<IEnumerable<Disbursement>>("api/disbursementapi", _json) ?? Enumerable.Empty<Disbursement>();
+        }
 
         public async Task<DisbursementDetail?> GetDisbursementByIdAsync(int id)
-            => await _http.GetFromJsonAsync<DisbursementDetail>($"api/disbursementapi/{id}", _json);
+        {
+            var operationsClient = _httpClientFactory.CreateClient("Operations");
+            return await operationsClient.GetFromJsonAsync<DisbursementDetail>($"api/disbursementapi/{id}", _json);
+        }
 
         public async Task<IEnumerable<Disbursement>> GetDisbursementsByBenefitIdAsync(int benefitId)
-            => await _http.GetFromJsonAsync<IEnumerable<Disbursement>>($"api/disbursementapi/benefit/{benefitId}", _json) ?? [];
+        {
+            var operationsClient = _httpClientFactory.CreateClient("Operations");
+            return await operationsClient.GetFromJsonAsync<IEnumerable<Disbursement>>($"api/disbursementapi/benefit/{benefitId}", _json) ?? [];
+        }
 
         public async Task<BenefitDetails?> GetDisbursementBenefitDetailsAsync(int benefitId)
-            => await _http.GetFromJsonAsync<BenefitDetails>($"api/disbursementapi/benefit-details/{benefitId}", _json);
+        {
+            var operationsClient = _httpClientFactory.CreateClient("Operations");
+            return await operationsClient.GetFromJsonAsync<BenefitDetails>($"api/disbursementapi/benefit-details/{benefitId}", _json);
+        }
 
         public async Task<(Disbursement? disbursement, string? error)> CreateDisbursementAsync(Disbursement disbursement)
         {
-            var response = await _http.PostAsJsonAsync("api/disbursementapi", disbursement);
+            var operationsClient = _httpClientFactory.CreateClient("Operations");
+            var response = await operationsClient.PostAsJsonAsync("api/disbursementapi", disbursement);
             if (response.IsSuccessStatusCode)
             {
                 try
@@ -169,7 +197,8 @@ namespace WelfareLink.Services
 
         public async Task<(Disbursement? disbursement, string? error)> UpdateDisbursementAsync(Disbursement disbursement)
         {
-            var response = await _http.PutAsJsonAsync($"api/disbursementapi/{disbursement.DisbursementID}", disbursement);
+            var operationsClient = _httpClientFactory.CreateClient("Operations");
+            var response = await operationsClient.PutAsJsonAsync($"api/disbursementapi/{disbursement.DisbursementID}", disbursement);
             if (response.IsSuccessStatusCode)
             {
                 try
@@ -207,7 +236,8 @@ namespace WelfareLink.Services
 
         public async Task<string?> DeleteDisbursementAsync(int id)
         {
-            var response = await _http.DeleteAsync($"api/disbursementapi/{id}");
+            var operationsClient = _httpClientFactory.CreateClient("Operations");
+            var response = await operationsClient.DeleteAsync($"api/disbursementapi/{id}");
             if (response.IsSuccessStatusCode) return null;
             try
             {
@@ -227,20 +257,30 @@ namespace WelfareLink.Services
         // ELIGIBILITY CHECK
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<EligibilityCheck>> GetAllChecksAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<EligibilityCheck>>("api/eligibilitycheckapi", _json) ?? Enumerable.Empty<EligibilityCheck>();
+        {
+            var eligibilityClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
+            return await eligibilityClient.GetFromJsonAsync<IEnumerable<EligibilityCheck>>("api/eligibilitycheckapi", _json) ?? Enumerable.Empty<EligibilityCheck>();
+        }
 
         public async Task<EligibilityCheck?> GetCheckByIdAsync(int id)
-            => await _http.GetFromJsonAsync<EligibilityCheck>($"api/eligibilitycheckapi/{id}", _json);
+        {
+            var eligibilityClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
+            return await eligibilityClient.GetFromJsonAsync<EligibilityCheck>($"api/eligibilitycheckapi/{id}", _json);
+        }
 
         public async Task<ApplicationInfo?> GetEligibilityApplicationInfoAsync(int applicationId)
-            => await _http.GetFromJsonAsync<ApplicationInfo>($"api/eligibilitycheckapi/application-info/{applicationId}", _json);
+        {
+            var eligibilityClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
+            return await eligibilityClient.GetFromJsonAsync<ApplicationInfo>($"api/eligibilitycheckapi/application-info/{applicationId}", _json);
+        }
 
         public async Task<EligibilityCheck?> CreateCheckAsync(EligibilityCheck check, int? applicationId)
         {
+            var eligibilityClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
             var url = applicationId.HasValue
                 ? $"api/eligibilitycheckapi?applicationId={applicationId}"
                 : "api/eligibilitycheckapi";
-            var response = await _http.PostAsJsonAsync(url, check);
+            var response = await eligibilityClient.PostAsJsonAsync(url, check);
             if (!response.IsSuccessStatusCode) return null;
             try
             {
@@ -257,26 +297,42 @@ namespace WelfareLink.Services
         }
 
         public async Task UpdateCheckAsync(EligibilityCheck check)
-            => await _http.PutAsJsonAsync($"api/eligibilitycheckapi/{check.CheckID}", check);
+        {
+            var eligibilityClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
+            await eligibilityClient.PutAsJsonAsync($"api/eligibilitycheckapi/{check.CheckID}", check);
+        }
 
         public async Task DeleteCheckAsync(int id)
-            => await _http.DeleteAsync($"api/eligibilitycheckapi/{id}");
+        {
+            var eligibilityClient = _httpClientFactory.CreateClient("BenefitsAndEligibility");
+            await eligibilityClient.DeleteAsync($"api/eligibilitycheckapi/{id}");
+        }
 
         // ──────────────────────────────────────────────
         // RESOURCE
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<Resource>> GetAllResourcesAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<Resource>>("api/resourceapi", _json) ?? Enumerable.Empty<Resource>();
+        {
+            var operationsClient = _httpClientFactory.CreateClient("Operations");
+            return await operationsClient.GetFromJsonAsync<IEnumerable<Resource>>("api/resourceapi", _json) ?? Enumerable.Empty<Resource>();
+        }
 
         public async Task<ProgramResourceDetail?> GetResourcesByProgramIdAsync(int programId)
-            => await _http.GetFromJsonAsync<ProgramResourceDetail>($"api/resourceapi/program/{programId}", _json);
+        {
+            var operationsClient = _httpClientFactory.CreateClient("Operations");
+            return await operationsClient.GetFromJsonAsync<ProgramResourceDetail>($"api/resourceapi/program/{programId}", _json);
+        }
 
         public async Task<IEnumerable<ResourceUtilisationViewModel>> GetResourceUtilisationAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ResourceUtilisationViewModel>>("api/resourceapi/utilisation", _json) ?? Enumerable.Empty<ResourceUtilisationViewModel>();
+        {
+            var operationsClient = _httpClientFactory.CreateClient("Operations");
+            return await operationsClient.GetFromJsonAsync<IEnumerable<ResourceUtilisationViewModel>>("api/resourceapi/utilisation", _json) ?? Enumerable.Empty<ResourceUtilisationViewModel>();
+        }
 
         public async Task<string?> AddResourceAsync(Resource resource)
         {
-            var response = await _http.PostAsJsonAsync("api/resourceapi", resource);
+            var operationsClient = _httpClientFactory.CreateClient("Operations");
+            var response = await operationsClient.PostAsJsonAsync("api/resourceapi", resource);
 
             try
             {
@@ -319,7 +375,8 @@ namespace WelfareLink.Services
 
         public async Task<string?> UpdateResourceAsync(Resource resource)
         {
-            var response = await _http.PutAsJsonAsync($"api/resourceapi/{resource.ResourceID}", resource);
+            var operationsClient = _httpClientFactory.CreateClient("Operations");
+            var response = await operationsClient.PutAsJsonAsync($"api/resourceapi/{resource.ResourceID}", resource);
 
             try
             {
@@ -925,22 +982,37 @@ namespace WelfareLink.Services
         // BENEFIT ANALYTICS
         // ──────────────────────────────────────────────
         public async Task<AnalyticsDashboardViewModel?> GetBenefitAnalyticsDashboardAsync()
-            => await _http.GetFromJsonAsync<AnalyticsDashboardViewModel>("api/benefitanalyticsapi/dashboard", _json);
+        {
+            var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
+            return await analyticsClient.GetFromJsonAsync<AnalyticsDashboardViewModel>("api/benefitanalyticsapi/dashboard", _json);
+        }
 
         // ──────────────────────────────────────────────
         // WELFARE APPLICATION ANALYTICS
         // ──────────────────────────────────────────────
         public async Task<Dictionary<string, object>?> GetApplicationAnalyticsDashboardAsync()
-            => await _http.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/dashboard", _json);
+        {
+            var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
+            return await analyticsClient.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/dashboard", _json);
+        }
 
         public async Task<IEnumerable<StatusBreakdownItem>> GetApplicationStatusBreakdownAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<StatusBreakdownItem>>("api/welfareapplicationanalyticsapi/status-breakdown", _json) ?? Enumerable.Empty<StatusBreakdownItem>();
+        {
+            var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
+            return await analyticsClient.GetFromJsonAsync<IEnumerable<StatusBreakdownItem>>("api/welfareapplicationanalyticsapi/status-breakdown", _json) ?? Enumerable.Empty<StatusBreakdownItem>();
+        }
 
         public async Task<Dictionary<string, object>?> GetApplicationMonthlyTrendsAsync(int year)
-            => await _http.GetFromJsonAsync<Dictionary<string, object>>($"api/welfareapplicationanalyticsapi/monthly-trends?year={year}", _json);
+        {
+            var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
+            return await analyticsClient.GetFromJsonAsync<Dictionary<string, object>>($"api/welfareapplicationanalyticsapi/monthly-trends?year={year}", _json);
+        }
 
         public async Task<Dictionary<string, object>?> GetEligibilityReportAsync()
-            => await _http.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/eligibility-report", _json);
+        {
+            var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
+            return await analyticsClient.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/eligibility-report", _json);
+        }
 
         // ──────────────────────────────────────────────
         // AUDIT LOG

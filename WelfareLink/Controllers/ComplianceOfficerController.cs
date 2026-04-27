@@ -55,7 +55,8 @@ namespace WelfareLink.Controllers
 
             try
             {
-                var client = _httpClientFactory.CreateClient("DashboardClient");
+                var wAppClient = _httpClientFactory.CreateClient("WApplicationSystem");
+                var operationsClient = _httpClientFactory.CreateClient("Operations");
 
                 // Configure JSON options for case-insensitive deserialization
                 var jsonOptions = new System.Text.Json.JsonSerializerOptions
@@ -65,7 +66,7 @@ namespace WelfareLink.Controllers
                 };
 
                 // Fetch application as strongly typed model with case-insensitive deserialization
-                var response = await client.GetAsync($"api/welfareapplicationapi/{id}");
+                var response = await wAppClient.GetAsync($"api/welfareapplicationapi/{id}");
                 if (!response.IsSuccessStatusCode) 
                 {
                     ViewBag.Error = $"API returned status: {response.StatusCode}";
@@ -100,7 +101,7 @@ namespace WelfareLink.Controllers
                     var programId = application.ProgramID;
                     if (programId != 0)
                     {
-                        var resourceResponse = await client.GetAsync($"api/resourceapi/program/{programId}");
+                        var resourceResponse = await operationsClient.GetAsync($"api/resourceapi/program/{programId}");
                         if (resourceResponse.IsSuccessStatusCode)
                         {
                             var resourceContent = await resourceResponse.Content.ReadAsStringAsync();
