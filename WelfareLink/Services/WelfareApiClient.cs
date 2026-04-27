@@ -16,6 +16,7 @@ namespace WelfareLink.Services
     public class WelfareApiClient
     {
         private readonly HttpClient _http;
+        private readonly IHttpClientFactory _httpClientFactory;
         private static readonly JsonSerializerOptions _json = new()
         {
             PropertyNameCaseInsensitive = true,
@@ -23,9 +24,10 @@ namespace WelfareLink.Services
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        public WelfareApiClient(HttpClient http)
+        public WelfareApiClient(HttpClient http, IHttpClientFactory httpClientFactory)
         {
             _http = http;
+            _httpClientFactory = httpClientFactory;
         }
 
         // ──────────────────────────────────────────────
@@ -409,12 +411,16 @@ namespace WelfareLink.Services
             => await _http.DeleteAsync($"api/welfareapplicationapi/{id}");
 
         public async Task<IEnumerable<WelfareApplication>> GetApplicationsByCitizenIdAsync(int citizenId)
-            => await _http.GetFromJsonAsync<IEnumerable<WelfareApplication>>($"api/citizenapi/{citizenId}/applications", _json) ?? [];
+        {
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            return await userMgmtClient.GetFromJsonAsync<IEnumerable<WelfareApplication>>($"api/citizenapi/{citizenId}/applications", _json) ?? [];
+        }
 
         public async Task<(bool success, string? error)> ApplyForProgramAsync(int citizenId, int programId, int[] selectedDocumentIds)
         {
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
             var payload = new { CitizenID = citizenId, ProgramID = programId, SelectedDocumentIds = selectedDocumentIds };
-            var response = await _http.PostAsJsonAsync("api/citizenapi/apply", payload);
+            var response = await userMgmtClient.PostAsJsonAsync("api/citizenapi/apply", payload);
 
             try
             {
@@ -605,17 +611,27 @@ namespace WelfareLink.Services
         // CITIZEN
         // ──────────────────────────────────────────────
         public async Task<Citizen?> GetCitizenByIdAsync(int id)
-            => await _http.GetFromJsonAsync<Citizen>($"api/citizenapi/{id}", _json);
+        {
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            return await userMgmtClient.GetFromJsonAsync<Citizen>($"api/citizenapi/{id}", _json);
+        }
 
         public async Task<Citizen?> GetCitizenByUserIdAsync(int userId)
-            => await _http.GetFromJsonAsync<Citizen>($"api/citizenapi/by-user/{userId}", _json);
+        {
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            return await userMgmtClient.GetFromJsonAsync<Citizen>($"api/citizenapi/by-user/{userId}", _json);
+        }
 
         public async Task<CitizenDashboardData?> GetCitizenDashboardAsync(int citizenId)
-            => await _http.GetFromJsonAsync<CitizenDashboardData>($"api/citizenapi/{citizenId}/dashboard", _json);
+        {
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            return await userMgmtClient.GetFromJsonAsync<CitizenDashboardData>($"api/citizenapi/{citizenId}/dashboard", _json);
+        }
 
         public async Task<(bool success, string? error)> CreateCitizenProfileAsync(CreateCitizenViewModelWithCredentials model)
         {
-            var response = await _http.PostAsJsonAsync("api/citizenapi", new
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            var response = await userMgmtClient.PostAsJsonAsync("api/citizenapi", new
             {
                 model.Username,
                 model.Password,
@@ -671,7 +687,8 @@ namespace WelfareLink.Services
 
         public async Task<string?> UpdateCitizenProfileAsync(Citizen citizen)
         {
-            var response = await _http.PutAsJsonAsync($"api/citizenapi/{citizen.CitizenId}", citizen);
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            var response = await userMgmtClient.PutAsJsonAsync($"api/citizenapi/{citizen.CitizenId}", citizen);
 
             try
             {
@@ -716,7 +733,8 @@ namespace WelfareLink.Services
 
         public async Task<string?> UpdateCitizenApplicationAsync(WelfareApplication application)
         {
-            var response = await _http.PutAsJsonAsync($"api/citizenapi/application/{application.ApplicationID}", application);
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            var response = await userMgmtClient.PutAsJsonAsync($"api/citizenapi/application/{application.ApplicationID}", application);
 
             try
             {
@@ -764,24 +782,29 @@ namespace WelfareLink.Services
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<CitizenDocument>> GetDocumentsByCitizenIdAsync(int citizenId, string? status = null)
         {
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
             var url = string.IsNullOrEmpty(status)
                 ? $"api/citizendocumentapi/citizen/{citizenId}"
                 : $"api/citizendocumentapi/citizen/{citizenId}?status={status}";
-            return await _http.GetFromJsonAsync<IEnumerable<CitizenDocument>>(url, _json) ?? Enumerable.Empty<CitizenDocument>();
+            return await userMgmtClient.GetFromJsonAsync<IEnumerable<CitizenDocument>>(url, _json) ?? Enumerable.Empty<CitizenDocument>();
         }
 
         public async Task<CitizenDocument?> GetDocumentByIdAsync(int id)
-            => await _http.GetFromJsonAsync<CitizenDocument>($"api/citizendocumentapi/{id}", _json);
+        {
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            return await userMgmtClient.GetFromJsonAsync<CitizenDocument>($"api/citizendocumentapi/{id}", _json);
+        }
 
         public async Task<(bool success, string? error)> UploadDocumentAsync(int citizenId, string docType, string documentName, IFormFile file)
         {
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
             using var content = new MultipartFormDataContent();
             content.Add(new StringContent(citizenId.ToString()), "citizenId");
             content.Add(new StringContent(docType), "docType");
             content.Add(new StringContent(documentName), "documentName");
             using var stream = file.OpenReadStream();
             content.Add(new StreamContent(stream), "file", file.FileName);
-            var response = await _http.PostAsync("api/citizendocumentapi/upload", content);
+            var response = await userMgmtClient.PostAsync("api/citizendocumentapi/upload", content);
 
             try
             {
@@ -824,10 +847,11 @@ namespace WelfareLink.Services
 
         public async Task<(bool success, string? error)> ReuploadDocumentAsync(int documentId, IFormFile file)
         {
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
             using var content = new MultipartFormDataContent();
             using var stream = file.OpenReadStream();
             content.Add(new StreamContent(stream), "file", file.FileName);
-            var response = await _http.PutAsync($"api/citizendocumentapi/{documentId}/reupload", content);
+            var response = await userMgmtClient.PutAsync($"api/citizendocumentapi/{documentId}/reupload", content);
 
             try
             {
@@ -870,13 +894,15 @@ namespace WelfareLink.Services
 
         public async Task<bool> DeleteDocumentAsync(int id)
         {
-            var response = await _http.DeleteAsync($"api/citizendocumentapi/{id}");
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            var response = await userMgmtClient.DeleteAsync($"api/citizendocumentapi/{id}");
             return response.IsSuccessStatusCode;
         }
 
         public async Task<(byte[]? bytes, string? contentType, string? fileName)> GetDocumentFileAsync(int id)
         {
-            var response = await _http.GetAsync($"api/citizendocumentapi/{id}/file");
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            var response = await userMgmtClient.GetAsync($"api/citizendocumentapi/{id}/file");
             if (!response.IsSuccessStatusCode) return (null, null, null);
 
             var bytes = await response.Content.ReadAsByteArrayAsync();
@@ -889,8 +915,9 @@ namespace WelfareLink.Services
 
         public async Task<bool> UpdateDocumentVerificationStatusAsync(int id, string status)
         {
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
             var content = new StringContent(JsonSerializer.Serialize(status), Encoding.UTF8, "application/json");
-            var response = await _http.PatchAsync($"api/citizendocumentapi/{id}/verify", content);
+            var response = await userMgmtClient.PatchAsync($"api/citizendocumentapi/{id}/verify", content);
             return response.IsSuccessStatusCode;
         }
 
@@ -1052,7 +1079,8 @@ namespace WelfareLink.Services
         // ──────────────────────────────────────────────
         public async Task<(User? user, string? error)> CreateUserAsync(User user)
         {
-            var response = await _http.PostAsJsonAsync("api/userapi", user);
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            var response = await userMgmtClient.PostAsJsonAsync("api/userapi", user);
             if (response.IsSuccessStatusCode)
             {
                 try
@@ -1087,7 +1115,8 @@ namespace WelfareLink.Services
             var loginRequest = new { Username = username, Password = password, UserType = userType };
             try
             {
-                var response = await _http.PostAsJsonAsync("api/userapi/login", loginRequest);
+                var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+                var response = await userMgmtClient.PostAsJsonAsync("api/userapi/login", loginRequest);
                 var content = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -1132,7 +1161,8 @@ namespace WelfareLink.Services
 
         public async Task<(User? user, string? error)> GetUserAsync(int userId)
         {
-            var response = await _http.GetAsync($"api/userapi/{userId}");
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            var response = await userMgmtClient.GetAsync($"api/userapi/{userId}");
             if (response.IsSuccessStatusCode)
             {
                 try
@@ -1164,8 +1194,9 @@ namespace WelfareLink.Services
 
         public async Task<(User? user, string? error)> UpdateProfileAsync(int userId, string? fullName, string? email)
         {
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
             var updateRequest = new { FullName = fullName, Email = email };
-            var response = await _http.PutAsJsonAsync($"api/userapi/{userId}/profile", updateRequest);
+            var response = await userMgmtClient.PutAsJsonAsync($"api/userapi/{userId}/profile", updateRequest);
             if (response.IsSuccessStatusCode)
             {
                 try
@@ -1197,8 +1228,9 @@ namespace WelfareLink.Services
 
         public async Task<(bool success, string? error)> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
         {
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
             var changePasswordRequest = new { CurrentPassword = currentPassword, NewPassword = newPassword };
-            var response = await _http.PutAsJsonAsync($"api/userapi/{userId}/password", changePasswordRequest);
+            var response = await userMgmtClient.PutAsJsonAsync($"api/userapi/{userId}/password", changePasswordRequest);
             if (response.IsSuccessStatusCode)
                 return (true, null);
             try
@@ -1217,7 +1249,8 @@ namespace WelfareLink.Services
 
         public async Task<(bool success, string? error)> BlockUserAsync(int userId)
         {
-            var response = await _http.PutAsJsonAsync($"api/userapi/{userId}/block", new { });
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            var response = await userMgmtClient.PutAsJsonAsync($"api/userapi/{userId}/block", new { });
             if (response.IsSuccessStatusCode)
                 return (true, null);
             try
@@ -1236,7 +1269,8 @@ namespace WelfareLink.Services
 
         public async Task<(bool success, string? error)> UnblockUserAsync(int userId)
         {
-            var response = await _http.PutAsJsonAsync($"api/userapi/{userId}/unblock", new { });
+            var userMgmtClient = _httpClientFactory.CreateClient("UserManagement");
+            var response = await userMgmtClient.PutAsJsonAsync($"api/userapi/{userId}/unblock", new { });
             if (response.IsSuccessStatusCode)
                 return (true, null);
             try
