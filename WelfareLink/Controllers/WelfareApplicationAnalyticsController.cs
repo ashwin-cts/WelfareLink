@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WelfareLink.Services;
+using System.Text.Json;
 
 namespace WelfareLink.Controllers
 {
@@ -16,10 +17,41 @@ namespace WelfareLink.Controllers
         public async Task<IActionResult> Index()
         {
             var metrics = await _api.GetApplicationAnalyticsDashboardAsync();
-            if (metrics != null)
+
+            // Set default values if no data is returned
+            ViewBag.TotalApplications = 0;
+            ViewBag.PendingApplications = 0;
+            ViewBag.ApprovedApplications = 0;
+            ViewBag.RejectedApplications = 0;
+            ViewBag.ApplicationsByMonth = new List<object>();
+            ViewBag.StatusBreakdown = new List<object>();
+
+            if (metrics != null && metrics.Count > 0)
             {
                 foreach (var kvp in metrics)
-                    ViewData[kvp.Key] = kvp.Value;
+                {
+                    // Convert JsonElement values to proper types to avoid runtime binder exceptions
+                    var value = kvp.Value;
+                    if (value is System.Text.Json.JsonElement jsonElement)
+                    {
+                        if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.Number)
+                        {
+                            if (jsonElement.TryGetInt32(out int intVal))
+                                value = intVal;
+                            else if (jsonElement.TryGetDouble(out double doubleVal))
+                                value = doubleVal;
+                        }
+                        else if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.String)
+                        {
+                            value = jsonElement.GetString();
+                        }
+                        else if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.True || jsonElement.ValueKind == System.Text.Json.JsonValueKind.False)
+                        {
+                            value = jsonElement.GetBoolean();
+                        }
+                    }
+                    ViewBag[kvp.Key] = value;
+                }
             }
             return View();
         }
@@ -38,7 +70,7 @@ namespace WelfareLink.Controllers
             var trends = await _api.GetApplicationMonthlyTrendsAsync(targetYear);
             if (trends != null)
             {
-                ViewBag.Year = trends.GetValueOrDefault("Year");
+                ViewBag.Year = ConvertJsonElement(trends.GetValueOrDefault("Year"));
                 ViewBag.MonthlyData = trends.GetValueOrDefault("MonthlyData");
             }
             return View();
@@ -52,7 +84,7 @@ namespace WelfareLink.Controllers
             {
                 ViewBag.ResultBreakdown = report.GetValueOrDefault("ResultBreakdown");
                 ViewBag.ChecksByMonth = report.GetValueOrDefault("ChecksByMonth");
-                ViewBag.TotalApplicationsChecked = report.GetValueOrDefault("TotalApplicationsChecked");
+                ViewBag.TotalApplicationsChecked = ConvertJsonElement(report.GetValueOrDefault("TotalApplicationsChecked"));
             }
             return View();
         }
@@ -62,6 +94,34 @@ namespace WelfareLink.Controllers
         {
             TempData["InfoMessage"] = "Export functionality will be implemented soon.";
             return RedirectToAction(nameof(Index));
+        }
+
+        // Helper method to convert JsonElement to appropriate type
+        private static object? ConvertJsonElement(object? value)
+        {
+            if (value is JsonElement jsonElement)
+            {
+                if (jsonElement.ValueKind == JsonValueKind.Number)
+                {
+                    if (jsonElement.TryGetInt32(out int intVal))
+                        return intVal;
+                    else if (jsonElement.TryGetDouble(out double doubleVal))
+                        return doubleVal;
+                }
+                else if (jsonElement.ValueKind == JsonValueKind.String)
+                {
+                    return jsonElement.GetString();
+                }
+                else if (jsonElement.ValueKind == JsonValueKind.True || jsonElement.ValueKind == JsonValueKind.False)
+                {
+                    return jsonElement.GetBoolean();
+                }
+                else if (jsonElement.ValueKind == JsonValueKind.Null)
+                {
+                    return null;
+                }
+            }
+            return value;
         }
     }
 }

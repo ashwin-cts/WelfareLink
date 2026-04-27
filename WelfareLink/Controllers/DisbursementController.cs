@@ -37,24 +37,34 @@ namespace WelfareLink.Controllers
         public async Task<IActionResult> History(DateTime? startDate, DateTime? endDate, string? benefitType, int? officerId, string? status)
         {
             var disbursements = (await _api.GetAllDisbursementsAsync()).AsQueryable();
-            var benefits = await _api.GetAllBenefitsAsync();
+            var benefits = (await _api.GetAllBenefitsAsync()).ToDictionary(b => b.BenefitID);
 
-            if (startDate.HasValue) disbursements = disbursements.Where(d => d.Date >= startDate.Value);
-            if (endDate.HasValue) disbursements = disbursements.Where(d => d.Date <= endDate.Value);
-            if (!string.IsNullOrEmpty(benefitType)) disbursements = disbursements.Where(d => d.Benefit != null && d.Benefit.Type == benefitType);
-            if (officerId.HasValue) disbursements = disbursements.Where(d => d.OfficerID == officerId.Value);
-            if (!string.IsNullOrEmpty(status)) disbursements = disbursements.Where(d => d.Status == status);
+            // Enrich disbursements with benefit information
+            var enrichedDisbursements = disbursements.Select(d =>
+            {
+                if (benefits.TryGetValue(d.BenefitID, out var benefit))
+                {
+                    d.Benefit = benefit;
+                }
+                return d;
+            }).AsQueryable();
 
-            ViewBag.BenefitTypes = benefits.Select(b => b.Type).Distinct().ToList();
+            if (startDate.HasValue) enrichedDisbursements = enrichedDisbursements.Where(d => d.Date >= startDate.Value);
+            if (endDate.HasValue) enrichedDisbursements = enrichedDisbursements.Where(d => d.Date <= endDate.Value);
+            if (!string.IsNullOrEmpty(benefitType)) enrichedDisbursements = enrichedDisbursements.Where(d => d.Benefit != null && d.Benefit.Type == benefitType);
+            if (officerId.HasValue) enrichedDisbursements = enrichedDisbursements.Where(d => d.OfficerID == officerId.Value);
+            if (!string.IsNullOrEmpty(status)) enrichedDisbursements = enrichedDisbursements.Where(d => d.Status == status);
+
+            ViewBag.BenefitTypes = benefits.Values.Select(b => b.Type).Distinct().ToList();
             ViewBag.Statuses = new List<string> { "Completed", "Pending", "Failed" };
-            ViewBag.OfficerIds = disbursements.Select(d => d.OfficerID).Distinct().OrderBy(o => o).ToList();
+            ViewBag.OfficerIds = enrichedDisbursements.Select(d => d.OfficerID).Distinct().OrderBy(o => o).ToList();
             ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd");
             ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
             ViewBag.SelectedBenefitType = benefitType;
             ViewBag.SelectedOfficerId = officerId;
             ViewBag.SelectedStatus = status;
 
-            return View(disbursements.ToList());
+            return View(enrichedDisbursements.ToList());
         }
 
         // GET: Disbursement/Details/5

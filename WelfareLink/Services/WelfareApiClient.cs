@@ -983,8 +983,17 @@ namespace WelfareLink.Services
         // ──────────────────────────────────────────────
         public async Task<AnalyticsDashboardViewModel?> GetBenefitAnalyticsDashboardAsync()
         {
-            var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
-            return await analyticsClient.GetFromJsonAsync<AnalyticsDashboardViewModel>("api/benefitanalyticsapi/dashboard", _json);
+            try
+            {
+                var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
+                return await analyticsClient.GetFromJsonAsync<AnalyticsDashboardViewModel>("api/benefitanalyticsapi/dashboard", _json);
+            }
+            catch (HttpRequestException ex)
+            {
+                // Log the error or handle gracefully - return null to indicate failure
+                System.Diagnostics.Debug.WriteLine($"Error fetching benefit analytics: {ex.Message}");
+                return null;
+            }
         }
 
         // ──────────────────────────────────────────────
@@ -992,26 +1001,58 @@ namespace WelfareLink.Services
         // ──────────────────────────────────────────────
         public async Task<Dictionary<string, object>?> GetApplicationAnalyticsDashboardAsync()
         {
-            var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
-            return await analyticsClient.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/dashboard", _json);
+            try
+            {
+                var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
+                return await analyticsClient.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/dashboard", _json);
+            }
+            catch (HttpRequestException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching application analytics: {ex.Message}");
+                return null;
+            }
         }
 
         public async Task<IEnumerable<StatusBreakdownItem>> GetApplicationStatusBreakdownAsync()
         {
-            var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
-            return await analyticsClient.GetFromJsonAsync<IEnumerable<StatusBreakdownItem>>("api/welfareapplicationanalyticsapi/status-breakdown", _json) ?? Enumerable.Empty<StatusBreakdownItem>();
+            try
+            {
+                var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
+                return await analyticsClient.GetFromJsonAsync<IEnumerable<StatusBreakdownItem>>("api/welfareapplicationanalyticsapi/status-breakdown", _json) ?? Enumerable.Empty<StatusBreakdownItem>();
+            }
+            catch (HttpRequestException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching status breakdown: {ex.Message}");
+                return Enumerable.Empty<StatusBreakdownItem>();
+            }
         }
 
         public async Task<Dictionary<string, object>?> GetApplicationMonthlyTrendsAsync(int year)
         {
-            var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
-            return await analyticsClient.GetFromJsonAsync<Dictionary<string, object>>($"api/welfareapplicationanalyticsapi/monthly-trends?year={year}", _json);
+            try
+            {
+                var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
+                return await analyticsClient.GetFromJsonAsync<Dictionary<string, object>>($"api/welfareapplicationanalyticsapi/monthly-trends?year={year}", _json);
+            }
+            catch (HttpRequestException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching monthly trends: {ex.Message}");
+                return null;
+            }
         }
 
         public async Task<Dictionary<string, object>?> GetEligibilityReportAsync()
         {
-            var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
-            return await analyticsClient.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/eligibility-report", _json);
+            try
+            {
+                var analyticsClient = _httpClientFactory.CreateClient("AnalyticsAndReporting");
+                return await analyticsClient.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/eligibility-report", _json);
+            }
+            catch (HttpRequestException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching eligibility report: {ex.Message}");
+                return null;
+            }
         }
 
         // ──────────────────────────────────────────────
