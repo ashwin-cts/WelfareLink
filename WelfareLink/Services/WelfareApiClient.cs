@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using WelfareLink.Models;
@@ -17,7 +18,9 @@ namespace WelfareLink.Services
         private readonly HttpClient _http;
         private static readonly JsonSerializerOptions _json = new()
         {
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
         public WelfareApiClient(HttpClient http)
@@ -29,10 +32,10 @@ namespace WelfareLink.Services
         // BENEFIT
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<Benefit>> GetAllBenefitsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<Benefit>>("api/benefitapi") ?? Enumerable.Empty<Benefit>();
+            => await _http.GetFromJsonAsync<IEnumerable<Benefit>>("api/benefitapi", _json) ?? Enumerable.Empty<Benefit>();
 
         public async Task<Benefit?> GetBenefitByIdAsync(int id)
-            => await _http.GetFromJsonAsync<Benefit>($"api/benefitapi/{id}");
+            => await _http.GetFromJsonAsync<Benefit>($"api/benefitapi/{id}", _json);
 
         public async Task<bool> BenefitExistsAsync(int id)
             => (await GetBenefitByIdAsync(id)) != null;
@@ -42,11 +45,31 @@ namespace WelfareLink.Services
             var response = await _http.PostAsJsonAsync($"api/benefitapi?officerId={userId}", benefit);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<BenefitResponse>();
-                return (result?.Benefit, null);
+                try
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrWhiteSpace(content))
+                        return (null, null);
+                    var result = JsonSerializer.Deserialize<BenefitResponse>(content, _json);
+                    return (result?.Benefit, null);
+                }
+                catch
+                {
+                    return (null, null);
+                }
             }
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (null, err?.Error ?? "Failed to create benefit.");
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return (null, "Failed to create benefit.");
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return (null, err?.Error ?? "Failed to create benefit.");
+            }
+            catch
+            {
+                return (null, "Failed to create benefit.");
+            }
         }
 
         public async Task<(Benefit? benefit, string? error)> UpdateBenefitAsync(Benefit benefit, int userId)
@@ -54,11 +77,31 @@ namespace WelfareLink.Services
             var response = await _http.PutAsJsonAsync($"api/benefitapi/{benefit.BenefitID}?officerId={userId}", benefit);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<BenefitResponse>();
-                return (result?.Benefit, null);
+                try
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrWhiteSpace(content))
+                        return (null, null);
+                    var result = JsonSerializer.Deserialize<BenefitResponse>(content, _json);
+                    return (result?.Benefit, null);
+                }
+                catch
+                {
+                    return (null, null);
+                }
             }
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (null, err?.Error ?? "Failed to update benefit.");
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return (null, "Failed to update benefit.");
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return (null, err?.Error ?? "Failed to update benefit.");
+            }
+            catch
+            {
+                return (null, "Failed to update benefit.");
+            }
         }
 
         public async Task DeleteBenefitAsync(int id)
@@ -69,37 +112,57 @@ namespace WelfareLink.Services
             var url = selectedId.HasValue
                 ? $"api/benefitapi/dropdown?selectedId={selectedId}"
                 : "api/benefitapi/dropdown";
-            return await _http.GetFromJsonAsync<DropdownData>(url);
+            return await _http.GetFromJsonAsync<DropdownData>(url, _json);
         }
 
         public async Task<ProgramResourceInfo?> GetProgramResourceInfoAsync(int programId)
-            => await _http.GetFromJsonAsync<ProgramResourceInfo>($"api/benefitapi/program-resource-info/{programId}");
+            => await _http.GetFromJsonAsync<ProgramResourceInfo>($"api/benefitapi/program-resource-info/{programId}", _json);
 
         // ──────────────────────────────────────────────
         // DISBURSEMENT
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<Disbursement>> GetAllDisbursementsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<Disbursement>>("api/disbursementapi") ?? Enumerable.Empty<Disbursement>();
+            => await _http.GetFromJsonAsync<IEnumerable<Disbursement>>("api/disbursementapi", _json) ?? Enumerable.Empty<Disbursement>();
 
         public async Task<DisbursementDetail?> GetDisbursementByIdAsync(int id)
-            => await _http.GetFromJsonAsync<DisbursementDetail>($"api/disbursementapi/{id}");
+            => await _http.GetFromJsonAsync<DisbursementDetail>($"api/disbursementapi/{id}", _json);
 
         public async Task<IEnumerable<Disbursement>> GetDisbursementsByBenefitIdAsync(int benefitId)
-            => await _http.GetFromJsonAsync<IEnumerable<Disbursement>>($"api/disbursementapi/benefit/{benefitId}") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<Disbursement>>($"api/disbursementapi/benefit/{benefitId}", _json) ?? [];
 
         public async Task<BenefitDetails?> GetDisbursementBenefitDetailsAsync(int benefitId)
-            => await _http.GetFromJsonAsync<BenefitDetails>($"api/disbursementapi/benefit-details/{benefitId}");
+            => await _http.GetFromJsonAsync<BenefitDetails>($"api/disbursementapi/benefit-details/{benefitId}", _json);
 
         public async Task<(Disbursement? disbursement, string? error)> CreateDisbursementAsync(Disbursement disbursement)
         {
             var response = await _http.PostAsJsonAsync("api/disbursementapi", disbursement);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<DisbursementResponse>();
-                return (result?.Disbursement, null);
+                try
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrWhiteSpace(content))
+                        return (null, null);
+                    var result = JsonSerializer.Deserialize<DisbursementResponse>(content, _json);
+                    return (result?.Disbursement, null);
+                }
+                catch
+                {
+                    return (null, null);
+                }
             }
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (null, err?.Error ?? "Failed to create disbursement.");
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return (null, "Failed to create disbursement.");
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return (null, err?.Error ?? "Failed to create disbursement.");
+            }
+            catch
+            {
+                return (null, "Failed to create disbursement.");
+            }
         }
 
         public async Task<(Disbursement? disbursement, string? error)> UpdateDisbursementAsync(Disbursement disbursement)
@@ -107,11 +170,31 @@ namespace WelfareLink.Services
             var response = await _http.PutAsJsonAsync($"api/disbursementapi/{disbursement.DisbursementID}", disbursement);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<DisbursementResponse>();
-                return (result?.Disbursement, null);
+                try
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrWhiteSpace(content))
+                        return (null, null);
+                    var result = JsonSerializer.Deserialize<DisbursementResponse>(content, _json);
+                    return (result?.Disbursement, null);
+                }
+                catch
+                {
+                    return (null, null);
+                }
             }
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (null, err?.Error ?? "Failed to update disbursement.");
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return (null, "Failed to update disbursement.");
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return (null, err?.Error ?? "Failed to update disbursement.");
+            }
+            catch
+            {
+                return (null, "Failed to update disbursement.");
+            }
         }
 
         public async Task<bool> DisbursementExistsAsync(int id)
@@ -124,21 +207,31 @@ namespace WelfareLink.Services
         {
             var response = await _http.DeleteAsync($"api/disbursementapi/{id}");
             if (response.IsSuccessStatusCode) return null;
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return err?.Error ?? "Failed to delete disbursement.";
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return "Failed to delete disbursement.";
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return err?.Error ?? "Failed to delete disbursement.";
+            }
+            catch
+            {
+                return "Failed to delete disbursement.";
+            }
         }
 
         // ──────────────────────────────────────────────
         // ELIGIBILITY CHECK
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<EligibilityCheck>> GetAllChecksAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<EligibilityCheck>>("api/eligibilitycheckapi") ?? Enumerable.Empty<EligibilityCheck>();
+            => await _http.GetFromJsonAsync<IEnumerable<EligibilityCheck>>("api/eligibilitycheckapi", _json) ?? Enumerable.Empty<EligibilityCheck>();
 
         public async Task<EligibilityCheck?> GetCheckByIdAsync(int id)
-            => await _http.GetFromJsonAsync<EligibilityCheck>($"api/eligibilitycheckapi/{id}");
+            => await _http.GetFromJsonAsync<EligibilityCheck>($"api/eligibilitycheckapi/{id}", _json);
 
         public async Task<ApplicationInfo?> GetEligibilityApplicationInfoAsync(int applicationId)
-            => await _http.GetFromJsonAsync<ApplicationInfo>($"api/eligibilitycheckapi/application-info/{applicationId}");
+            => await _http.GetFromJsonAsync<ApplicationInfo>($"api/eligibilitycheckapi/application-info/{applicationId}", _json);
 
         public async Task<EligibilityCheck?> CreateCheckAsync(EligibilityCheck check, int? applicationId)
         {
@@ -147,8 +240,18 @@ namespace WelfareLink.Services
                 : "api/eligibilitycheckapi";
             var response = await _http.PostAsJsonAsync(url, check);
             if (!response.IsSuccessStatusCode) return null;
-            var result = await response.Content.ReadFromJsonAsync<EligibilityCheckResponse>();
-            return result?.Check;
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return null;
+                var result = JsonSerializer.Deserialize<EligibilityCheckResponse>(content, _json);
+                return result?.Check;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public async Task UpdateCheckAsync(EligibilityCheck check)
@@ -161,28 +264,98 @@ namespace WelfareLink.Services
         // RESOURCE
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<Resource>> GetAllResourcesAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<Resource>>("api/resourceapi") ?? Enumerable.Empty<Resource>();
+            => await _http.GetFromJsonAsync<IEnumerable<Resource>>("api/resourceapi", _json) ?? Enumerable.Empty<Resource>();
 
         public async Task<ProgramResourceDetail?> GetResourcesByProgramIdAsync(int programId)
-            => await _http.GetFromJsonAsync<ProgramResourceDetail>($"api/resourceapi/program/{programId}");
+            => await _http.GetFromJsonAsync<ProgramResourceDetail>($"api/resourceapi/program/{programId}", _json);
 
         public async Task<IEnumerable<ResourceUtilisationViewModel>> GetResourceUtilisationAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ResourceUtilisationViewModel>>("api/resourceapi/utilisation") ?? Enumerable.Empty<ResourceUtilisationViewModel>();
+            => await _http.GetFromJsonAsync<IEnumerable<ResourceUtilisationViewModel>>("api/resourceapi/utilisation", _json) ?? Enumerable.Empty<ResourceUtilisationViewModel>();
 
         public async Task<string?> AddResourceAsync(Resource resource)
         {
             var response = await _http.PostAsJsonAsync("api/resourceapi", resource);
-            if (response.IsSuccessStatusCode) return null;
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return err?.Error ?? "Failed to allocate resource.";
+
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    if (string.IsNullOrWhiteSpace(content))
+                        return null;
+
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<MessageResponse>(content, _json);
+                        return null;
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(content))
+                    return "Failed to allocate resource.";
+
+                try
+                {
+                    var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                    return err?.Error ?? "Failed to allocate resource.";
+                }
+                catch
+                {
+                    return "Failed to allocate resource.";
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                return $"Connection error: {ex.Message}";
+            }
         }
 
         public async Task<string?> UpdateResourceAsync(Resource resource)
         {
             var response = await _http.PutAsJsonAsync($"api/resourceapi/{resource.ResourceID}", resource);
-            if (response.IsSuccessStatusCode) return null;
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return err?.Error ?? "Failed to update resource.";
+
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    if (string.IsNullOrWhiteSpace(content))
+                        return null;
+
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<MessageResponse>(content, _json);
+                        return null;
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(content))
+                    return "Failed to update resource.";
+
+                try
+                {
+                    var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                    return err?.Error ?? "Failed to update resource.";
+                }
+                catch
+                {
+                    return "Failed to update resource.";
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                return $"Connection error: {ex.Message}";
+            }
         }
 
         // ──────────────────────────────────────────────
@@ -193,14 +366,14 @@ namespace WelfareLink.Services
             var url = string.IsNullOrEmpty(status)
                 ? "api/welfareapplicationapi"
                 : $"api/welfareapplicationapi?status={status}";
-            return await _http.GetFromJsonAsync<IEnumerable<WelfareApplication>>(url) ?? Enumerable.Empty<WelfareApplication>();
+            return await _http.GetFromJsonAsync<IEnumerable<WelfareApplication>>(url, _json) ?? Enumerable.Empty<WelfareApplication>();
         }
 
         public async Task<IEnumerable<WelfareApplication>> GetPendingApplicationsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<WelfareApplication>>("api/welfareapplicationapi/pending") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<WelfareApplication>>("api/welfareapplicationapi/pending", _json) ?? [];
 
         public async Task<WelfareApplication?> GetApplicationByIdAsync(int id)
-            => await _http.GetFromJsonAsync<WelfareApplication>($"api/welfareapplicationapi/{id}");
+            => await _http.GetFromJsonAsync<WelfareApplication>($"api/welfareapplicationapi/{id}", _json);
 
         public async Task<bool> ApplicationExistsAsync(int id)
             => (await GetApplicationByIdAsync(id)) != null;
@@ -209,8 +382,18 @@ namespace WelfareLink.Services
         {
             var response = await _http.PostAsJsonAsync("api/welfareapplicationapi", application);
             if (!response.IsSuccessStatusCode) return null;
-            var result = await response.Content.ReadFromJsonAsync<ApplicationResponse>();
-            return result?.Application;
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return null;
+                var result = JsonSerializer.Deserialize<ApplicationResponse>(content, _json);
+                return result?.Application;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public async Task UpdateApplicationAsync(WelfareApplication application)
@@ -226,67 +409,209 @@ namespace WelfareLink.Services
             => await _http.DeleteAsync($"api/welfareapplicationapi/{id}");
 
         public async Task<IEnumerable<WelfareApplication>> GetApplicationsByCitizenIdAsync(int citizenId)
-            => await _http.GetFromJsonAsync<IEnumerable<WelfareApplication>>($"api/citizenapi/{citizenId}/applications") ?? [];
+            => await _http.GetFromJsonAsync<IEnumerable<WelfareApplication>>($"api/citizenapi/{citizenId}/applications", _json) ?? [];
 
         public async Task<(bool success, string? error)> ApplyForProgramAsync(int citizenId, int programId, int[] selectedDocumentIds)
         {
             var payload = new { CitizenID = citizenId, ProgramID = programId, SelectedDocumentIds = selectedDocumentIds };
             var response = await _http.PostAsJsonAsync("api/citizenapi/apply", payload);
-            if (response.IsSuccessStatusCode) return (true, null);
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (false, err?.Error ?? "Failed to submit application.");
+
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Success - API returns { Message: "...", ApplicationID: 123 }
+                    if (string.IsNullOrWhiteSpace(content))
+                        return (true, null);
+
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<ApplicationSubmissionResponse>(content, _json);
+                        return (true, null);
+                    }
+                    catch
+                    {
+                        return (true, null);
+                    }
+                }
+
+                // Handle failure response
+                if (string.IsNullOrWhiteSpace(content))
+                    return (false, "Failed to submit application.");
+
+                try
+                {
+                    var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                    return (false, err?.Error ?? "Failed to submit application.");
+                }
+                catch
+                {
+                    return (false, "Failed to submit application.");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                return (false, $"Connection error: {ex.Message}");
+            }
         }
 
         // ──────────────────────────────────────────────
         // WELFARE PROGRAM
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<WelfareProgram>> GetAllProgramsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<WelfareProgram>>("api/welfareprogramapi") ?? Enumerable.Empty<WelfareProgram>();
+            => await _http.GetFromJsonAsync<IEnumerable<WelfareProgram>>("api/welfareprogramapi", _json) ?? Enumerable.Empty<WelfareProgram>();
 
         public async Task<ProgramDetailViewModel?> GetProgramByIdAsync(int id)
-            => await _http.GetFromJsonAsync<ProgramDetailViewModel>($"api/welfareprogramapi/{id}");
+            => await _http.GetFromJsonAsync<ProgramDetailViewModel>($"api/welfareprogramapi/{id}", _json);
 
         public async Task<BudgetDashboardViewModel?> GetBudgetMonitoringAsync()
-            => await _http.GetFromJsonAsync<BudgetDashboardViewModel>("api/welfareprogramapi/budget-monitoring");
+            => await _http.GetFromJsonAsync<BudgetDashboardViewModel>("api/welfareprogramapi/budget-monitoring", _json);
 
         public async Task<IEnumerable<ProgramPerformanceViewModel>> GetProgramPerformanceAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ProgramPerformanceViewModel>>("api/welfareprogramapi/performance") ?? Enumerable.Empty<ProgramPerformanceViewModel>();
+            => await _http.GetFromJsonAsync<IEnumerable<ProgramPerformanceViewModel>>("api/welfareprogramapi/performance", _json) ?? Enumerable.Empty<ProgramPerformanceViewModel>();
 
         public async Task<string?> AddProgramAsync(WelfareProgram program)
         {
             var response = await _http.PostAsJsonAsync("api/welfareprogramapi", program);
-            if (response.IsSuccessStatusCode) return null;
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return err?.Error ?? "Failed to create program.";
+
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    if (string.IsNullOrWhiteSpace(content))
+                        return null;
+
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<MessageResponse>(content, _json);
+                        return null;
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(content))
+                    return "Failed to create program.";
+
+                try
+                {
+                    var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                    return err?.Error ?? "Failed to create program.";
+                }
+                catch
+                {
+                    return "Failed to create program.";
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                return $"Connection error: {ex.Message}";
+            }
         }
 
         public async Task<string?> UpdateProgramAsync(WelfareProgram program)
         {
             var response = await _http.PutAsJsonAsync($"api/welfareprogramapi/{program.ProgramID}", program);
-            if (response.IsSuccessStatusCode) return null;
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return err?.Error ?? "Failed to update program.";
+
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    if (string.IsNullOrWhiteSpace(content))
+                        return null;
+
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<MessageResponse>(content, _json);
+                        return null;
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(content))
+                    return "Failed to update program.";
+
+                try
+                {
+                    var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                    return err?.Error ?? "Failed to update program.";
+                }
+                catch
+                {
+                    return "Failed to update program.";
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                return $"Connection error: {ex.Message}";
+            }
         }
 
         public async Task<string?> SuspendProgramAsync(int id)
         {
             var response = await _http.PatchAsync($"api/welfareprogramapi/{id}/suspend", null);
-            if (response.IsSuccessStatusCode) return null;
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return err?.Error ?? "Failed to suspend programme.";
+
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    if (string.IsNullOrWhiteSpace(content))
+                        return null;
+
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<MessageResponse>(content, _json);
+                        return null;
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(content))
+                    return "Failed to suspend programme.";
+
+                try
+                {
+                    var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                    return err?.Error ?? "Failed to suspend programme.";
+                }
+                catch
+                {
+                    return "Failed to suspend programme.";
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                return $"Connection error: {ex.Message}";
+            }
         }
 
         // ──────────────────────────────────────────────
         // CITIZEN
         // ──────────────────────────────────────────────
         public async Task<Citizen?> GetCitizenByIdAsync(int id)
-            => await _http.GetFromJsonAsync<Citizen>($"api/citizenapi/{id}");
+            => await _http.GetFromJsonAsync<Citizen>($"api/citizenapi/{id}", _json);
 
         public async Task<Citizen?> GetCitizenByUserIdAsync(int userId)
-            => await _http.GetFromJsonAsync<Citizen>($"api/citizenapi/by-user/{userId}");
+            => await _http.GetFromJsonAsync<Citizen>($"api/citizenapi/by-user/{userId}", _json);
 
         public async Task<CitizenDashboardData?> GetCitizenDashboardAsync(int citizenId)
-            => await _http.GetFromJsonAsync<CitizenDashboardData>($"api/citizenapi/{citizenId}/dashboard");
+            => await _http.GetFromJsonAsync<CitizenDashboardData>($"api/citizenapi/{citizenId}/dashboard", _json);
 
         public async Task<(bool success, string? error)> CreateCitizenProfileAsync(CreateCitizenViewModelWithCredentials model)
         {
@@ -301,25 +626,137 @@ namespace WelfareLink.Services
                 model.ContactInfo,
                 model.Gender
             });
-            if (response.IsSuccessStatusCode) return (true, null);
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (false, err?.Error ?? "Failed to create profile.");
+
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    if (string.IsNullOrWhiteSpace(content))
+                        return (true, null);
+
+                    // Try to deserialize the success response to extract CitizenId if needed
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<CreateProfileResponse>(content, _json);
+                        return (true, null);
+                    }
+                    catch
+                    {
+                        // If deserialization fails but status is success, still consider it success
+                        return (true, null);
+                    }
+                }
+
+                // Handle failure response
+                if (string.IsNullOrWhiteSpace(content))
+                    return (false, "Failed to create profile.");
+
+                try
+                {
+                    var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                    return (false, err?.Error ?? "Failed to create profile.");
+                }
+                catch
+                {
+                    return (false, "Failed to create profile.");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                return (false, $"Connection error: {ex.Message}");
+            }
         }
 
         public async Task<string?> UpdateCitizenProfileAsync(Citizen citizen)
         {
             var response = await _http.PutAsJsonAsync($"api/citizenapi/{citizen.CitizenId}", citizen);
-            if (response.IsSuccessStatusCode) return null;
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return err?.Error ?? "Failed to update profile.";
+
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Success - API returns { Message: "..." }
+                    if (string.IsNullOrWhiteSpace(content))
+                        return null;
+
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<MessageResponse>(content, _json);
+                        return null; // Success
+                    }
+                    catch
+                    {
+                        return null; // Treat as success even if deserialization fails
+                    }
+                }
+
+                // Handle failure response
+                if (string.IsNullOrWhiteSpace(content))
+                    return "Failed to update profile.";
+
+                try
+                {
+                    var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                    return err?.Error ?? "Failed to update profile.";
+                }
+                catch
+                {
+                    return "Failed to update profile.";
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                return $"Connection error: {ex.Message}";
+            }
         }
 
         public async Task<string?> UpdateCitizenApplicationAsync(WelfareApplication application)
         {
             var response = await _http.PutAsJsonAsync($"api/citizenapi/application/{application.ApplicationID}", application);
-            if (response.IsSuccessStatusCode) return null;
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return err?.Error ?? "Failed to update application.";
+
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Success - API returns { Message: "..." }
+                    if (string.IsNullOrWhiteSpace(content))
+                        return null;
+
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<MessageResponse>(content, _json);
+                        return null; // Success
+                    }
+                    catch
+                    {
+                        return null; // Treat as success even if deserialization fails
+                    }
+                }
+
+                // Handle failure response
+                if (string.IsNullOrWhiteSpace(content))
+                    return "Failed to update application.";
+
+                try
+                {
+                    var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                    return err?.Error ?? "Failed to update application.";
+                }
+                catch
+                {
+                    return "Failed to update application.";
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                return $"Connection error: {ex.Message}";
+            }
         }
 
         // ──────────────────────────────────────────────
@@ -330,11 +767,11 @@ namespace WelfareLink.Services
             var url = string.IsNullOrEmpty(status)
                 ? $"api/citizendocumentapi/citizen/{citizenId}"
                 : $"api/citizendocumentapi/citizen/{citizenId}?status={status}";
-            return await _http.GetFromJsonAsync<IEnumerable<CitizenDocument>>(url) ?? Enumerable.Empty<CitizenDocument>();
+            return await _http.GetFromJsonAsync<IEnumerable<CitizenDocument>>(url, _json) ?? Enumerable.Empty<CitizenDocument>();
         }
 
         public async Task<CitizenDocument?> GetDocumentByIdAsync(int id)
-            => await _http.GetFromJsonAsync<CitizenDocument>($"api/citizendocumentapi/{id}");
+            => await _http.GetFromJsonAsync<CitizenDocument>($"api/citizendocumentapi/{id}", _json);
 
         public async Task<(bool success, string? error)> UploadDocumentAsync(int citizenId, string docType, string documentName, IFormFile file)
         {
@@ -345,9 +782,44 @@ namespace WelfareLink.Services
             using var stream = file.OpenReadStream();
             content.Add(new StreamContent(stream), "file", file.FileName);
             var response = await _http.PostAsync("api/citizendocumentapi/upload", content);
-            if (response.IsSuccessStatusCode) return (true, null);
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (false, err?.Error ?? "Failed to upload document.");
+
+            try
+            {
+                var contentStr = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    if (string.IsNullOrWhiteSpace(contentStr))
+                        return (true, null);
+
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<MessageResponse>(contentStr, _json);
+                        return (true, null);
+                    }
+                    catch
+                    {
+                        return (true, null);
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(contentStr))
+                    return (false, "Failed to upload document.");
+
+                try
+                {
+                    var err = JsonSerializer.Deserialize<ErrorResponse>(contentStr, _json);
+                    return (false, err?.Error ?? "Failed to upload document.");
+                }
+                catch
+                {
+                    return (false, "Failed to upload document.");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                return (false, $"Connection error: {ex.Message}");
+            }
         }
 
         public async Task<(bool success, string? error)> ReuploadDocumentAsync(int documentId, IFormFile file)
@@ -356,9 +828,44 @@ namespace WelfareLink.Services
             using var stream = file.OpenReadStream();
             content.Add(new StreamContent(stream), "file", file.FileName);
             var response = await _http.PutAsync($"api/citizendocumentapi/{documentId}/reupload", content);
-            if (response.IsSuccessStatusCode) return (true, null);
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (false, err?.Error ?? "Failed to reupload document.");
+
+            try
+            {
+                var contentStr = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    if (string.IsNullOrWhiteSpace(contentStr))
+                        return (true, null);
+
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<MessageResponse>(contentStr, _json);
+                        return (true, null);
+                    }
+                    catch
+                    {
+                        return (true, null);
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(contentStr))
+                    return (false, "Failed to reupload document.");
+
+                try
+                {
+                    var err = JsonSerializer.Deserialize<ErrorResponse>(contentStr, _json);
+                    return (false, err?.Error ?? "Failed to reupload document.");
+                }
+                catch
+                {
+                    return (false, "Failed to reupload document.");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                return (false, $"Connection error: {ex.Message}");
+            }
         }
 
         public async Task<bool> DeleteDocumentAsync(int id)
@@ -391,43 +898,43 @@ namespace WelfareLink.Services
         // BENEFIT ANALYTICS
         // ──────────────────────────────────────────────
         public async Task<AnalyticsDashboardViewModel?> GetBenefitAnalyticsDashboardAsync()
-            => await _http.GetFromJsonAsync<AnalyticsDashboardViewModel>("api/benefitanalyticsapi/dashboard");
+            => await _http.GetFromJsonAsync<AnalyticsDashboardViewModel>("api/benefitanalyticsapi/dashboard", _json);
 
         // ──────────────────────────────────────────────
         // WELFARE APPLICATION ANALYTICS
         // ──────────────────────────────────────────────
         public async Task<Dictionary<string, object>?> GetApplicationAnalyticsDashboardAsync()
-            => await _http.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/dashboard");
+            => await _http.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/dashboard", _json);
 
         public async Task<IEnumerable<StatusBreakdownItem>> GetApplicationStatusBreakdownAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<StatusBreakdownItem>>("api/welfareapplicationanalyticsapi/status-breakdown") ?? Enumerable.Empty<StatusBreakdownItem>();
+            => await _http.GetFromJsonAsync<IEnumerable<StatusBreakdownItem>>("api/welfareapplicationanalyticsapi/status-breakdown", _json) ?? Enumerable.Empty<StatusBreakdownItem>();
 
         public async Task<Dictionary<string, object>?> GetApplicationMonthlyTrendsAsync(int year)
-            => await _http.GetFromJsonAsync<Dictionary<string, object>>($"api/welfareapplicationanalyticsapi/monthly-trends?year={year}");
+            => await _http.GetFromJsonAsync<Dictionary<string, object>>($"api/welfareapplicationanalyticsapi/monthly-trends?year={year}", _json);
 
         public async Task<Dictionary<string, object>?> GetEligibilityReportAsync()
-            => await _http.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/eligibility-report");
+            => await _http.GetFromJsonAsync<Dictionary<string, object>>("api/welfareapplicationanalyticsapi/eligibility-report", _json);
 
         // ──────────────────────────────────────────────
         // AUDIT LOG
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<AuditLog>> GetAllAuditLogsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<AuditLog>>("api/auditlogapi") ?? Enumerable.Empty<AuditLog>();
+            => await _http.GetFromJsonAsync<IEnumerable<AuditLog>>("api/auditlogapi", _json) ?? Enumerable.Empty<AuditLog>();
 
         public async Task<AuditLogPagedResponse?> GetPagedAuditLogsAsync(int pageNumber = 1, int pageSize = 10)
-            => await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged?pageNumber={pageNumber}&pageSize={pageSize}");
+            => await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged?pageNumber={pageNumber}&pageSize={pageSize}", _json);
 
         public async Task<AuditLogPagedResponse?> GetPagedAuditLogsByEntityTypeAsync(string entityType, int pageNumber = 1, int pageSize = 10)
-            => await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/entity/{entityType}?pageNumber={pageNumber}&pageSize={pageSize}");
+            => await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/entity/{entityType}?pageNumber={pageNumber}&pageSize={pageSize}", _json);
 
         public async Task<AuditLogPagedResponse?> GetPagedAuditLogsByActionAsync(string action, int pageNumber = 1, int pageSize = 10)
-            => await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/action/{action}?pageNumber={pageNumber}&pageSize={pageSize}");
+            => await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/action/{action}?pageNumber={pageNumber}&pageSize={pageSize}", _json);
 
         public async Task<AuditLogPagedResponse?> GetPagedAuditLogsByDateRangeAsync(DateTime startDate, DateTime endDate, int pageNumber = 1, int pageSize = 10)
         {
             var start = startDate.ToString("yyyy-MM-dd");
             var end = endDate.ToString("yyyy-MM-dd");
-            return await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/date-range?startDate={start}&endDate={end}&pageNumber={pageNumber}&pageSize={pageSize}");
+            return await _http.GetFromJsonAsync<AuditLogPagedResponse>($"api/auditlogapi/paged/date-range?startDate={start}&endDate={end}&pageNumber={pageNumber}&pageSize={pageSize}", _json);
         }
 
         public async Task<bool> CreateAuditLogAsync(int? userId, string action, string entityType, int entityId, string description)
@@ -441,21 +948,44 @@ namespace WelfareLink.Services
         // AUDIT (Government Auditor)
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<ProgramAuditSummary>> GetGovernmentAuditorDashboardAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ProgramAuditSummary>>("api/auditapi/dashboard") ?? Enumerable.Empty<ProgramAuditSummary>();
+            => await _http.GetFromJsonAsync<IEnumerable<ProgramAuditSummary>>("api/auditapi/dashboard", _json) ?? Enumerable.Empty<ProgramAuditSummary>();
 
         public async Task<IEnumerable<Audit>> GetAllAuditsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<Audit>>("api/auditapi") ?? Enumerable.Empty<Audit>();
+            => await _http.GetFromJsonAsync<IEnumerable<Audit>>("api/auditapi", _json) ?? Enumerable.Empty<Audit>();
 
         public async Task<Audit?> GetAuditByIdAsync(int id)
-            => await _http.GetFromJsonAsync<Audit>($"api/auditapi/{id}");
+            => await _http.GetFromJsonAsync<Audit>($"api/auditapi/{id}", _json);
 
         public async Task<(Audit? audit, string? error)> CreateAuditAsync(Audit audit)
         {
             var response = await _http.PostAsJsonAsync("api/auditapi", audit);
             if (response.IsSuccessStatusCode)
-                return (await response.Content.ReadFromJsonAsync<Audit>(_json), null);
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (null, err?.Error ?? "Failed to create audit.");
+            {
+                try
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrWhiteSpace(content))
+                        return (null, null);
+                    var result = JsonSerializer.Deserialize<Audit>(content, _json);
+                    return (result, null);
+                }
+                catch
+                {
+                    return (null, null);
+                }
+            }
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return (null, "Failed to create audit.");
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return (null, err?.Error ?? "Failed to create audit.");
+            }
+            catch
+            {
+                return (null, "Failed to create audit.");
+            }
         }
 
         public async Task<bool> UpdateAuditStatusAsync(int id, string status)
@@ -469,21 +999,44 @@ namespace WelfareLink.Services
         // COMPLIANCE RECORD
         // ──────────────────────────────────────────────
         public async Task<IEnumerable<ComplianceRecord>> GetAllComplianceRecordsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi") ?? Enumerable.Empty<ComplianceRecord>();
+            => await _http.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi", _json) ?? Enumerable.Empty<ComplianceRecord>();
 
         public async Task<IEnumerable<ComplianceRecord>> GetOpenComplianceRecordsAsync()
-            => await _http.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi/open") ?? Enumerable.Empty<ComplianceRecord>();
+            => await _http.GetFromJsonAsync<IEnumerable<ComplianceRecord>>("api/complaincerecordapi/open", _json) ?? Enumerable.Empty<ComplianceRecord>();
 
         public async Task<ComplianceRecord?> GetComplianceRecordByIdAsync(int id)
-            => await _http.GetFromJsonAsync<ComplianceRecord>($"api/complaincerecordapi/{id}");
+            => await _http.GetFromJsonAsync<ComplianceRecord>($"api/complaincerecordapi/{id}", _json);
 
         public async Task<(ComplianceRecord? record, string? error)> CreateComplianceRecordAsync(ComplianceRecord record)
         {
             var response = await _http.PostAsJsonAsync("api/complaincerecordapi", record);
             if (response.IsSuccessStatusCode)
-                return (await response.Content.ReadFromJsonAsync<ComplianceRecord>(_json), null);
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (null, err?.Error ?? "Failed to create compliance record.");
+            {
+                try
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrWhiteSpace(content))
+                        return (null, null);
+                    var result = JsonSerializer.Deserialize<ComplianceRecord>(content, _json);
+                    return (result, null);
+                }
+                catch
+                {
+                    return (null, null);
+                }
+            }
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return (null, "Failed to create compliance record.");
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return (null, err?.Error ?? "Failed to create compliance record.");
+            }
+            catch
+            {
+                return (null, "Failed to create compliance record.");
+            }
         }
 
         public async Task<bool> UpdateComplianceStatusAsync(int id, string status, int? resolvedByUserId, string? notes)
@@ -502,24 +1055,79 @@ namespace WelfareLink.Services
             var response = await _http.PostAsJsonAsync("api/userapi", user);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<User>(_json);
-                return (result, null);
+                try
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrWhiteSpace(content))
+                        return (null, "Server returned empty response.");
+                    var result = JsonSerializer.Deserialize<User>(content, _json);
+                    return (result, null);
+                }
+                catch (JsonException ex)
+                {
+                    return (null, $"Invalid JSON response: {ex.Message}");
+                }
             }
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (null, err?.Error ?? "Failed to create user.");
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return (null, "Failed to create user.");
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return (null, err?.Error ?? "Failed to create user.");
+            }
+            catch
+            {
+                return (null, "Failed to create user.");
+            }
         }
 
         public async Task<(User? user, string? error)> LoginAsync(string username, string password, string userType)
         {
             var loginRequest = new { Username = username, Password = password, UserType = userType };
-            var response = await _http.PostAsJsonAsync("api/userapi/login", loginRequest);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var result = await response.Content.ReadFromJsonAsync<User>(_json);
-                return (result, null);
+                var response = await _http.PostAsJsonAsync("api/userapi/login", loginRequest);
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    if (string.IsNullOrWhiteSpace(content))
+                        return (null, "Server returned empty response. Please check if the API is running correctly.");
+
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<User>(content, _json);
+                        return (result, null);
+                    }
+                    catch (JsonException ex)
+                    {
+                        return (null, $"Invalid response from server: {ex.Message}");
+                    }
+                }
+
+                // Failure response
+                if (string.IsNullOrWhiteSpace(content))
+                    return (null, "Invalid username or password");
+
+                try
+                {
+                    var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                    return (null, err?.Error ?? "Invalid username or password");
+                }
+                catch
+                {
+                    return (null, "Invalid username or password");
+                }
             }
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (null, err?.Error ?? "Invalid username or password");
+            catch (HttpRequestException ex)
+            {
+                return (null, $"Connection error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return (null, $"Error: {ex.Message}");
+            }
         }
 
         public async Task<(User? user, string? error)> GetUserAsync(int userId)
@@ -527,11 +1135,31 @@ namespace WelfareLink.Services
             var response = await _http.GetAsync($"api/userapi/{userId}");
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<User>(_json);
-                return (result, null);
+                try
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrWhiteSpace(content))
+                        return (null, null);
+                    var result = JsonSerializer.Deserialize<User>(content, _json);
+                    return (result, null);
+                }
+                catch
+                {
+                    return (null, null);
+                }
             }
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (null, err?.Error ?? "User not found");
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return (null, "User not found");
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return (null, err?.Error ?? "User not found");
+            }
+            catch
+            {
+                return (null, "User not found");
+            }
         }
 
         public async Task<(User? user, string? error)> UpdateProfileAsync(int userId, string? fullName, string? email)
@@ -540,11 +1168,31 @@ namespace WelfareLink.Services
             var response = await _http.PutAsJsonAsync($"api/userapi/{userId}/profile", updateRequest);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<User>(_json);
-                return (result, null);
+                try
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrWhiteSpace(content))
+                        return (null, null);
+                    var result = JsonSerializer.Deserialize<User>(content, _json);
+                    return (result, null);
+                }
+                catch
+                {
+                    return (null, null);
+                }
             }
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (null, err?.Error ?? "Failed to update profile");
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return (null, "Failed to update profile");
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return (null, err?.Error ?? "Failed to update profile");
+            }
+            catch
+            {
+                return (null, "Failed to update profile");
+            }
         }
 
         public async Task<(bool success, string? error)> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
@@ -552,33 +1200,57 @@ namespace WelfareLink.Services
             var changePasswordRequest = new { CurrentPassword = currentPassword, NewPassword = newPassword };
             var response = await _http.PutAsJsonAsync($"api/userapi/{userId}/password", changePasswordRequest);
             if (response.IsSuccessStatusCode)
-            {
                 return (true, null);
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return (false, "Failed to change password");
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return (false, err?.Error ?? "Failed to change password");
             }
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (false, err?.Error ?? "Failed to change password");
+            catch
+            {
+                return (false, "Failed to change password");
+            }
         }
 
         public async Task<(bool success, string? error)> BlockUserAsync(int userId)
         {
             var response = await _http.PutAsJsonAsync($"api/userapi/{userId}/block", new { });
             if (response.IsSuccessStatusCode)
-            {
                 return (true, null);
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return (false, "Failed to block user");
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return (false, err?.Error ?? "Failed to block user");
             }
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (false, err?.Error ?? "Failed to block user");
+            catch
+            {
+                return (false, "Failed to block user");
+            }
         }
 
         public async Task<(bool success, string? error)> UnblockUserAsync(int userId)
         {
             var response = await _http.PutAsJsonAsync($"api/userapi/{userId}/unblock", new { });
             if (response.IsSuccessStatusCode)
-            {
                 return (true, null);
+            try
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(content))
+                    return (false, "Failed to unblock user");
+                var err = JsonSerializer.Deserialize<ErrorResponse>(content, _json);
+                return (false, err?.Error ?? "Failed to unblock user");
             }
-            var err = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return (false, err?.Error ?? "Failed to unblock user");
+            catch
+            {
+                return (false, "Failed to unblock user");
+            }
         }
     }
 

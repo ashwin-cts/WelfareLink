@@ -1,0 +1,6 @@
+@WelfareLink.Operations.API_HostAddress = http://localhost:5072
+
+GET {{WelfareLink.Operations.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -12,10 +12,10 @@ namespace WelfareLink
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // Add MVC
             builder.Services.AddControllersWithViews();
 
-            // Configure JSON serialization options
+            // JSON options
             var jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
@@ -23,7 +23,7 @@ namespace WelfareLink
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
 
-            // Add Session support
+            // Session
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
@@ -32,55 +32,118 @@ namespace WelfareLink
                 options.Cookie.IsEssential = true;
             });
 
-            // DB context kept only for AccountController and AdminController (login/auth)
+            // DB context (only for auth/admin)
             builder.Services.AddDbContext<WelfareLinkDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // Register typed HttpClient pointing at the API
-            var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"]
-                             ?? throw new InvalidOperationException("ApiSettings:BaseUrl is not configured.");
-
+            // -----------------------------
+            // HttpClients
+            // -----------------------------
+            //Typed HttpClient for WelfareApiClient
             builder.Services.AddHttpClient<WelfareApiClient>(client =>
             {
-                client.BaseAddress = new Uri(apiBaseUrl);
-            }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-            {
-                // Accept self-signed certs in development
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            });
+                client.BaseAddress = new Uri(
+                    builder.Configuration["ApiSettings:WApplicationSystem"]
+                    ?? throw new InvalidOperationException("ApiSettings:WApplicationSystem is not configured."));
+            })
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                });
 
-            // Register HttpClient for dashboard controllers with case-insensitive JSON deserialization
-            builder.Services.AddHttpClient("DashboardClient", client =>
+            builder.Services.AddHttpClient("UserManagement", client =>
             {
-                client.BaseAddress = new Uri(apiBaseUrl);
-            }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            });
+                client.BaseAddress = new Uri(
+                    builder.Configuration["ApiSettings:UserManagement"]
+                    ?? throw new InvalidOperationException("ApiSettings:UserManagement is not configured."));
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                });
 
+            builder.Services.AddHttpClient("BenefitsAndEligibility", client =>
+            {
+                client.BaseAddress = new Uri(
+                    builder.Configuration["ApiSettings:BenefitsAndEligibility"]
+                    ?? throw new InvalidOperationException("ApiSettings:BenefitsAndEligibility is not configured."));
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                });
+
+            builder.Services.AddHttpClient("WApplicationSystem", client =>
+            {
+                client.BaseAddress = new Uri(
+                    builder.Configuration["ApiSettings:WApplicationSystem"]
+                    ?? throw new InvalidOperationException("ApiSettings:WApplicationSystem is not configured."));
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                });
+
+            builder.Services.AddHttpClient("ComplianceAndAuditLog", client =>
+            {
+                client.BaseAddress = new Uri(
+                    builder.Configuration["ApiSettings:ComplianceAndAuditLog"]
+                    ?? throw new InvalidOperationException("ApiSettings:ComplianceAndAuditLog is not configured."));
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                });
+
+            builder.Services.AddHttpClient("Operations", client =>
+            {
+                client.BaseAddress = new Uri(
+                    builder.Configuration["ApiSettings:Operations"]
+                    ?? throw new InvalidOperationException("ApiSettings:Operations is not configured."));
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                });
+
+            builder.Services.AddHttpClient("AnalyticsAndReporting", client =>
+            {
+                client.BaseAddress = new Uri(
+                    builder.Configuration["ApiSettings:AnalyticsAndReporting"]
+                    ?? throw new InvalidOperationException("ApiSettings:AnalyticsAndReporting is not configured."));
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                });
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Middleware
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
             app.UseRouting();
-
             app.UseSession();
-
             app.UseAuthorization();
 
-            app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Account}/{action=Login}/{id?}")
-                .WithStaticAssets();
+                pattern: "{controller=Account}/{action=Login}/{id?}");
 
             app.Run();
         }
