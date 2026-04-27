@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using WelfareLink.Models;
 using WelfareLink.Services;
 
@@ -6,11 +9,34 @@ namespace WelfareLink.Controllers
 {
     public class AuditorController : Controller
     {
-        private readonly WelfareApiClient _api;
-
-        public AuditorController(WelfareApiClient apiClient)
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly WelfareApiClient _apiClient;
+        private static readonly JsonSerializerOptions _jsonOptions = new()
         {
-            _api = apiClient;
+            PropertyNameCaseInsensitive = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        public AuditorController(IHttpClientFactory httpClientFactory, WelfareApiClient apiClient)
+        {
+            _httpClientFactory = httpClientFactory;
+            _apiClient = apiClient;
+        }
+
+        private async Task<List<T>> DeserializeResponse<T>(HttpResponseMessage response)
+        {
+            if (!response.IsSuccessStatusCode)
+                return new List<T>();
+
+            var json = await response.Content.ReadAsStringAsync();
+            try
+            {
+                return JsonSerializer.Deserialize<List<T>>(json, _jsonOptions) ?? new List<T>();
+            }
+            catch
+            {
+                return new List<T>();
+            }
         }
 
         private bool CheckAuthorization()
@@ -36,25 +62,25 @@ namespace WelfareLink.Controllers
             {
                 dynamic dashboardData = new System.Dynamic.ExpandoObject();
 
-                // Get applications
-                var applications = (await _api.GetAllApplicationsAsync()).ToList();
+                // Get applications using the API client
+                var applications = (await _apiClient.GetAllApplicationsAsync()).ToList();
                 dashboardData.TotalApplications = applications.Count;
 
-                // Get programs
-                var programs = (await _api.GetAllProgramsAsync()).ToList();
+                // Get programs using the API client
+                var programs = (await _apiClient.GetAllProgramsAsync()).ToList();
                 dashboardData.TotalPrograms = programs.Count;
 
                 // Calculate total budget
                 decimal totalBudget = programs.Sum(p => p.Budget);
                 dashboardData.TotalBudget = totalBudget;
 
-                // Get resources
-                var resources = (await _api.GetAllResourcesAsync()).ToList();
-                decimal totalResource = resources.Sum(r => r.Quantity);
+                // Get resources using the API client
+                var resources = (await _apiClient.GetAllResourcesAsync()).ToList();
+                decimal totalResource = resources.Sum(r => (decimal)r.Quantity);
                 dashboardData.TotalResource = totalResource;
 
-                // Get disbursements
-                var disbursements = (await _api.GetAllDisbursementsAsync()).ToList();
+                // Get disbursements using the API client
+                var disbursements = (await _apiClient.GetAllDisbursementsAsync()).ToList();
                 decimal totalDisbursement = (decimal)disbursements.Sum(d => d.Amount);
                 dashboardData.TotalDisbursement = totalDisbursement;
 
@@ -63,14 +89,7 @@ namespace WelfareLink.Controllers
             catch (Exception ex)
             {
                 ViewBag.Error = $"Error loading dashboard: {ex.Message}";
-                dynamic emptyData = new System.Dynamic.ExpandoObject();
-                var dict = (IDictionary<string, object>)emptyData;
-                dict["TotalApplications"] = 0;
-                dict["TotalPrograms"] = 0;
-                dict["TotalBudget"] = 0;
-                dict["TotalResource"] = 0;
-                dict["TotalDisbursement"] = 0;
-                return View(emptyData);
+                return View();
             }
         }
 
@@ -85,11 +104,19 @@ namespace WelfareLink.Controllers
 
             try
             {
-                var programs = (await _api.GetAllProgramsAsync()).ToList();
-                var applications = (await _api.GetAllApplicationsAsync()).ToList();
-                var benefits = (await _api.GetAllBenefitsAsync()).ToList();
-                var disbursements = (await _api.GetAllDisbursementsAsync()).ToList();
-                var resources = (await _api.GetAllResourcesAsync()).ToList();
+                var client = _httpClientFactory.CreateClient("DashboardClient");
+
+                var programsResponse = await client.GetAsync("api/welfareprogramapi");
+                var applicationsResponse = await client.GetAsync("api/welfareapplicationapi");
+                var benefitsResponse = await client.GetAsync("api/benefitapi");
+                var disbursementsResponse = await client.GetAsync("api/disbursementapi");
+                var resourcesResponse = await client.GetAsync("api/resourceapi");
+
+                var programs = await DeserializeResponse<WelfareProgram>(programsResponse);
+                var applications = await DeserializeResponse<WelfareApplication>(applicationsResponse);
+                var benefits = await DeserializeResponse<Benefit>(benefitsResponse);
+                var disbursements = await DeserializeResponse<Disbursement>(disbursementsResponse);
+                var resources = await DeserializeResponse<Resource>(resourcesResponse);
 
                 var programBreakdown = new List<dynamic>();
 
@@ -165,8 +192,17 @@ namespace WelfareLink.Controllers
 
             try
             {
-                var resources = (await _api.GetAllResourcesAsync()).ToList();
-                var programs = (await _api.GetAllProgramsAsync()).ToList();
+                var client = _httpClientFactory.CreateClient("DashboardClient");
+
+                var resourcesResponse = await client.GetAsync("api/resourceapi");
+                var programsResponse = await client.GetAsync("api/welfareprogramapi");
+                var applicationsResponse = await client.GetAsync("api/welfareapplicationapi");
+                var benefitsResponse = await client.GetAsync("api/benefitapi");
+
+                var resources = await DeserializeResponse<Resource>(resourcesResponse);
+                var programs = await DeserializeResponse<WelfareProgram>(programsResponse);
+                var applications = await DeserializeResponse<WelfareApplication>(applicationsResponse);
+                var benefits = await DeserializeResponse<Benefit>(benefitsResponse);
 
                 var resourceStatements = new List<dynamic>();
 
@@ -215,10 +251,17 @@ namespace WelfareLink.Controllers
 
             try
             {
-                var applications = (await _api.GetAllApplicationsAsync()).ToList();
-                var benefits = (await _api.GetAllBenefitsAsync()).ToList();
-                var disbursements = (await _api.GetAllDisbursementsAsync()).ToList();
-                var programs = (await _api.GetAllProgramsAsync()).ToList();
+                var client = _httpClientFactory.CreateClient("DashboardClient");
+
+                var applicationResponse = await client.GetAsync("api/welfareapplicationapi");
+                var benefitResponse = await client.GetAsync("api/benefitapi");
+                var disbursementResponse = await client.GetAsync("api/disbursementapi");
+                var programResponse = await client.GetAsync("api/welfareprogramapi");
+
+                var applications = await DeserializeResponse<WelfareApplication>(applicationResponse);
+                var benefits = await DeserializeResponse<Benefit>(benefitResponse);
+                var disbursements = await DeserializeResponse<Disbursement>(disbursementResponse);
+                var programs = await DeserializeResponse<WelfareProgram>(programResponse);
 
                 var disbursementStatements = new List<dynamic>();
 
