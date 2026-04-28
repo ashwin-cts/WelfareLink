@@ -1,9 +1,9 @@
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using WelfareLink.AnalyticsReport.API.Data;
 using WelfareLink.AnalyticsReport.API.Interfaces;
 using WelfareLink.AnalyticsReport.API.Repositories;
 using WelfareLink.AnalyticsReport.API.Services;
+using WelfareLink.AnalyticsReport.API.Configuration;
 
 namespace WelfareLink.AnalyticsReport.API
 {
@@ -73,6 +73,9 @@ namespace WelfareLink.AnalyticsReport.API
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
 
+            // Add JWT Authentication & Authorization (Centralized Configuration)
+            builder.Services.AddJwtAuthenticationAndAuthorization(builder.Configuration);
+
             // Add CORS to allow requests from WelfareLink (MVC) to WelfareLinkApi
             builder.Services.AddCors(options =>
             {
@@ -83,15 +86,6 @@ namespace WelfareLink.AnalyticsReport.API
                           .AllowAnyHeader()
                           .AllowCredentials();
                 });
-            });
-
-            // Add session support so API can read session values (e.g., UserId)
-            builder.Services.AddDistributedMemoryCache();
-            builder.Services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(30);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
             });
 
             var app = builder.Build();
@@ -108,11 +102,13 @@ namespace WelfareLink.AnalyticsReport.API
 
             app.UseStaticFiles();
 
-            // Enable session and CORS before authorization so controllers can access session
-            app.UseSession();
+            app.UseRouting();
+
+            // Enable CORS before authentication
             app.UseCors("AllowWelfareLinkMvc");
 
-            app.UseAuthorization();
+            // Apply JWT Authentication & Authorization middleware
+            app.UseJwtAuthenticationAndAuthorization();
 
             app.MapControllers();
 

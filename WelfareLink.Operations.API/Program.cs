@@ -1,9 +1,9 @@
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using WelfareLink.Operations.API.Data;
 using WelfareLink.Operations.API.Interfaces;
 using WelfareLink.Operations.API.Repositories;
 using WelfareLink.Operations.API.Services;
+using WelfareLink.Operations.API.Configuration;
 
 namespace WelfareLink.Operations.API
 {
@@ -73,6 +73,17 @@ namespace WelfareLink.Operations.API
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
 
+            // Add JWT Authentication & Authorization (Centralized Configuration)
+            builder.Services.AddJwtAuthenticationAndAuthorization(builder.Configuration);
+
+            // Configure Authorization with global [Authorize] policy
+            builder.Services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
+
             // Add CORS to allow requests from WelfareLink (MVC) to WelfareLinkApi
             builder.Services.AddCors(options =>
             {
@@ -83,15 +94,6 @@ namespace WelfareLink.Operations.API
                           .AllowAnyHeader()
                           .AllowCredentials();
                 });
-            });
-
-            // Add session support so API can read session values (e.g., UserId)
-            builder.Services.AddDistributedMemoryCache();
-            builder.Services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(30);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
             });
 
             var app = builder.Build();
@@ -108,11 +110,13 @@ namespace WelfareLink.Operations.API
 
             app.UseStaticFiles();
 
-            // Enable session and CORS before authorization so controllers can access session
-            app.UseSession();
+            app.UseRouting();
+
+            // Enable CORS before authentication
             app.UseCors("AllowWelfareLinkMvc");
 
-            app.UseAuthorization();
+            // Apply JWT Authentication & Authorization middleware
+            app.UseJwtAuthenticationAndAuthorization();
 
             app.MapControllers();
 

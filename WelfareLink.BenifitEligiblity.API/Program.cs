@@ -1,5 +1,7 @@
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using WelfareLink.BenifitEligiblity.API.Data;
 using WelfareLink.BenifitEligiblity.API.Interfaces;
 using WelfareLink.BenifitEligiblity.API.Repositories;
@@ -73,7 +75,40 @@ namespace WelfareLink.BenifitEligiblity.API
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
 
-            // Add CORS to allow requests from WelfareLink (MVC) to WelfareLinkApi
+            // JWT Configuration
+            var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+            var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JwtSettings:Secret is not configured");
+            var key = Encoding.ASCII.GetBytes(secret);
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidAudience = jwtSettings["Audience"],
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
+            // Configure Authorization with global [Authorize] policy
+            builder.Services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
+
+            // Add CORS to allow requests from WelfareLink (MVC) and API clients with JWT tokens
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowWelfareLinkMvc", policy =>
@@ -83,15 +118,6 @@ namespace WelfareLink.BenifitEligiblity.API
                           .AllowAnyHeader()
                           .AllowCredentials();
                 });
-            });
-
-            // Add session support so API can read session values (e.g., UserId)
-            builder.Services.AddDistributedMemoryCache();
-            builder.Services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(30);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
             });
 
             var app = builder.Build();
@@ -108,10 +134,13 @@ namespace WelfareLink.BenifitEligiblity.API
 
             app.UseStaticFiles();
 
-            // Enable session and CORS before authorization so controllers can access session
-            app.UseSession();
+            app.UseRouting();
+
+            // Enable CORS before authentication
             app.UseCors("AllowWelfareLinkMvc");
 
+            // Apply JWT Authentication & Authorization middleware
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

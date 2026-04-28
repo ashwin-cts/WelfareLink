@@ -1,9 +1,9 @@
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using WelfareLink.WApplicationSystem.API.Data;
 using WelfareLink.WApplicationSystem.API.Interfaces;
 using WelfareLink.WApplicationSystem.API.Repositories;
 using WelfareLink.WApplicationSystem.API.Services;
+using WelfareLink.WApplicationSystem.API.Configuration;
 
 namespace WelfareLink.WApplicationSystem.API
 {
@@ -73,25 +73,19 @@ namespace WelfareLink.WApplicationSystem.API
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
 
+            // Add JWT Authentication & Authorization (Centralized Configuration)
+            builder.Services.AddJwtAuthenticationAndAuthorization(builder.Configuration);
+
             // Add CORS to allow requests from WelfareLink (MVC) to WelfareLinkApi
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowWelfareLinkMvc", policy =>
-                {//MVC local host
+                {
                     policy.WithOrigins("https://localhost:7100", "http://localhost:5000") 
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials();
                 });
-            });
-
-            // Add session support so API can read session values (e.g., UserId)
-            builder.Services.AddDistributedMemoryCache();
-            builder.Services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(30);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
             });
 
             var app = builder.Build();
@@ -108,11 +102,13 @@ namespace WelfareLink.WApplicationSystem.API
 
             app.UseStaticFiles();
 
-            // Enable session and CORS before authorization so controllers can access session
-            app.UseSession();
+            app.UseRouting();
+
+            // Enable CORS before authentication
             app.UseCors("AllowWelfareLinkMvc");
 
-            app.UseAuthorization();
+            // Apply JWT Authentication & Authorization middleware
+            app.UseJwtAuthenticationAndAuthorization();
 
             app.MapControllers();
 

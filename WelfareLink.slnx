@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="WelfareLink.AnalyticsReport.API/WelfareLink.AnalyticsReport.API.csproj" Id="c11d6aa3-2676-4f99-8a54-d628d291bf25" />
+  <Project Path="WelfareLink.Authentication.API/WelfareLink.Authentication.API.csproj" />
   <Project Path="WelfareLink.BenifitEligiblity.API/WelfareLink.BenifitEligiblity.API.csproj" Id="158f667a-9f28-4fbb-854c-85390bc1b320" />
   <Project Path="WelfareLink.ComplianceAndAudit.API/WelfareLink.ComplianceAndAuditLog.API.csproj" Id="e5218329-1a33-4ac5-987f-3a71b9b88614" />
   <Project Path="WelfareLink.Operations.API/WelfareLink.Operations.API.csproj" Id="18b3fd10-ab32-4c49-9f6e-eb04ae0f762f" />

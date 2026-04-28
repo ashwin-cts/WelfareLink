@@ -1,9 +1,9 @@
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using WelfareLink.UserManagement.API.Data;
 using WelfareLink.UserManagement.API.Interfaces;
 using WelfareLink.UserManagement.API.Repositories;
 using WelfareLink.UserManagement.API.Services;
+using WelfareLink.UserManagement.API.Configuration;
 
 namespace WelfareLink.UserManagement.API
 {
@@ -33,6 +33,7 @@ namespace WelfareLink.UserManagement.API
                                     .Select(e => e.ErrorMessage))
                         });
                 });
+
             //Db reg
             builder.Services.AddDbContext<WelfareLinkDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             //DI Container
@@ -73,25 +74,18 @@ namespace WelfareLink.UserManagement.API
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
 
+            // Add JWT Authentication & Authorization (Centralized Configuration)
+            builder.Services.AddJwtAuthenticationAndAuthorization(builder.Configuration);
+
             // Add CORS to allow requests from WelfareLink (MVC) to WelfareLinkApi
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowWelfareLinkMvc", policy =>
+                options.AddDefaultPolicy(policy =>
                 {
-                    policy.WithOrigins("https://localhost:7100", "http://localhost:5000") 
+                    policy.AllowAnyOrigin()
                           .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials();
+                          .AllowAnyHeader();
                 });
-            });
-
-            // Add session support so API can read session values (e.g., UserId)
-            builder.Services.AddDistributedMemoryCache();
-            builder.Services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(30);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
             });
 
             var app = builder.Build();
@@ -108,11 +102,13 @@ namespace WelfareLink.UserManagement.API
 
             app.UseStaticFiles();
 
-            // Enable session and CORS before authorization so controllers can access session
-            app.UseSession();
-            app.UseCors("AllowWelfareLinkMvc");
+            app.UseRouting();
 
-            app.UseAuthorization();
+            // Enable CORS before authentication
+            app.UseCors();
+
+            // Apply JWT Authentication & Authorization middleware
+            app.UseJwtAuthenticationAndAuthorization();
 
             app.MapControllers();
 

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.UserManagement.API.Interfaces;
 using WelfareLink.UserManagement.API.Models;

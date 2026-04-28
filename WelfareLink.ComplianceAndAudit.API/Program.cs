@@ -1,9 +1,9 @@
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using WelfareLink.ComplianceAndAudit.API.Data;
 using WelfareLink.ComplianceAndAudit.API.Interfaces;
 using WelfareLink.ComplianceAndAudit.API.Repositories;
 using WelfareLink.ComplianceAndAudit.API.Services;
+using WelfareLink.ComplianceAndAudit.API.Configuration;
 
 namespace WelfareLink.ComplianceAndAudit.API
 {
@@ -73,6 +73,9 @@ namespace WelfareLink.ComplianceAndAudit.API
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
 
+            // Add JWT Authentication & Authorization (Centralized Configuration)
+            builder.Services.AddJwtAuthenticationAndAuthorization(builder.Configuration);
+
             // Add CORS to allow requests from WelfareLink (MVC) to WelfareLinkApi
             builder.Services.AddCors(options =>
             {
@@ -83,15 +86,6 @@ namespace WelfareLink.ComplianceAndAudit.API
                           .AllowAnyHeader()
                           .AllowCredentials();
                 });
-            });
-
-            // Add session support so API can read session values (e.g., UserId)
-            builder.Services.AddDistributedMemoryCache();
-            builder.Services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(30);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
             });
 
             var app = builder.Build();
@@ -108,11 +102,13 @@ namespace WelfareLink.ComplianceAndAudit.API
 
             app.UseStaticFiles();
 
-            // Enable session and CORS before authorization so controllers can access session
-            app.UseSession();
+            app.UseRouting();
+
+            // Enable CORS before authentication
             app.UseCors("AllowWelfareLinkMvc");
 
-            app.UseAuthorization();
+            // Apply JWT Authentication & Authorization middleware
+            app.UseJwtAuthenticationAndAuthorization();
 
             app.MapControllers();
 
