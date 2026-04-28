@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.Authentication.API.Models;
 using WelfareLink.Authentication.API.Services;
@@ -20,6 +21,7 @@ namespace WelfareLink.Authentication.API.Endpoints
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest loginRequest)
         {
             if (!ModelState.IsValid)
@@ -36,15 +38,23 @@ namespace WelfareLink.Authentication.API.Endpoints
 
             try
             {
+                _logger.LogInformation($"Login attempt for user: {loginRequest.Username} with userType: {loginRequest.UserType}");
+
                 var user = await _authenticationService.ValidateUserAsync(
                     loginRequest.Username,
                     loginRequest.Password,
                     loginRequest.UserType
                 );
 
-                if (user == null || !user.IsActive)
+                if (user == null)
                 {
-                    _logger.LogWarning($"Failed login attempt for user: {loginRequest.Username}");
+                    _logger.LogWarning($"User validation returned null for: {loginRequest.Username}");
+                    return Unauthorized(new { error = "Invalid credentials or account is inactive" });
+                }
+
+                if (!user.IsActive)
+                {
+                    _logger.LogWarning($"Login attempt for inactive user: {loginRequest.Username}");
                     return Unauthorized(new { error = "Invalid credentials or account is inactive" });
                 }
 
@@ -65,7 +75,7 @@ namespace WelfareLink.Authentication.API.Endpoints
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Login error: {ex.Message}");
+                _logger.LogError($"Login error for user {loginRequest.Username}: {ex.GetType().Name} - {ex.Message}. Stack: {ex.StackTrace}");
                 return StatusCode(500, new { error = "An error occurred during login" });
             }
         }

@@ -76,6 +76,7 @@ namespace WelfareLink.UserManagement.API.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<ActionResult<User>> Login([FromBody] LoginRequest loginRequest)
         {
             if (!ModelState.IsValid)
@@ -88,17 +89,42 @@ namespace WelfareLink.UserManagement.API.Controllers
 
             try
             {
-                var user = await _userRepository.GetByUsernameAndRoleAsync(loginRequest.Username, loginRequest.UserType);
+                // Normalize input - trim and handle case sensitivity
+                var normalizedUsername = loginRequest.Username?.Trim() ?? "";
+                var normalizedPassword = loginRequest.Password?.Trim() ?? "";
+                var normalizedUserType = loginRequest.UserType?.Trim() ?? "";
 
-                if (user == null || user.Password != loginRequest.Password)
+                var user = await _userRepository.GetByUsernameAndRoleAsync(normalizedUsername, normalizedUserType);
+
+                if (user == null)
                 {
-                    // Log failed login attempt
+                    // User not found
                     await _auditLogService.LogActionAsync(
                         userId: null,
                         action: "Login",
                         entityType: "User",
                         entityId: null,
-                        description: $"Failed login attempt for user '{loginRequest.Username}' with role '{loginRequest.UserType}'",
+                        description: $"Failed login attempt - user not found for '{normalizedUsername}' with role '{normalizedUserType}'",
+                        ipAddress: ipAddress,
+                        userAgent: userAgent,
+                        status: "Failed"
+                    );
+
+                    return Unauthorized(new { error = "Invalid username or password" });
+                }
+
+                // Trim password from database and compare
+                var storedPassword = user.Password?.Trim() ?? "";
+
+                if (!string.Equals(storedPassword, normalizedPassword, StringComparison.Ordinal))
+                {
+                    // Password mismatch - log for debugging
+                    await _auditLogService.LogActionAsync(
+                        userId: null,
+                        action: "Login",
+                        entityType: "User",
+                        entityId: null,
+                        description: $"Failed login attempt - password mismatch for user '{normalizedUsername}' with role '{normalizedUserType}'",
                         ipAddress: ipAddress,
                         userAgent: userAgent,
                         status: "Failed"
@@ -514,6 +540,47 @@ namespace WelfareLink.UserManagement.API.Controllers
 
                 return BadRequest(new { error = ex.Message });
             }
+        }
+
+        // DEBUG: Remove this endpoint after troubleshooting
+        [HttpPost("debug/check-credentials")]
+        [AllowAnonymous]
+        public async Task<IActionResult> DebugCheckCredentials([FromBody] LoginRequest request)
+        {
+            var username = request.Username?.Trim() ?? "";
+            var password = request.Password?.Trim() ?? "";
+            var role = request.UserType?.Trim() ?? "";
+
+            var user = await _userRepository.GetByUsernameAndRoleAsync(username, role);
+
+            if (user == null)
+            {
+                return Ok(new
+                {
+                    message = "User not found",
+                    username,
+                    role,
+                    userExists = false
+                });
+            }
+
+            var storedPassword = user.Password?.Trim() ?? "";
+            var passwordMatch = string.Equals(storedPassword, password, StringComparison.Ordinal);
+
+            return Ok(new
+            {
+                message = "Debug info",
+                userExists = true,
+                username = user.Username,
+                role = user.Role,
+                isActive = user.IsActive,
+                passwordMatch,
+                submittedPasswordLength = password.Length,
+                storedPasswordLength = storedPassword.Length,
+                submittedPassword = password,
+                storedPassword,
+                hint = !passwordMatch ? $"Password mismatch! Submitted: '{password}' vs Stored: '{storedPassword}'" : "Password matches!"
+            });
         }
     }
 

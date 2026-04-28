@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
 namespace WelfareLink.Authentication.API.Configuration
@@ -50,27 +51,32 @@ namespace WelfareLink.Authentication.API.Configuration
                 // Handle authorization failure
                 options.Events = new JwtBearerEvents
                 {
-                    OnAuthenticationFailed = context =>
+                    OnAuthenticationFailed = async context =>
                     {
-                        if (!context.Response.HasStarted)
-                        {
-                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                            context.Response.ContentType = "application/json";
-                        }
-                        return context.Response.WriteAsJsonAsync(new 
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsJsonAsync(new 
                         { 
                             error = "Token validation failed",
                             details = context.Exception.Message 
                         });
                     },
-                    OnChallenge = context =>
+                    OnChallenge = async context =>
                     {
-                        if (!context.Response.HasStarted)
+                        // Check if endpoint allows anonymous access
+                        var endpoint = context.HttpContext.GetEndpoint();
+                        var allowAnonymous = endpoint?.Metadata.GetOrderedMetadata<IAllowAnonymousMetadata>().FirstOrDefault();
+
+                        if (allowAnonymous != null)
                         {
-                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                            context.Response.ContentType = "application/json";
+                            // This endpoint allows anonymous access, don't challenge
+                            context.Succeed(null);
+                            return;
                         }
-                        return context.Response.WriteAsJsonAsync(new 
+
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsJsonAsync(new 
                         { 
                             error = "Unauthorized - Valid JWT token required" 
                         });
