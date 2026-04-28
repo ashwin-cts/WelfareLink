@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WelfareLink.Services;
+using WelfareLink.Models;
 using System.Text.Json;
+using System.Dynamic;
 
 namespace WelfareLink.Controllers
 {
@@ -18,6 +20,8 @@ namespace WelfareLink.Controllers
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine("=== Analytics Index Action Started ===");
+
                 // Initialize ViewBag with default values to prevent null reference exceptions in view
                 ViewBag.TotalApplications = 0;
                 ViewBag.PendingApplications = 0;
@@ -31,27 +35,48 @@ namespace WelfareLink.Controllers
                 ViewBag.ApplicationsByMonth = new List<dynamic>();
 
                 var metrics = await _api.GetApplicationAnalyticsDashboardAsync();
+                System.Diagnostics.Debug.WriteLine($"Metrics from API: {(metrics == null ? "NULL" : $"{metrics.Count} entries")}");
 
                 // If analytics API returns null or empty, build metrics from actual data
                 if (metrics == null || metrics.Count == 0)
                 {
+                    System.Diagnostics.Debug.WriteLine("Building metrics from local data...");
+
                     var applications = await _api.GetAllApplicationsAsync();
                     var appList = applications.ToList();
 
                     System.Diagnostics.Debug.WriteLine($"Total applications fetched: {appList.Count}");
 
-                    int approved = appList.Count(a => a.Status == "Approved");
-                    int total = appList.Count;
-
-                    metrics = new Dictionary<string, object>
+                    if (appList.Count > 0)
                     {
-                        { "TotalApplications", total },
-                        { "PendingApplications", appList.Count(a => a.Status == "Pending") },
-                        { "ApprovedApplications", approved },
-                        { "RejectedApplications", appList.Count(a => a.Status == "Rejected") },
-                        { "UnderReviewApplications", appList.Count(a => a.Status == "Under Review") },
-                        { "ApprovalRate", total > 0 ? Math.Round((double)approved / total * 100, 2) : 0 }
-                    };
+                        int approved = appList.Count(a => a.Status == "Approved");
+                        int total = appList.Count;
+
+                        metrics = new Dictionary<string, object>
+                        {
+                            { "TotalApplications", total },
+                            { "PendingApplications", appList.Count(a => a.Status == "Pending") },
+                            { "ApprovedApplications", approved },
+                            { "RejectedApplications", appList.Count(a => a.Status == "Rejected") },
+                            { "UnderReviewApplications", appList.Count(a => a.Status == "Under Review") },
+                            { "ApprovalRate", total > 0 ? Math.Round((double)approved / total * 100, 2) : 0 }
+                        };
+
+                        System.Diagnostics.Debug.WriteLine($"Created metrics: Total={total}, Approved={approved}, Pending={appList.Count(a => a.Status == "Pending")}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("No applications found - returning empty metrics");
+                        metrics = new Dictionary<string, object>
+                        {
+                            { "TotalApplications", 0 },
+                            { "PendingApplications", 0 },
+                            { "ApprovedApplications", 0 },
+                            { "RejectedApplications", 0 },
+                            { "UnderReviewApplications", 0 },
+                            { "ApprovalRate", 0 }
+                        };
+                    }
 
                     // Add eligibility check count and breakdown
                     try
@@ -68,6 +93,8 @@ namespace WelfareLink.Controllers
 
                         metrics["EligibleChecks"] = eligibleCount;
                         metrics["IneligibleChecks"] = ineligibleCount;
+
+                        System.Diagnostics.Debug.WriteLine($"Eligible: {eligibleCount}, Ineligible: {ineligibleCount}");
                     }
                     catch (Exception ex)
                     {
@@ -80,17 +107,25 @@ namespace WelfareLink.Controllers
                     // Build applications by month
                     try
                     {
-                        var monthlyData = appList
-                            .GroupBy(a => a.SubmittedDate.Month)
-                            .OrderBy(g => g.Key)
-                            .Select(g => new
-                            {
-                                Month = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(g.Key),
-                                Count = g.Count()
-                            })
-                            .ToList();
+                        if (appList != null && appList.Count > 0)
+                        {
+                            var monthlyData = appList
+                                .GroupBy(a => a.SubmittedDate.Month)
+                                .OrderBy(g => g.Key)
+                                .Select(g => new
+                                {
+                                    Month = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(g.Key),
+                                    Count = g.Count()
+                                })
+                                .ToList();
 
-                        metrics["ApplicationsByMonth"] = monthlyData.Cast<dynamic>().ToList();
+                            metrics["ApplicationsByMonth"] = monthlyData.Cast<dynamic>().ToList();
+                            System.Diagnostics.Debug.WriteLine($"Built {monthlyData.Count} months of data");
+                        }
+                        else
+                        {
+                            metrics["ApplicationsByMonth"] = new List<dynamic>();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -153,13 +188,65 @@ namespace WelfareLink.Controllers
                 // Now populate ViewBag from metrics dictionary
                 if (metrics != null && metrics.Count > 0)
                 {
+                    System.Diagnostics.Debug.WriteLine($"Populating ViewBag with {metrics.Count} metrics");
+
                     foreach (var kvp in metrics)
                     {
                         var value = kvp.Value;
+                        System.Diagnostics.Debug.WriteLine($"Processing {kvp.Key}: {value?.GetType().Name ?? "null"}");
 
-                        if (value is System.Text.Json.JsonElement jsonElement)
+                        // Handle specific array types first
+                        if (kvp.Key == "ApplicationsByMonth" && value is System.Text.Json.JsonElement jsonAppArray && jsonAppArray.ValueKind == System.Text.Json.JsonValueKind.Array)
                         {
-                            if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.Number)
+                            try
+                            {
+                                var monthList = new List<dynamic>();
+                                foreach (var item in jsonAppArray.EnumerateArray())
+                                {
+                                    try
+                                    {
+                                        var monthObj = new System.Dynamic.ExpandoObject() as dynamic;
+                                        var dict = (IDictionary<string, object>)monthObj;
+
+                                        // Extract month (try both "month" and "Month")
+                                        if (item.TryGetProperty("month", out var monthProp))
+                                            dict["Month"] = monthProp.GetString();
+                                        else if (item.TryGetProperty("Month", out monthProp))
+                                            dict["Month"] = monthProp.GetString();
+                                        else
+                                            dict["Month"] = "Unknown";
+
+                                        // Extract count (try both "count" and "Count")
+                                        if (item.TryGetProperty("count", out var countProp) && countProp.TryGetInt32(out int count))
+                                            dict["Count"] = count;
+                                        else if (item.TryGetProperty("Count", out countProp) && countProp.TryGetInt32(out count))
+                                            dict["Count"] = count;
+                                        else
+                                            dict["Count"] = 0;
+
+                                        monthList.Add(monthObj);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"Error processing month item: {ex.Message}");
+                                    }
+                                }
+                                value = monthList;
+                                System.Diagnostics.Debug.WriteLine($"Converted ApplicationsByMonth to {monthList.Count} items");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Error converting ApplicationsByMonth: {ex.Message}");
+                                value = new List<dynamic>();
+                            }
+                        }
+                        else if (value is System.Text.Json.JsonElement jsonElement)
+                        {
+                            if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.Null)
+                            {
+                                value = null;
+                            }
+                            else if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.Number)
                             {
                                 if (jsonElement.TryGetInt32(out int intVal))
                                     value = intVal;
@@ -279,23 +366,42 @@ namespace WelfareLink.Controllers
                 if (trends != null && trends.Count > 0)
                 {
                     System.Diagnostics.Debug.WriteLine($"Trends API returned data with {trends.Count} entries");
-                    ViewBag.Year = ConvertJsonElement(trends.GetValueOrDefault("Year")) ?? targetYear;
-                    var monthlyData = trends.GetValueOrDefault("MonthlyData");
 
-                    // Convert to list if it's an array or IEnumerable
-                    if (monthlyData is System.Collections.IEnumerable enumerable && !(monthlyData is string))
+                    object yearObj = null;
+                    if (trends.TryGetValue("Year", out yearObj) && yearObj != null)
                     {
-                        // Properly deserialize JsonElement objects to ensure properties are accessible
-                        monthlyDataList = ConvertJsonElementList(enumerable).ToList();
-                        System.Diagnostics.Debug.WriteLine($"Converted {monthlyDataList.Count} monthly data items from API");
+                        var yearValue = ConvertJsonElement(yearObj);
+
+                        // Safely convert Year to int
+                        if (yearValue is int yearInt)
+                            ViewBag.Year = yearInt;
+                        else if (yearValue is long yearLong)
+                            ViewBag.Year = (int)yearLong;
+                        else if (yearValue is string yearStr && int.TryParse(yearStr, out int yearParsed))
+                            ViewBag.Year = yearParsed;
+                        else
+                            ViewBag.Year = targetYear;
                     }
-                    else if (monthlyData != null)
+
+                    object monthlyDataObj = null;
+                    if (trends.TryGetValue("MonthlyData", out monthlyDataObj) && monthlyDataObj != null)
                     {
-                        var converted = ConvertJsonElementToObject(monthlyData);
-                        if (converted != null)
+                        var monthlyData = monthlyDataObj;
+                        // Convert to list if it's an array or IEnumerable
+                        if (monthlyData is System.Collections.IEnumerable enumerable && !(monthlyData is string))
                         {
-                            monthlyDataList = new List<dynamic> { converted };
-                            System.Diagnostics.Debug.WriteLine("Converted single monthly data item from API");
+                            // Properly deserialize JsonElement objects to ensure properties are accessible
+                            monthlyDataList = ConvertJsonElementList(enumerable).ToList();
+                            System.Diagnostics.Debug.WriteLine($"Converted {monthlyDataList.Count} monthly data items from API");
+                        }
+                        else
+                        {
+                            var converted = ConvertJsonElementToObject(monthlyData);
+                            if (converted != null)
+                            {
+                                monthlyDataList = new List<dynamic> { converted };
+                                System.Diagnostics.Debug.WriteLine("Converted single monthly data item from API");
+                            }
                         }
                     }
                 }
@@ -385,16 +491,39 @@ namespace WelfareLink.Controllers
                 {
                     System.Diagnostics.Debug.WriteLine($"Report from API has {report.Count} entries");
                     // Try to populate from API response
-                    var resultBreakdown = report.GetValueOrDefault("ResultBreakdown");
-                    var checksByMonth = report.GetValueOrDefault("ChecksByMonth");
-                    totalApplicationsChecked = (int?)ConvertJsonElement(report.GetValueOrDefault("TotalApplicationsChecked")) ?? 0;
+                    object resultBreakdown = null;
+                    object checksByMonth = null;
+                    object totalAppsObj = null;
+
+                    if (report.TryGetValue("ResultBreakdown", out resultBreakdown))
+                    {
+                        resultBreakdown = resultBreakdown;
+                    }
+                    if (report.TryGetValue("ChecksByMonth", out checksByMonth))
+                    {
+                        checksByMonth = checksByMonth;
+                    }
+                    if (report.TryGetValue("TotalApplicationsChecked", out totalAppsObj))
+                    {
+                        totalAppsObj = totalAppsObj;
+                    }
+
+                    var totalAppsValue = ConvertJsonElement(totalAppsObj);
+
+                    // Safely convert to int
+                    if (totalAppsValue is int intVal)
+                        totalApplicationsChecked = intVal;
+                    else if (totalAppsValue is long longVal)
+                        totalApplicationsChecked = (int)longVal;
+                    else if (totalAppsValue is string strVal && int.TryParse(strVal, out int parsedVal))
+                        totalApplicationsChecked = parsedVal;
 
                     // Convert ResultBreakdown to list
                     if (resultBreakdown is System.Collections.IEnumerable rb && !(rb is string))
                     {
                         try
                         {
-                            resultBreakdownList = rb.Cast<dynamic>().ToList();
+                            resultBreakdownList = ConvertJsonElementList(rb).ToList();
                             System.Diagnostics.Debug.WriteLine($"ResultBreakdown has {resultBreakdownList.Count} items");
                         }
                         catch { }
@@ -405,7 +534,7 @@ namespace WelfareLink.Controllers
                     {
                         try
                         {
-                            checksByMonthList = cm.Cast<dynamic>().ToList();
+                            checksByMonthList = ConvertJsonElementList(cm).ToList();
                             System.Diagnostics.Debug.WriteLine($"ChecksByMonth has {checksByMonthList.Count} items");
                         }
                         catch { }
@@ -529,12 +658,7 @@ namespace WelfareLink.Controllers
             {
                 if (item is System.Text.Json.JsonElement jsonElement)
                 {
-                    var json = jsonElement.GetRawText();
-                    return System.Text.Json.JsonSerializer.Deserialize<dynamic>(json, 
-                        new System.Text.Json.JsonSerializerOptions 
-                        { 
-                            PropertyNameCaseInsensitive = true 
-                        });
+                    return ConvertJsonElementValue(jsonElement);
                 }
                 return item;
             }
@@ -554,26 +678,91 @@ namespace WelfareLink.Controllers
                 {
                     if (item is System.Text.Json.JsonElement jsonElement)
                     {
-                        var json = jsonElement.GetRawText();
-                        var obj = System.Text.Json.JsonSerializer.Deserialize<dynamic>(json,
-                            new System.Text.Json.JsonSerializerOptions 
-                            { 
-                                PropertyNameCaseInsensitive = true 
-                            });
-                        if (obj != null)
-                            result.Add(obj);
+                        try
+                        {
+                            // For objects, create an ExpandoObject with properties
+                            if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+                            {
+                                var expando = new System.Dynamic.ExpandoObject() as dynamic;
+                                var dict = (IDictionary<string, object>)expando;
+
+                                foreach (var prop in jsonElement.EnumerateObject())
+                                {
+                                    var value = ConvertJsonElementValue(prop.Value);
+                                    dict[prop.Name] = value;
+                                }
+                                result.Add(expando);
+                            }
+                            else
+                            {
+                                var value = ConvertJsonElementValue(jsonElement);
+                                result.Add(value);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Error converting JsonElement item: {ex.Message}");
+                        }
                     }
-                    else
+                    else if (item != null)
                     {
                         result.Add(item);
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Return what we got
+                System.Diagnostics.Debug.WriteLine($"Error in ConvertJsonElementList: {ex.Message}");
             }
             return result;
+        }
+
+        // Helper method to convert a single JsonElement value
+        private object ConvertJsonElementValue(System.Text.Json.JsonElement jsonElement)
+        {
+            try
+            {
+                switch (jsonElement.ValueKind)
+                {
+                    case System.Text.Json.JsonValueKind.Null:
+                        return null;
+                    case System.Text.Json.JsonValueKind.True:
+                        return true;
+                    case System.Text.Json.JsonValueKind.False:
+                        return false;
+                    case System.Text.Json.JsonValueKind.Number:
+                        if (jsonElement.TryGetInt32(out int intVal))
+                            return intVal;
+                        if (jsonElement.TryGetInt64(out long longVal))
+                            return longVal;
+                        if (jsonElement.TryGetDouble(out double doubleVal))
+                            return doubleVal;
+                        return jsonElement.GetRawText();
+                    case System.Text.Json.JsonValueKind.String:
+                        return jsonElement.GetString();
+                    case System.Text.Json.JsonValueKind.Array:
+                        var list = new List<object>();
+                        foreach (var element in jsonElement.EnumerateArray())
+                        {
+                            list.Add(ConvertJsonElementValue(element));
+                        }
+                        return list;
+                    case System.Text.Json.JsonValueKind.Object:
+                        var expando = new System.Dynamic.ExpandoObject() as dynamic;
+                        var dict = (IDictionary<string, object>)expando;
+                        foreach (var prop in jsonElement.EnumerateObject())
+                        {
+                            dict[prop.Name] = ConvertJsonElementValue(prop.Value);
+                        }
+                        return expando;
+                    default:
+                        return jsonElement.GetRawText();
+                }
+            }
+            catch
+            {
+                return jsonElement.GetRawText();
+            }
         }
 
         // Helper method to convert JsonElement value
@@ -581,16 +770,43 @@ namespace WelfareLink.Controllers
         {
             try
             {
+                if (item == null)
+                    return null;
+
                 if (item is System.Text.Json.JsonElement jsonElement)
                 {
-                    return jsonElement.GetRawText();
-                }
-                return item;
-                        }
-                        catch
-                        {
-                            return null;
-                        }
+                    // Check for null JsonElement
+                    if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.Null)
+                        return null;
+
+                    if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.Number)
+                    {
+                        if (jsonElement.TryGetInt32(out int intVal))
+                            return intVal;
+                        if (jsonElement.TryGetInt64(out long longVal))
+                            return longVal;
+                        if (jsonElement.TryGetDouble(out double doubleVal))
+                            return doubleVal;
+                    }
+                    else if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.String)
+                    {
+                        return jsonElement.GetString();
+                    }
+                    else if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.True)
+                    {
+                        return true;
+                    }
+                    else if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.False)
+                    {
+                        return false;
                     }
                 }
+                return item;
             }
+            catch
+            {
+                return null;
+            }
+        }
+    }
+}

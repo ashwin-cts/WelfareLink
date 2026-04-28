@@ -174,35 +174,75 @@
                                 <tbody>
                                     @foreach (var item in ViewBag.ResultBreakdown)
                                     {
-                                        var resultText = SafeConvertToString(SafeGetProperty(item, "Result"));
-                                        var countValue = SafeConvertToInt(SafeGetProperty(item, "Count"));
-                                        var percentageValue = SafeConvertToDouble(SafeGetProperty(item, "Percentage"));
-                                        <tr>
-                                            <td>
-                                                @if (resultText.ToLower() == "eligible")
-                                                {
-                                                    <span class="badge bg-success">@resultText</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-danger">@resultText</span>
-                                                }
-                                            </td>
-                                            <td><strong>@countValue</strong></td>
-                                            <td>@Math.Round(percentageValue, 2)%</td>
-                                            <td>
-                                                <div class="progress" style="height: 25px;">
-                                                    @{
-                                                        var bgClass = resultText.ToLower() == "eligible" ? "bg-success" : "bg-danger";
+                                        try
+                                        {
+                                            // Try dynamic access first
+                                            dynamic itemDynamic = item;
+                                            var resultText = itemDynamic.Result?.ToString() ?? "Unknown";
+                                            var countValue = itemDynamic.Count ?? 0;
+                                            var percentageValue = itemDynamic.Percentage ?? 0.0;
+
+                                            <tr>
+                                                <td>
+                                                    @if (resultText.ToLower() == "eligible")
+                                                    {
+                                                        <span class="badge bg-success">@resultText</span>
                                                     }
-                                                    <div class="progress-bar @bgClass" role="progressbar" 
-                                                         style="width: @percentageValue%" 
-                                                         aria-valuenow="@percentageValue" aria-valuemin="0" aria-valuemax="100">
-                                                        @Math.Round(percentageValue, 1)%
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger">@resultText</span>
+                                                    }
+                                                </td>
+                                                <td><strong>@countValue</strong></td>
+                                                <td>@Math.Round((double)percentageValue, 2)%</td>
+                                                <td>
+                                                    <div class="progress" style="height: 25px;">
+                                                        @{
+                                                            var bgClass = resultText.ToLower() == "eligible" ? "bg-success" : "bg-danger";
+                                                        }
+                                                        <div class="progress-bar @bgClass" role="progressbar" 
+                                                             style="width: @percentageValue%" 
+                                                             aria-valuenow="@percentageValue" aria-valuemin="0" aria-valuemax="100">
+                                                            @Math.Round((double)percentageValue, 1)%
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                </td>
+                                            </tr>
+                                        }
+                                        catch
+                                        {
+                                            // Fallback to reflection
+                                            var resultText = SafeConvertToString(SafeGetProperty(item, "Result"));
+                                            var countValue = SafeConvertToInt(SafeGetProperty(item, "Count"));
+                                            var percentageValue = SafeConvertToDouble(SafeGetProperty(item, "Percentage"));
+
+                                            <tr>
+                                                <td>
+                                                    @if (resultText.ToLower() == "eligible")
+                                                    {
+                                                        <span class="badge bg-success">@resultText</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger">@resultText</span>
+                                                    }
+                                                </td>
+                                                <td><strong>@countValue</strong></td>
+                                                <td>@Math.Round((double)percentageValue, 2)%</td>
+                                                <td>
+                                                    <div class="progress" style="height: 25px;">
+                                                        @{
+                                                            var bgClass = resultText.ToLower() == "eligible" ? "bg-success" : "bg-danger";
+                                                        }
+                                                        <div class="progress-bar @bgClass" role="progressbar" 
+                                                             style="width: @percentageValue%" 
+                                                             aria-valuenow="@percentageValue" aria-valuemin="0" aria-valuemax="100">
+                                                            @Math.Round((double)percentageValue, 1)%
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
                                     }
                                 </tbody>
                             </table>
@@ -256,7 +296,7 @@
                                                     <div class="progress-bar bg-success" role="progressbar" 
                                                          style="width: @eligibilityRate%" 
                                                          aria-valuenow="@eligibilityRate" aria-valuemin="0" aria-valuemax="100">
-                                                        @Math.Round(eligibilityRate, 1)%
+                                                        @Math.Round((double)eligibilityRate, 1)%
                                                     </div>
                                                 </div>
                                             </td>

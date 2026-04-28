@@ -63,29 +63,52 @@
                         @foreach (var month in monthlyList)
                         {
                             monthCount++;
-                            // For each item, use reflection to safely get properties
-                            var monthProp = month.GetType().GetProperty("Month", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
-                            var totalProp = month.GetType().GetProperty("Total", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
-                            var pendingProp = month.GetType().GetProperty("Pending", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
-                            var approvedProp = month.GetType().GetProperty("Approved", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
-                            var rejectedProp = month.GetType().GetProperty("Rejected", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
-                            var underReviewProp = month.GetType().GetProperty("UnderReview", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                            try
+                            {
+                                // Try dynamic access first
+                                dynamic monthDynamic = month;
+                                var monthName = monthDynamic.Month ?? "N/A";
+                                var total = monthDynamic.Total ?? 0;
+                                var pending = monthDynamic.Pending ?? 0;
+                                var approved = monthDynamic.Approved ?? 0;
+                                var rejected = monthDynamic.Rejected ?? 0;
+                                var underReview = monthDynamic.UnderReview ?? 0;
 
-                            var monthName = monthProp?.GetValue(month)?.ToString() ?? "N/A";
-                            var total = totalProp?.GetValue(month) ?? 0;
-                            var pending = pendingProp?.GetValue(month) ?? 0;
-                            var approved = approvedProp?.GetValue(month) ?? 0;
-                            var rejected = rejectedProp?.GetValue(month) ?? 0;
-                            var underReview = underReviewProp?.GetValue(month) ?? 0;
+                                <tr>
+                                    <td><strong>@monthName</strong></td>
+                                    <td><span class="badge bg-primary">@total</span></td>
+                                    <td><span class="badge bg-warning text-dark">@pending</span></td>
+                                    <td><span class="badge bg-success">@approved</span></td>
+                                    <td><span class="badge bg-danger">@rejected</span></td>
+                                    <td><span class="badge bg-info">@underReview</span></td>
+                                </tr>
+                            }
+                            catch
+                            {
+                                // Fallback to reflection if dynamic access fails
+                                var monthProp = month.GetType().GetProperty("Month", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                                var totalProp = month.GetType().GetProperty("Total", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                                var pendingProp = month.GetType().GetProperty("Pending", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                                var approvedProp = month.GetType().GetProperty("Approved", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                                var rejectedProp = month.GetType().GetProperty("Rejected", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                                var underReviewProp = month.GetType().GetProperty("UnderReview", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
 
-                            <tr>
-                                <td><strong>@monthName</strong></td>
-                                <td><span class="badge bg-primary">@total</span></td>
-                                <td><span class="badge bg-warning text-dark">@pending</span></td>
-                                <td><span class="badge bg-success">@approved</span></td>
-                                <td><span class="badge bg-danger">@rejected</span></td>
-                                <td><span class="badge bg-info">@underReview</span></td>
-                            </tr>
+                                var monthName = monthProp?.GetValue(month)?.ToString() ?? "N/A";
+                                var total = totalProp?.GetValue(month) ?? 0;
+                                var pending = pendingProp?.GetValue(month) ?? 0;
+                                var approved = approvedProp?.GetValue(month) ?? 0;
+                                var rejected = rejectedProp?.GetValue(month) ?? 0;
+                                var underReview = underReviewProp?.GetValue(month) ?? 0;
+
+                                <tr>
+                                    <td><strong>@monthName</strong></td>
+                                    <td><span class="badge bg-primary">@total</span></td>
+                                    <td><span class="badge bg-warning text-dark">@pending</span></td>
+                                    <td><span class="badge bg-success">@approved</span></td>
+                                    <td><span class="badge bg-danger">@rejected</span></td>
+                                    <td><span class="badge bg-info">@underReview</span></td>
+                                </tr>
+                            }
                         }
 
                         @if (monthCount == 0)

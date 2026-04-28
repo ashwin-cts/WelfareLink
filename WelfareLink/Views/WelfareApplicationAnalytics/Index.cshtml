@@ -163,21 +163,21 @@
                             var rejectedPercent = (rejectedApps * 100.0 / total);
                             var reviewPercent = (underReviewApps * 100.0 / total);
                         }
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: @pendingPercent%" 
-                             aria-valuenow="@pendingPercent" aria-valuemin="0" aria-valuemax="100">
-                            Pending: @Math.Round(pendingPercent, 1)%
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: @(pendingPercent)%" 
+                             aria-valuenow="@(pendingPercent)" aria-valuemin="0" aria-valuemax="100">
+                            Pending: @Math.Round((double)pendingPercent, 1)%
                         </div>
-                        <div class="progress-bar bg-success" role="progressbar" style="width: @approvedPercent%" 
-                             aria-valuenow="@approvedPercent" aria-valuemin="0" aria-valuemax="100">
-                            Approved: @Math.Round(approvedPercent, 1)%
+                        <div class="progress-bar bg-success" role="progressbar" style="width: @(approvedPercent)%" 
+                             aria-valuenow="@(approvedPercent)" aria-valuemin="0" aria-valuemax="100">
+                            Approved: @Math.Round((double)approvedPercent, 1)%
                         </div>
-                        <div class="progress-bar bg-danger" role="progressbar" style="width: @rejectedPercent%" 
-                             aria-valuenow="@rejectedPercent" aria-valuemin="0" aria-valuemax="100">
-                            Rejected: @Math.Round(rejectedPercent, 1)%
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: @(rejectedPercent)%" 
+                             aria-valuenow="@(rejectedPercent)" aria-valuemin="0" aria-valuemax="100">
+                            Rejected: @Math.Round((double)rejectedPercent, 1)%
                         </div>
-                        <div class="progress-bar bg-info" role="progressbar" style="width: @reviewPercent%" 
-                             aria-valuenow="@reviewPercent" aria-valuemin="0" aria-valuemax="100">
-                            Review: @Math.Round(reviewPercent, 1)%
+                        <div class="progress-bar bg-info" role="progressbar" style="width: @(reviewPercent)%" 
+                             aria-valuenow="@(reviewPercent)" aria-valuemin="0" aria-valuemax="100">
+                            Review: @Math.Round((double)reviewPercent, 1)%
                         </div>
                     </div>
                 </div>
@@ -194,10 +194,17 @@
                 </div>
                 <div class="card-body">
                     @{
-                        var applicationsByMonth = ViewBag.ApplicationsByMonth as System.Collections.IEnumerable;
+                        var applicationsByMonth = ViewBag.ApplicationsByMonth;
                         int monthDataCount = 0;
+
+                        // Convert to list if it's an enumerable
+                        System.Collections.IEnumerable monthList = null;
+                        if (applicationsByMonth != null && applicationsByMonth is System.Collections.IEnumerable)
+                        {
+                            monthList = applicationsByMonth as System.Collections.IEnumerable;
+                        }
                     }
-                    @if (applicationsByMonth != null)
+                    @if (monthList != null)
                     {
                         <div class="table-responsive">
                             <table class="table table-striped">
@@ -208,21 +215,39 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var month in applicationsByMonth)
+                                    @foreach (var month in monthList)
                                     {
                                         monthDataCount++;
-                                        var monthProp = month.GetType().GetProperty("Month", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
-                                        var countProp = month.GetType().GetProperty("Count", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                                        try
+                                        {
+                                            // Try dynamic access first
+                                            dynamic monthDynamic = month;
+                                            var monthName = monthDynamic.Month ?? "N/A";
+                                            var count = monthDynamic.Count ?? 0;
 
-                                        var monthName = monthProp?.GetValue(month)?.ToString() ?? "N/A";
-                                        var count = countProp?.GetValue(month) ?? 0;
+                                            <tr>
+                                                <td>@monthName</td>
+                                                <td>
+                                                    <span class="badge bg-primary">@count</span>
+                                                </td>
+                                            </tr>
+                                        }
+                                        catch
+                                        {
+                                            // Fallback to reflection if dynamic access fails
+                                            var monthProp = month.GetType().GetProperty("Month", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
+                                            var countProp = month.GetType().GetProperty("Count", System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public);
 
-                                        <tr>
-                                            <td>@monthName</td>
-                                            <td>
-                                                <span class="badge bg-primary">@count</span>
-                                            </td>
-                                        </tr>
+                                            var monthName = monthProp?.GetValue(month)?.ToString() ?? "N/A";
+                                            var count = countProp?.GetValue(month) ?? 0;
+
+                                            <tr>
+                                                <td>@monthName</td>
+                                                <td>
+                                                    <span class="badge bg-primary">@count</span>
+                                                </td>
+                                            </tr>
+                                        }
                                     }
                                     @if (monthDataCount == 0)
                                     {
