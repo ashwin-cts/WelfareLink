@@ -65,12 +65,12 @@ namespace WelfareLink.Authentication.API.Configuration
                     {
                         // Check if endpoint allows anonymous access
                         var endpoint = context.HttpContext.GetEndpoint();
-                        var allowAnonymous = endpoint?.Metadata.GetOrderedMetadata<IAllowAnonymousMetadata>().FirstOrDefault();
+                        var allowAnonymous = endpoint?.Metadata.GetOrderedMetadata<IAllowAnonymous>().FirstOrDefault();
 
                         if (allowAnonymous != null)
                         {
                             // This endpoint allows anonymous access, don't challenge
-                            context.Succeed(null);
+                            context.HandleResponse();
                             return;
                         }
 
