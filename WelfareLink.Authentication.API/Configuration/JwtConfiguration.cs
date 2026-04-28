@@ -52,8 +52,11 @@ namespace WelfareLink.Authentication.API.Configuration
                 {
                     OnAuthenticationFailed = context =>
                     {
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                        context.Response.ContentType = "application/json";
+                        if (!context.Response.HasStarted)
+                        {
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            context.Response.ContentType = "application/json";
+                        }
                         return context.Response.WriteAsJsonAsync(new 
                         { 
                             error = "Token validation failed",
@@ -62,8 +65,11 @@ namespace WelfareLink.Authentication.API.Configuration
                     },
                     OnChallenge = context =>
                     {
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                        context.Response.ContentType = "application/json";
+                        if (!context.Response.HasStarted)
+                        {
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            context.Response.ContentType = "application/json";
+                        }
                         return context.Response.WriteAsJsonAsync(new 
                         { 
                             error = "Unauthorized - Valid JWT token required" 
