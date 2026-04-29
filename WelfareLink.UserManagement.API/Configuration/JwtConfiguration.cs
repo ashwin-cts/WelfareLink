@@ -48,44 +48,57 @@ namespace WelfareLink.UserManagement.API.Configuration
 
                 options.Events = new JwtBearerEvents
                 {
-                    OnAuthenticationFailed = async context =>
+                    OnAuthenticationFailed = context =>
                     {
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                        context.Response.ContentType = "application/json";
-                        await context.Response.WriteAsJsonAsync(new 
-                        { 
-                            error = "Token validation failed",
-                            details = context.Exception.Message 
-                        });
+                        if (!context.Response.HasStarted)
+                        {
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            context.Response.ContentType = "application/json";
+                            return context.Response.WriteAsJsonAsync(new 
+                            { 
+                                error = "Token validation failed",
+                                details = context.Exception.Message 
+                            });
+                        }
+                        return Task.CompletedTask;
                     },
-                    OnChallenge = async context =>
+                    OnChallenge = context =>
                     {
+                        // Prevent default challenge behavior
+                        context.HandleResponse();
+
                         // Check if endpoint allows anonymous access
                         var endpoint = context.HttpContext.GetEndpoint();
                         var allowAnonymous = endpoint?.Metadata.GetOrderedMetadata<IAllowAnonymous>().FirstOrDefault();
 
-                        if (allowAnonymous != null)
+                        // Also allow Swagger endpoints to be accessed without JWT
+                        var path = context.HttpContext.Request.Path;
+                        if (allowAnonymous != null || path.StartsWithSegments("/swagger") || path.StartsWithSegments("/openapi"))
                         {
-                            // This endpoint allows anonymous access, don't challenge
-                            context.HandleResponse();
-                            return;
+                            // This endpoint allows anonymous access, skip sending challenge
+                            return Task.CompletedTask;
                         }
 
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                        context.Response.ContentType = "application/json";
-                        await context.Response.WriteAsJsonAsync(new 
-                        { 
-                            error = "Unauthorized - Valid JWT token required" 
-                        });
+                        // Only set response if not already started
+                        if (!context.Response.HasStarted)
+                        {
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            context.Response.ContentType = "application/json";
+                            return context.Response.WriteAsJsonAsync(new 
+                            { 
+                                error = "Unauthorized - Valid JWT token required" 
+                            });
+                        }
+
+                        return Task.CompletedTask;
                     }
                 };
             });
 
             services.AddAuthorization(options =>
             {
-                options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
+                // Don't use a fallback policy that blocks Swagger
+                // Instead, controllers and endpoints should explicitly require authorization with [Authorize] attribute
             });
 
             return services;

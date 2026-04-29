@@ -12,7 +12,19 @@ namespace WelfareLink.UserManagement.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddHttpContextAccessor();
+             builder.Services.AddHttpContextAccessor();
+
+            // Add distributed memory cache for session support
+            builder.Services.AddDistributedMemoryCache();
+
+            // Add session services
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             // Add services to the container.
 
             builder.Services.AddControllers()
@@ -88,31 +100,43 @@ namespace WelfareLink.UserManagement.API
                 });
             });
 
-            var app = builder.Build();
+             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
 
             app.UseRouting();
 
+            app.UseSession();
+
             // Enable CORS before authentication
             app.UseCors();
 
-            // Apply JWT Authentication & Authorization middleware
-            app.UseJwtAuthenticationAndAuthorization();
+            // Use authentication and authorization BEFORE Swagger
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            // Swagger UI after authentication middleware is added but endpoint routing happens first
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi().WithOpenApi().WithName("OpenAPI v1").WithOpenApi();
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             app.MapControllers();
 
-            app.Run();
+            try
+            {
+                app.Run();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Application startup error: {ex}");
+                throw;
+            }
         }
     }
 }

@@ -1,7 +1,0 @@
-using WelfareLink.BenifitEligiblity.API.Interfaces;
-
-namespace WelfareLink.BenifitEligiblity.API.Repositories;
-
-public class NotificationRepository : INotificationRepository
-{
-}
