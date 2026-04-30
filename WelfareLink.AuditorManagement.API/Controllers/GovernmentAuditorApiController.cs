@@ -48,7 +48,7 @@ namespace WelfareLink.AuditorManagement.API.Controllers
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+            var currentUserId = GetUserIdFromClaims();
 
             try
             {
@@ -123,7 +123,7 @@ namespace WelfareLink.AuditorManagement.API.Controllers
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+            var currentUserId = GetUserIdFromClaims();
 
             try
             {
@@ -223,7 +223,7 @@ namespace WelfareLink.AuditorManagement.API.Controllers
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+            var currentUserId = GetUserIdFromClaims();
 
             try
             {
@@ -297,7 +297,7 @@ namespace WelfareLink.AuditorManagement.API.Controllers
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+            var currentUserId = GetUserIdFromClaims();
 
             try
             {
@@ -413,7 +413,7 @@ namespace WelfareLink.AuditorManagement.API.Controllers
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+            var currentUserId = GetUserIdFromClaims();
 
             try
             {
@@ -470,7 +470,7 @@ namespace WelfareLink.AuditorManagement.API.Controllers
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+            var currentUserId = GetUserIdFromClaims();
 
             try
             {
@@ -528,7 +528,7 @@ namespace WelfareLink.AuditorManagement.API.Controllers
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+            var currentUserId = GetUserIdFromClaims();
 
             try
             {
@@ -572,6 +572,21 @@ namespace WelfareLink.AuditorManagement.API.Controllers
 
                 return BadRequest(new { error = ex.Message });
             }
+        }
+
+        /// <summary>
+        /// Extract User ID from JWT claims
+        /// </summary>
+        private int? GetUserIdFromClaims()
+        {
+            var userIdClaim = User.FindFirst("UserId") ?? User.FindFirst("sub") ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId))
+            {
+                return userId;
+            }
+
+            return null;
         }
     }
 }
