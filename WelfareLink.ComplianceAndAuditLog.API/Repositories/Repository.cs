@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using WelfareLink.ComplianceAndAudit.API.Data;
-using WelfareLink.ComplianceAndAudit.API.Interfaces;
+using WelfareLink.ComplianceAndAuditLog.API.Data;
+using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
 
-namespace WelfareLink.ComplianceAndAudit.API.Repositories
+namespace WelfareLink.ComplianceAndAuditLog.API.Repositories
 {
     public class Repository<T> : IRepository<T> where T : class
     {

@@ -1,6 +1,6 @@
-using WelfareLink.ComplianceAndAudit.API.Models;
+using WelfareLink.ComplianceAndAuditLog.API.Models;
 
-namespace WelfareLink.ComplianceAndAudit.API.Interfaces;
+namespace WelfareLink.ComplianceAndAuditLog.API.Interfaces;
 
 public interface ICitizenRepository
 {

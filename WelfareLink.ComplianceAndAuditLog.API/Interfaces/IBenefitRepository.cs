@@ -1,5 +1,5 @@
-using WelfareLink.ComplianceAndAudit.API.Models;
-namespace WelfareLink.ComplianceAndAudit.API.Interfaces
+using WelfareLink.ComplianceAndAuditLog.API.Models;
+namespace WelfareLink.ComplianceAndAuditLog.API.Interfaces
 {
     public interface IBenefitRepository
     {

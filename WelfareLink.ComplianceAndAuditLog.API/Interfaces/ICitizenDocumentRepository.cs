@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using WelfareLink.ComplianceAndAudit.API.Models;
+using WelfareLink.ComplianceAndAuditLog.API.Models;
 
-namespace WelfareLink.ComplianceAndAudit.API.Interfaces;
+namespace WelfareLink.ComplianceAndAuditLog.API.Interfaces;
 
 public interface ICitizenDocumentRepository
 {

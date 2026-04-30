@@ -1,7 +1,8 @@
-using WelfareLink.ComplianceAndAudit.API.Interfaces;
-using WelfareLink.ComplianceAndAudit.API.Models;
+using WelfareLink.ComplianceAndAuditLog.API.Exceptions;
+using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
+using WelfareLink.ComplianceAndAuditLog.API.Models;
 
-namespace WelfareLink.ComplianceAndAudit.API.Services;
+namespace WelfareLink.ComplianceAndAuditLog.API.Services;
 
 public class EligibilityCheckService : IEligibilityCheckService
 {
@@ -44,14 +45,14 @@ public class EligibilityCheckService : IEligibilityCheckService
     {
         if (check == null)
         {
-            throw new ArgumentNullException(nameof(check));
+            throw new BadRequestException("Eligibility check cannot be null.");
         }
 
         // Validate result
         var validResults = new[] { "Eligible", "Ineligible" };
         if (!validResults.Contains(check.Result, StringComparer.OrdinalIgnoreCase))
         {
-            throw new ArgumentException("Result must be either 'Eligible' or 'Ineligible'.");
+            throw new BadRequestException("Result must be either 'Eligible' or 'Ineligible'.");
         }
 
         // Set the date if not already set
@@ -90,13 +91,13 @@ public class EligibilityCheckService : IEligibilityCheckService
     {
         if (check == null)
         {
-            throw new ArgumentNullException(nameof(check));
+            throw new BadRequestException("Eligibility check cannot be null.");
         }
 
         var existingCheck = await _eligibilityCheckRepository.GetByIdAsync(check.CheckID);
         if (existingCheck == null)
         {
-            throw new InvalidOperationException($"Eligibility check with ID {check.CheckID} not found.");
+            throw new NotFoundException($"Eligibility check with ID {check.CheckID} not found.");
         }
 
         var oldResult = existingCheck.Result;
@@ -130,7 +131,7 @@ public class EligibilityCheckService : IEligibilityCheckService
         var check = await _eligibilityCheckRepository.GetByIdAsync(id);
         if (check == null)
         {
-            throw new InvalidOperationException($"Eligibility check with ID {id} not found.");
+            throw new NotFoundException($"Eligibility check with ID {id} not found.");
         }
 
         await _eligibilityCheckRepository.DeleteAsync(id);
@@ -150,7 +151,7 @@ public class EligibilityCheckService : IEligibilityCheckService
     {
         if (string.IsNullOrWhiteSpace(result))
         {
-            throw new ArgumentException("Result cannot be null or empty.", nameof(result));
+            throw new BadRequestException("Result cannot be null or empty.");
         }
 
         return await _eligibilityCheckRepository.GetByResultAsync(result);
@@ -160,7 +161,7 @@ public class EligibilityCheckService : IEligibilityCheckService
     {
         if (startDate > endDate)
         {
-            throw new ArgumentException("Start date cannot be after end date.");
+            throw new BadRequestException("Start date cannot be after end date.");
         }
 
         return await _eligibilityCheckRepository.GetByDateRangeAsync(startDate, endDate);

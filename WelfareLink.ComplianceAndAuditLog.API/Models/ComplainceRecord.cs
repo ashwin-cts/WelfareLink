@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace WelfareLink.ComplianceAndAudit.API.Models
+namespace WelfareLink.ComplianceAndAuditLog.API.Models
 {
     public class ComplainceRecord
     {

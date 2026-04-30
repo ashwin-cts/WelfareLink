@@ -19,7 +19,7 @@ namespace WelfareLink.WelfareOfficerManagement.API
             try
             {
                 //exception
-                Log.Information("Starting the BenefitEligiblity API");
+                Log.Information("Starting the WelfareOfficerManagement API");
                 var builder = WebApplication.CreateBuilder(args);
                 builder.Services.AddHttpContextAccessor();
                 // Add services to the container.
@@ -128,7 +128,7 @@ namespace WelfareLink.WelfareOfficerManagement.API
                 app.Run();
             }
             catch (Exception ex) {
-                Log.Fatal(ex, "Application terminated unexpectedly");
+                Log.Fatal(ex, "Application ProgramMangement API terminated unexpectedly");
             }
             finally
             {

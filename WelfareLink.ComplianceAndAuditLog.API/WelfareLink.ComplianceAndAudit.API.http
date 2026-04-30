@@ -1,6 +1,6 @@
-@WelfareLink.ComplianceAndAudit.API_HostAddress = http://localhost:5044
+@WelfareLink.ComplianceAndAuditLog.API_HostAddress = http://localhost:5044
 
-GET {{WelfareLink.ComplianceAndAudit.API_HostAddress}}/weatherforecast/
+GET {{WelfareLink.ComplianceAndAuditLog.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###

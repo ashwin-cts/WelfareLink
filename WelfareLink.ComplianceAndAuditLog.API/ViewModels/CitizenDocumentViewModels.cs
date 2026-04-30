@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using WelfareLink.ComplianceAndAudit.API.Models;
+using WelfareLink.ComplianceAndAuditLog.API.Models;
 
-namespace WelfareLink.ComplianceAndAudit.API.ViewModels
+namespace WelfareLink.ComplianceAndAuditLog.API.ViewModels
 {
     public class DocumentUploadViewModel
     {

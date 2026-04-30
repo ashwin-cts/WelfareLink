@@ -1,6 +1,6 @@
-using WelfareLink.ComplianceAndAudit.API.ViewModels;
+using WelfareLink.ComplianceAndAuditLog.API.ViewModels;
 
-namespace WelfareLink.ComplianceAndAudit.API.Interfaces
+namespace WelfareLink.ComplianceAndAuditLog.API.Interfaces
 {
     public interface IBenefitAnalyticsService
     {

@@ -1,6 +1,6 @@
-using WelfareLink.ComplianceAndAudit.API.Interfaces;
+using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
 
-namespace WelfareLink.ComplianceAndAudit.API.Repositories;
+namespace WelfareLink.ComplianceAndAuditLog.API.Repositories;
 
 public class ReportRepository : IReportRepository
 {

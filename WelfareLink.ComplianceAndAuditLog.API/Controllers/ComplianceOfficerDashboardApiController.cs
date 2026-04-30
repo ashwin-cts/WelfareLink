@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using WelfareLink.ComplianceAndAudit.API.Interfaces;
-using WelfareLink.ComplianceAndAudit.API.Models;
-using WelfareLink.ComplianceAndAudit.API.Data;
+using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
+using WelfareLink.ComplianceAndAuditLog.API.Models;
+using WelfareLink.ComplianceAndAuditLog.API.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace WelfareLink.ComplianceAndAudit.API.Controllers
+namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

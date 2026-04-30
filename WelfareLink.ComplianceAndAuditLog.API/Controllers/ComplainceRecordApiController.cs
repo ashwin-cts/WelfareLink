@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using WelfareLink.ComplianceAndAudit.API.Interfaces;
-using WelfareLink.ComplianceAndAudit.API.Models;
+using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
+using WelfareLink.ComplianceAndAuditLog.API.Models;
 
-namespace WelfareLink.ComplianceAndAudit.API.Controllers
+namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
