@@ -1,3 +1,4 @@
+using WelfareLink.WelfareOfficerManagement.API.Exceptions;
 using WelfareLink.WelfareOfficerManagement.API.Interfaces;
 using WelfareLink.WelfareOfficerManagement.API.Models;
 
@@ -78,12 +79,12 @@ public class ResourceService : IResourceService
         var program = await _programRepository.GetProgramByIdAsync(programId);
         if (program == null)
         {
-            throw new InvalidOperationException($"Program with ID {programId} not found.");
+            throw new NotFoundException($"Program with ID {programId} not found.");
         }
 
         if (program.Status != "Active")
         {
-            throw new InvalidOperationException("Cannot allocate resources to a non-active programme.");
+            throw new BusinessValidationException("Cannot allocate resources to a non-active programme.");
         }
     }
 
@@ -91,7 +92,7 @@ public class ResourceService : IResourceService
     {
         if (resource.Quantity <= 0)
         {
-            throw new InvalidOperationException("Resource quantity must be greater than zero.");
+            throw new BadRequestException("Resource quantity must be greater than zero.");
         }
     }
 
@@ -100,7 +101,7 @@ public class ResourceService : IResourceService
         var program = await _programRepository.GetProgramByIdAsync(resource.ProgramID);
         if (program == null)
         {
-            throw new InvalidOperationException("Programme not found.");
+            throw new NotFoundException("Programme not found.");
         }
 
         var existingResources = await _resourceRepository.GetResourcesByProgramIdAsync(resource.ProgramID);
@@ -121,7 +122,7 @@ public class ResourceService : IResourceService
             if (newTotalFunds > program.Budget)
             {
                 var excessAmount = newTotalFunds - program.Budget;
-                throw new InvalidOperationException(
+                throw new BusinessValidationException(
                     $"Cannot allocate ₹{resource.Quantity:N2}. Programme budget: ₹{program.Budget:N2}, Already allocated: ₹{totalAllocatedFunds:N2}, Remaining: ₹{remainingBudget:N2}. Exceeds by ₹{excessAmount:N2}. Please increase programme budget or reduce allocation amount.");
             }
         }
