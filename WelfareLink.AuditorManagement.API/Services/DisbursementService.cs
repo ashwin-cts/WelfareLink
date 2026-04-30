@@ -1,3 +1,4 @@
+using WelfareLink.AuditorManagement.API.Exceptions;
 using WelfareLink.AuditorManagement.API.Interfaces;
 using WelfareLink.AuditorManagement.API.Models;
 using static System.Net.Mime.MediaTypeNames;
@@ -40,7 +41,7 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentException("Disbursement ID must be greater than zero.", nameof(id));
+                throw new BadRequestException("Disbursement ID must be greater than zero.");
             }
             return await _disbursementRepository.GetByIdAsync(id);
         }
@@ -113,12 +114,12 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (disbursement.DisbursementID <= 0)
             {
-                throw new ArgumentException("Disbursement ID must be greater than zero.", nameof(disbursement.DisbursementID));
+                throw new BadRequestException("Disbursement ID must be greater than zero.");
             }
 
             if (!await _disbursementRepository.ExistsAsync(disbursement.DisbursementID))
             {
-                throw new InvalidOperationException($"Disbursement with ID {disbursement.DisbursementID} does not exist.");
+                throw new BusinessValidationException($"Disbursement with ID {disbursement.DisbursementID} does not exist.");
             }
 
             await ValidateDisbursementAsync(disbursement);
@@ -168,13 +169,13 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentException("Disbursement ID must be greater than zero.", nameof(id));
+                throw new BadRequestException("Disbursement ID must be greater than zero.");
             }
 
             var disbursement = await _disbursementRepository.GetByIdAsync(id);
             if (disbursement == null)
             {
-                throw new InvalidOperationException($"Disbursement with ID {id} does not exist.");
+                throw new BusinessValidationException($"Disbursement with ID {id} does not exist.");
             }
 
             var benefitId = disbursement.BenefitID;
@@ -199,7 +200,7 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (benefitId <= 0)
             {
-                throw new ArgumentException("Benefit ID must be greater than zero.", nameof(benefitId));
+                throw new BadRequestException("Benefit ID must be greater than zero.");
             }
             return await _disbursementRepository.GetByBenefitIdAsync(benefitId);
         }
@@ -266,18 +267,18 @@ namespace WelfareLink.AuditorManagement.API.Services
 
             var programId = benefit.WelfareApplication.ProgramID;
             var program = benefit.WelfareApplication.Program;
-            
+
 
             var resources = await _resourceRepository.GetResourcesByProgramIdAsync(programId);
             var totalResourceQuantity = (double)resources.Sum(r => r.Quantity);
 
             if (totalResourceQuantity == 0)
             {
-                
-                    throw new InvalidOperationException(
-                        $"Resource Unavailable: Programme '{program.Title}' has no resources allocated. " +
-                        $"Please contact the Programme Manager to allocate resources before disbursing benefits.");
-                
+
+                throw new BusinessValidationException(
+                    $"Resource Unavailable: Programme '{program.Title}' has no resources allocated. " +
+                    $"Please contact the Programme Manager to allocate resources before disbursing benefits.");
+
             }
 
             // Sum completed disbursements across ALL benefits for this program (excluding current record when updating)
@@ -285,18 +286,18 @@ namespace WelfareLink.AuditorManagement.API.Services
             var totalCompletedForProgram =
                     await _disbursementRepository
                     .GetCompletedDisbursementTotalForProgramAsync(programId,
-                                                      disbursement.DisbursementID);
+                                                                  disbursement.DisbursementID);
 
             var available = totalResourceQuantity - totalCompletedForProgram;
 
             if (disbursement.Amount > available)
             {
                 if (available <= 0)
-                    throw new InvalidOperationException(
+                    throw new BusinessValidationException(
                         $"Resource Insufficient: The programme resource allocation of ₹{totalResourceQuantity:N2} has been fully exhausted. " +
                         $"Please contact the Programme Manager to allocate additional resources.");
                 else
-                    throw new InvalidOperationException(
+                    throw new BusinessValidationException(
                         $"Resource Insufficient: Only ₹{available:N2} remains from the programme allocation of ₹{totalResourceQuantity:N2}. " +
                         $"Reduce the disbursement amount or contact the Programme Manager.");
             }
@@ -306,7 +307,7 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (disbursement == null)
             {
-                throw new ArgumentNullException(nameof(disbursement), "Disbursement cannot be null.");
+                throw new BadRequestException("Disbursement cannot be null.");
             }
 
             await ValidateBenefitIdAsync(disbursement.BenefitID);
@@ -339,12 +340,12 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (benefitId <= 0)
             {
-                throw new ArgumentException("Benefit ID must be greater than zero.", nameof(benefitId));
+                throw new BadRequestException("Benefit ID must be greater than zero.");
             }
 
             if (!await _benefitRepository.ExistsAsync(benefitId))
             {
-                throw new InvalidOperationException($"Benefit with ID {benefitId} does not exist. Please select a valid benefit.");
+                throw new BusinessValidationException($"Benefit with ID {benefitId} does not exist. Please select a valid benefit.");
             }
         }
 
@@ -352,7 +353,7 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (disbursement.Amount <= 0)
             {
-                throw new ArgumentException("Disbursement amount must be greater than zero.", nameof(disbursement.Amount));
+                throw new BadRequestException("Disbursement amount must be greater than zero.");
             }
 
             var benefit = await _benefitRepository.GetByIdAsync(disbursement.BenefitID);
@@ -376,10 +377,9 @@ namespace WelfareLink.AuditorManagement.API.Services
             // Validate amount doesn't exceed remaining balance for any status
             if (disbursement.Amount > remainingToDisburse)
             {
-                throw new ArgumentException(
+                throw new BadRequestException(
                     $"Disbursement amount (₹{disbursement.Amount:N2}) exceeds remaining balance (₹{remainingToDisburse:N2}). " +
-                    $"Total benefit: ₹{benefit.Amount:N2}, Already disbursed: ₹{totalAlreadyDisbursed:N2}",
-                    nameof(disbursement.Amount));
+                    $"Total benefit: ₹{benefit.Amount:N2}, Already disbursed: ₹{totalAlreadyDisbursed:N2}");
             }
         }
 
@@ -387,12 +387,12 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (citizenId <= 0)
             {
-                throw new ArgumentException("Citizen ID must be greater than zero.", nameof(citizenId));
+                throw new BadRequestException("Citizen ID must be greater than zero.");
             }
 
             if (citizenId > 999999999) // Max 9 digits
             {
-                throw new ArgumentException("Citizen ID exceeds maximum allowed digits.", nameof(citizenId));
+                throw new BadRequestException("Citizen ID exceeds maximum allowed digits.");
             }
         }
 
@@ -400,12 +400,12 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (officerId <= 0)
             {
-                throw new ArgumentException("Officer ID must be greater than zero.", nameof(officerId));
+                throw new BadRequestException("Officer ID must be greater than zero.");
             }
 
             if (officerId > 999999) // Max 6 digits
             {
-                throw new ArgumentException("Officer ID exceeds maximum allowed digits.", nameof(officerId));
+                throw new BadRequestException("Officer ID exceeds maximum allowed digits.");
             }
         }
 
@@ -413,17 +413,17 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (date == default)
             {
-                throw new ArgumentException("Date is required.", nameof(date));
+                throw new BadRequestException("Date is required.");
             }
 
             if (date > DateTime.Now.AddDays(1))
             {
-                throw new ArgumentException("Disbursement date cannot be in the future.", nameof(date));
+                throw new BadRequestException("Disbursement date cannot be in the future.");
             }
 
             if (date < DateTime.Now.AddYears(-10))
             {
-                throw new ArgumentException("Disbursement date cannot be older than 10 years.", nameof(date));
+                throw new BadRequestException("Disbursement date cannot be older than 10 years.");
             }
         }
 
@@ -431,12 +431,12 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (string.IsNullOrWhiteSpace(status))
             {
-                throw new ArgumentException("Status is required.", nameof(status));
+                throw new BadRequestException("Status is required.");
             }
 
             if (!_validStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
             {
-                throw new ArgumentException($"Invalid status. Valid statuses are: {string.Join(", ", _validStatuses)}", nameof(status));
+                throw new BadRequestException($"Invalid status. Valid statuses are: {string.Join(", ", _validStatuses)}");
             }
 
         }
@@ -453,7 +453,7 @@ namespace WelfareLink.AuditorManagement.API.Services
                     latestCheck.ResultCode.Equals("Rejected", StringComparison.OrdinalIgnoreCase) ||
                     latestCheck.ResultCode.Equals("REJECTED", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException($"Cannot create disbursement for application #{applicationId}. The application has been rejected in the eligibility check.");
+                    throw new BusinessValidationException($"Cannot create disbursement for application #{applicationId}. The application has been rejected in the eligibility check.");
                 }
             }
         }

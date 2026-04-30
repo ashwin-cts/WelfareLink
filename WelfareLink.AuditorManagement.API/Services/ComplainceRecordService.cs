@@ -1,7 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+
 using WelfareLink.AuditorManagement.API.Data;
+using WelfareLink.AuditorManagement.API.Exceptions;
 using WelfareLink.AuditorManagement.API.Interfaces;
 using WelfareLink.AuditorManagement.API.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace WelfareLink.AuditorManagement.API.Services;
 
@@ -39,7 +41,7 @@ public class ComplainceRecordService : IComplainceRecordService
     public async Task<ComplainceRecord> UpdateStatusAsync(int id, string status, int? resolvedByUserId, string? notes)
     {
         var record = await _repo.GetByIdAsync(id)
-            ?? throw new InvalidOperationException($"Compliance record #{id} not found.");
+            ?? throw new NotFoundException($"Compliance record #{id} not found.");
 
         record.Status = status;
         if (notes != null) record.Notes = notes;
