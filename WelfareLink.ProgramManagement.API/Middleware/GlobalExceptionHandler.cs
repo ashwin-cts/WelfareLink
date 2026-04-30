@@ -18,10 +18,12 @@ namespace WelfareLink.ProgramManagement.API.Middleware
             CancellationToken cancellationToken)
         {
             var traceId = httpContext.TraceIdentifier;
+            //log update for error
             _logger.LogError(
-                exception,
-                "An error has occurred while processing the request. TraceId {TraceId}",
-                traceId
+               exception,
+        "An error has occurred while processing the request. TraceId: {TraceId} | Error: {ErrorMessage}",
+        traceId,
+        exception.Message
             );
 
             int statusCode = 0;
