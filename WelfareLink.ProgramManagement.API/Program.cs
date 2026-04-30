@@ -7,6 +7,8 @@ using WelfareLink.ProgramManagement.API.Data;
 using WelfareLink.ProgramManagement.API.Interfaces;
 using WelfareLink.ProgramManagement.API.Repositories;
 using WelfareLink.ProgramManagement.API.Services;
+// ADDED THIS USING STATEMENT for your GlobalExceptionHandler
+using WelfareLink.ProgramManagement.API.Middleware;
 
 namespace WelfareLink.ProgramManagement.API
 {
@@ -22,6 +24,10 @@ namespace WelfareLink.ProgramManagement.API
             {
                 Log.Information("Starting the ProgramManagement API");
                 var builder = WebApplication.CreateBuilder(args);
+
+                // 1. ADDED THIS: Route all internal ASP.NET logs (including your exception handler) to Serilog
+                builder.Host.UseSerilog();
+
                 builder.Services.AddHttpContextAccessor();
                 // Add services to the container.
 
@@ -43,8 +49,23 @@ namespace WelfareLink.ProgramManagement.API
                                         .Select(e => e.ErrorMessage))
                             });
                     });
+
+                // 2. ADDED THIS: Register your global exception handler in the DI container
+                builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+                // Explicitly configure the Host logger to filter out the noise and write to File/Console
+                builder.Host.UseSerilog((context, services, configuration) => configuration
+                    .MinimumLevel.Information()
+                    // Hide standard ASP.NET request logs
+                    .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
+                    // Hide standard Entity Framework SQL queries
+                    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
+                    .WriteTo.Console()
+                    .WriteTo.File("logs/microservice-.txt", rollingInterval: RollingInterval.Day)
+                );
+
                 //Db reg
                 builder.Services.AddDbContext<WelfareLinkDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
                 //DI Container
                 builder.Services.AddScoped<IUserRepository, UserRepository>();
                 builder.Services.AddScoped<ICitizenRepository, CitizenRepository>();
@@ -59,7 +80,6 @@ namespace WelfareLink.ProgramManagement.API
                 builder.Services.AddScoped<IReportRepository, ReportRepository>();
                 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
                 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-
 
                 // Service registrations
                 builder.Services.AddScoped<IUserService, UserService>();
@@ -79,6 +99,7 @@ namespace WelfareLink.ProgramManagement.API
                 builder.Services.AddScoped<IWelfareApplicationAnalyticsService, WelfareApplicationAnalyticsService>();
                 builder.Services.AddScoped<IWelfareApplicationDocumentService, WelfareApplicationDocumentService>();
                 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+
                 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
                 builder.Services.AddProblemDetails();
                 builder.Services.AddOpenApi();
@@ -130,6 +151,9 @@ namespace WelfareLink.ProgramManagement.API
                 });
 
                 var app = builder.Build();
+
+                // 3. ADDED THIS: Add the exception handler to the HTTP pipeline so it actually catches errors!
+                app.UseExceptionHandler();
 
                 // Configure the HTTP request pipeline.
                 if (app.Environment.IsDevelopment())
