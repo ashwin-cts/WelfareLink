@@ -1,6 +1,6 @@
-using WelfareLink.ComplianceAndAudit.API.Interfaces;
+using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
 
-namespace WelfareLink.ComplianceAndAudit.API.Services
+namespace WelfareLink.ComplianceAndAuditLog.API.Services
 {
     public class WelfareApplicationAnalyticsService : IWelfareApplicationAnalyticsService
     {

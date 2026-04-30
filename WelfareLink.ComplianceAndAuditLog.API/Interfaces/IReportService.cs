@@ -1,4 +1,4 @@
-namespace WelfareLink.ComplianceAndAudit.API.Interfaces;
+namespace WelfareLink.ComplianceAndAuditLog.API.Interfaces;
 
 public interface IReportService
 {

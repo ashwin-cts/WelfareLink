@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using WelfareLink.ComplianceAndAudit.API.Models;
+using WelfareLink.ComplianceAndAuditLog.API.Models;
 
-namespace WelfareLink.ComplianceAndAudit.API.Data
+namespace WelfareLink.ComplianceAndAuditLog.API.Data
 {
     public class WelfareLinkDbContext:DbContext
     {

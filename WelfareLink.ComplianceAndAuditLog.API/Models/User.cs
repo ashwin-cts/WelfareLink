@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WelfareLink.ComplianceAndAudit.API.Models
+namespace WelfareLink.ComplianceAndAuditLog.API.Models
 {
     public class User
     {

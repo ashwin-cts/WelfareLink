@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace WelfareLink.ComplianceAndAudit.API.ViewModels
+namespace WelfareLink.ComplianceAndAuditLog.API.ViewModels
 {
     public class EditProfileViewModel
     {

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
-namespace WelfareLink.ComplianceAndAudit.API.Configuration
+namespace WelfareLink.ComplianceAndAuditLog.API.Configuration
 {
     public static class JwtConfiguration
     {

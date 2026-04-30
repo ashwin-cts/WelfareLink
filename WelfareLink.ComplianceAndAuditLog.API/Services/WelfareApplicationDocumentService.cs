@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using WelfareLink.ComplianceAndAudit.API.Data;
-using WelfareLink.ComplianceAndAudit.API.Interfaces;
-using WelfareLink.ComplianceAndAudit.API.Models;
+using WelfareLink.ComplianceAndAuditLog.API.Data;
+using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
+using WelfareLink.ComplianceAndAuditLog.API.Models;
 
-namespace WelfareLink.ComplianceAndAudit.API.Services;
+namespace WelfareLink.ComplianceAndAuditLog.API.Services;
 
 public class WelfareApplicationDocumentService : IWelfareApplicationDocumentService
 {

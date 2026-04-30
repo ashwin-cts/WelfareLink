@@ -1,6 +1,6 @@
 using System;
 
-namespace WelfareLink.ComplianceAndAudit.API.Utilities
+namespace WelfareLink.ComplianceAndAuditLog.API.Utilities
 {
     public static class AuditLogHelper
     {
