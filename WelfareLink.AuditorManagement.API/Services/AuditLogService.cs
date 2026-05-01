@@ -1,5 +1,7 @@
+using WelfareLink.AuditorManagement.API.Exceptions;
 using WelfareLink.AuditorManagement.API.Interfaces;
 using WelfareLink.AuditorManagement.API.Models;
+
 
 namespace WelfareLink.AuditorManagement.API.Services
 {
@@ -21,7 +23,7 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentException("Audit Log ID must be greater than zero.", nameof(id));
+                throw new BadRequestException("Audit Log ID must be greater than zero.");
             }
             return await _auditLogRepository.GetByIdAsync(id);
         }
@@ -30,11 +32,11 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (pageNumber <= 0)
             {
-                throw new ArgumentException("Page number must be greater than zero.", nameof(pageNumber));
+                throw new BadRequestException("Page number must be greater than zero.");
             }
             if (pageSize <= 0)
             {
-                throw new ArgumentException("Page size must be greater than zero.", nameof(pageSize));
+                throw new BadRequestException("Page size must be greater than zero.");
             }
             return await _auditLogRepository.GetPagedAsync(pageNumber, pageSize);
         }
@@ -43,15 +45,15 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (string.IsNullOrWhiteSpace(entityType))
             {
-                throw new ArgumentException("Entity type cannot be empty.", nameof(entityType));
+                throw new BadRequestException("Entity type cannot be empty.");
             }
             if (pageNumber <= 0)
             {
-                throw new ArgumentException("Page number must be greater than zero.", nameof(pageNumber));
+                throw new BadRequestException("Page number must be greater than zero.");
             }
             if (pageSize <= 0)
             {
-                throw new ArgumentException("Page size must be greater than zero.", nameof(pageSize));
+                throw new BadRequestException("Page size must be greater than zero.");
             }
             return await _auditLogRepository.GetPagedByEntityTypeAsync(entityType, pageNumber, pageSize);
         }
@@ -60,15 +62,15 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (string.IsNullOrWhiteSpace(action))
             {
-                throw new ArgumentException("Action cannot be empty.", nameof(action));
+                throw new BadRequestException("Action cannot be empty.");
             }
             if (pageNumber <= 0)
             {
-                throw new ArgumentException("Page number must be greater than zero.", nameof(pageNumber));
+                throw new BadRequestException("Page number must be greater than zero.");
             }
             if (pageSize <= 0)
             {
-                throw new ArgumentException("Page size must be greater than zero.", nameof(pageSize));
+                throw new BadRequestException("Page size must be greater than zero.");
             }
             return await _auditLogRepository.GetPagedByActionAsync(action, pageNumber, pageSize);
         }
@@ -77,15 +79,15 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (startDate > endDate)
             {
-                throw new ArgumentException("Start date must be before or equal to end date.");
+                throw new BadRequestException("Start date must be before or equal to end date.");
             }
             if (pageNumber <= 0)
             {
-                throw new ArgumentException("Page number must be greater than zero.", nameof(pageNumber));
+                throw new BadRequestException("Page number must be greater than zero.");
             }
             if (pageSize <= 0)
             {
-                throw new ArgumentException("Page size must be greater than zero.", nameof(pageSize));
+                throw new BadRequestException("Page size must be greater than zero.");
             }
             return await _auditLogRepository.GetPagedByDateRangeAsync(startDate, endDate, pageNumber, pageSize);
         }
@@ -94,15 +96,15 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (string.IsNullOrWhiteSpace(action))
             {
-                throw new ArgumentException("Action cannot be empty.", nameof(action));
+                throw new BadRequestException("Action cannot be empty.");
             }
             if (string.IsNullOrWhiteSpace(entityType))
             {
-                throw new ArgumentException("Entity type cannot be empty.", nameof(entityType));
+                throw new BadRequestException("Entity type cannot be empty.");
             }
             if (string.IsNullOrWhiteSpace(description))
             {
-                throw new ArgumentException("Description cannot be empty.", nameof(description));
+                throw new BadRequestException("Description cannot be empty.");
             }
 
             var auditLog = new AuditLog
@@ -127,7 +129,7 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentException("Audit Log ID must be greater than zero.", nameof(id));
+                throw new BadRequestException("Audit Log ID must be greater than zero.");
             }
             return await _auditLogRepository.DeleteAsync(id);
         }
@@ -136,7 +138,7 @@ namespace WelfareLink.AuditorManagement.API.Services
         {
             if (daysOld <= 0)
             {
-                throw new ArgumentException("Days old must be greater than zero.", nameof(daysOld));
+                throw new BadRequestException("Days old must be greater than zero.");
             }
             return await _auditLogRepository.DeleteOldLogsAsync(daysOld);
         }

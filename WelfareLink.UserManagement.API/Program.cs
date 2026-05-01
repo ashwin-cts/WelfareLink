@@ -101,6 +101,7 @@ namespace WelfareLink.UserManagement.API
             });
 
              var app = builder.Build();
+            app.UseExceptionHandler();
 
             // Configure the HTTP request pipeline.
             app.UseHttpsRedirection();

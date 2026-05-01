@@ -1,7 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+
 using WelfareLink.CitizenManagement.API.Data;
+using WelfareLink.CitizenManagement.API.Exceptions;
 using WelfareLink.CitizenManagement.API.Interfaces;
 using WelfareLink.CitizenManagement.API.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace WelfareLink.CitizenManagement.API.Services;
 
@@ -39,7 +41,7 @@ public class ComplainceRecordService : IComplainceRecordService
     public async Task<ComplainceRecord> UpdateStatusAsync(int id, string status, int? resolvedByUserId, string? notes)
     {
         var record = await _repo.GetByIdAsync(id)
-            ?? throw new InvalidOperationException($"Compliance record #{id} not found.");
+            ?? throw new NotFoundException($"Compliance record #{id} not found.");
 
         record.Status = status;
         if (notes != null) record.Notes = notes;

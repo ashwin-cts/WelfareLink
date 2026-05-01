@@ -6,4 +6,3 @@
 2026-04-30 17:59:32.773 +05:30 [INF] Starting the WelfareOfficerManagement API
 2026-04-30 18:06:56.929 +05:30 [INF] Starting the WelfareOfficerManagement API
 2026-04-30 18:09:54.158 +05:30 [INF] Starting the WelfareOfficerManagement API
-2026-04-30 18:20:02.579 +05:30 [INF] Starting the WelfareOfficerManagement API

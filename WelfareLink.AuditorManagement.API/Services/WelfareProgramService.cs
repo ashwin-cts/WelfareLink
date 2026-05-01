@@ -1,3 +1,4 @@
+using WelfareLink.AuditorManagement.API.Exceptions;
 using WelfareLink.AuditorManagement.API.Interfaces;
 using WelfareLink.AuditorManagement.API.Models;
 
@@ -90,11 +91,11 @@ public class WelfareProgramService : IWelfareProgramService
     {
         var program = await _programRepository.GetProgramByIdAsync(id);
         if (program == null)
-            throw new InvalidOperationException($"Programme #{id} not found.");
+            throw new NotFoundException($"Programme #{id} not found.");
         if (program.Status == "Expired")
-            throw new InvalidOperationException("Cannot suspend an already expired programme.");
+            throw new BusinessValidationException("Cannot suspend an already expired programme.");
         if (program.Status == "Suspended")
-            throw new InvalidOperationException("Programme is already suspended.");
+            throw new BusinessValidationException("Programme is already suspended.");
         await _programRepository.UpdateStatusAsync(id, "Suspended");
 
         var userId = GetCurrentUserId();
@@ -113,12 +114,12 @@ public class WelfareProgramService : IWelfareProgramService
         var program = await _programRepository.GetProgramByIdAsync(id);
         if (program == null)
         {
-            throw new InvalidOperationException($"Program with ID {id} not found.");
+            throw new NotFoundException($"Program with ID {id} not found.");
         }
 
         if (program.Status == "Active")
         {
-            throw new InvalidOperationException("Cannot delete an active program. Please suspend or complete it first.");
+            throw new BusinessValidationException("Cannot delete an active program. Please suspend or complete it first.");
         }
 
         await _programRepository.DeleteProgramAsync(id);
@@ -128,14 +129,14 @@ public class WelfareProgramService : IWelfareProgramService
     {
         if (program.EndDate <= program.StartDate)
         {
-            throw new InvalidOperationException("Programme end date must be after the start date.");
+            throw new BadRequestException("Programme end date must be after the start date.");
         }
 
         // Only check if start date is in the past for NEW programmes
         // Allow updates to existing programmes even if start date is in the past
         if (isNewProgram && program.StartDate < DateTime.Today)
         {
-            throw new InvalidOperationException("Programme start date cannot be in the past.");
+            throw new BadRequestException("Programme start date cannot be in the past.");
         }
     }
 
@@ -143,7 +144,7 @@ public class WelfareProgramService : IWelfareProgramService
     {
         if (program.Budget <= 0)
         {
-            throw new InvalidOperationException("Programme budget must be greater than zero.");
+            throw new BadRequestException("Programme budget must be greater than zero.");
         }
     }
 
@@ -156,7 +157,7 @@ public class WelfareProgramService : IWelfareProgramService
 
         if (duplicate != null)
         {
-            throw new InvalidOperationException($"A programme with the title '{title}' already exists.");
+            throw new BusinessValidationException($"A programme with the title '{title}' already exists.");
         }
     }
 }
