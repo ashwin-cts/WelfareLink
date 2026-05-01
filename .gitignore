@@ -1,30 +1,23 @@
-
 # Visual Studio cache
 .vs/
 
-# Build outputs
-bin/
-obj/
+# Build outputs for all projects
+**/bin/
+**/obj/
 Debug/
 Release/
 
-
-# User-specific files
+# User-specific and temp files
 *.user
 *.suo
 *.log
 *.tmp
 *.txt
 
-WelfareLink/bin/
-WelfareLink/obj/
-WelfareLinkApi/bin/
-WelfareLinkApi/obj/
-WelfareLinkApi/wwwroot/*
+# Ignore everything inside logs folders but keep the folder
+**/logs/*
+!**/logs/.gitkeep
 
-
-# But keep the folder itself via .gitkeep
-!wwwroot/.gitkeep
-!WelfareLink/wwwroot/.gitkeep
-!WelfareLinkApi/wwwroot/.gitkeep
-
+# Ignore everything inside wwwroot folders but keep the folder
+**/wwwroot/*
+!**/wwwroot/.gitkeep
