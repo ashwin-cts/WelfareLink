@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.ProgramManagement.API.Interfaces;
 using WelfareLink.ProgramManagement.API.Models;
@@ -7,6 +8,8 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: Internal roles can view resource allocations and utilization reports
+    [Authorize(Roles = "Admin,ProgramManager,GovernmentAuditor,ComplianceOfficer")]
     public class ResourceApiController : ControllerBase
     {
         private readonly IResourceService _resourceService;
@@ -25,6 +28,7 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // GET: api/resourceapi
         [HttpGet]
+        // Falls back to Base Rule (Read-only access)
         public async Task<IActionResult> GetAll()
         {
             var resources = await _resourceService.GetAllResourcesAsync();
@@ -33,6 +37,7 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // GET: api/resourceapi/program/{programId}
         [HttpGet("program/{programId}")]
+        // Falls back to Base Rule (Read-only access)
         public async Task<IActionResult> GetByProgramId(int programId)
         {
             var program = await _programService.GetProgramByIdAsync(programId);
@@ -64,6 +69,7 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // GET: api/resourceapi/utilisation
         [HttpGet("utilisation")]
+        // Falls back to Base Rule (Read-only access)
         public async Task<IActionResult> GetUtilisationReport()
         {
             var resources = await _resourceService.GetAllResourcesAsync();
@@ -122,6 +128,8 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // POST: api/resourceapi
         [HttpPost]
+        // OVERRIDE: Only Program Managers and Admins can allocate resources
+        [Authorize(Roles = "ProgramManager")]
         public async Task<IActionResult> Allocate([FromBody] Resource resource)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -139,6 +147,8 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // PUT: api/resourceapi/{id}
         [HttpPut("{id}")]
+        // OVERRIDE: Only Program Managers and Admins can modify resources
+        [Authorize(Roles = "Admin,ProgramManager")]
         public async Task<IActionResult> Update(int id, [FromBody] Resource resource)
         {
             if (id != resource.ResourceID) return BadRequest(new { Error = "ID mismatch." });

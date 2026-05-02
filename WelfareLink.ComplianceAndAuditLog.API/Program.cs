@@ -3,6 +3,7 @@ using Serilog;
 using WelfareLink.ComplianceAndAuditLog.API.Configuration;
 using WelfareLink.ComplianceAndAuditLog.API.Data;
 using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
+using WelfareLink.ComplianceAndAuditLog.API.Middleware;
 using WelfareLink.ComplianceAndAuditLog.API.Repositories;
 using WelfareLink.ComplianceAndAuditLog.API.Services;
 
@@ -41,6 +42,18 @@ namespace WelfareLink.ComplianceAndAuditLog.API
                                         .Select(e => e.ErrorMessage))
                             });
                     });
+                // 2. ADDED THIS: Register your global exception handler in the DI container
+                builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+                // Explicitly configure the Host logger to filter out the noise and write to File/Console
+                builder.Host.UseSerilog((context, services, configuration) => configuration
+                    .MinimumLevel.Information()
+                    // Hide standard ASP.NET request logs
+                    .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
+                    // Hide standard Entity Framework SQL queries
+                    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
+                    .WriteTo.Console()
+                    .WriteTo.File("logs/microservice-.txt", rollingInterval: RollingInterval.Day)
+                );
                 //Db reg
                 builder.Services.AddDbContext<WelfareLinkDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
                 //DI Container

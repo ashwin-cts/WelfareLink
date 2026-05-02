@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.WelfareOfficerManagement.API.Interfaces;
 using WelfareLink.WelfareOfficerManagement.API.Models;
@@ -6,6 +7,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: Internal staff can view applications, summaries, and pending lists
+    [Authorize(Roles = "Admin,WelfareOfficer,ProgramManager,GovernmentAuditor,ComplianceOfficer")]
     public class WelfareApplicationApiController : ControllerBase
     {
         private readonly IWelfareApplicationService _welfareApplicationService;
@@ -68,6 +71,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // POST: api/welfareapplicationapi
         [HttpPost]
+        // OVERRIDE: Only Welfare Officers and Admins can manually create applications internally
+        [Authorize(Roles = "WelfareOfficer")]
         public async Task<IActionResult> Create([FromBody] WelfareApplication application)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -78,6 +83,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // PUT: api/welfareapplicationapi/{id}
         [HttpPut("{id}")]
+        // OVERRIDE: Only Welfare Officers and Admins can manually edit applications
+        [Authorize(Roles = "Admin,WelfareOfficer")]
         public async Task<IActionResult> Update(int id, [FromBody] WelfareApplication application)
         {
             if (id != application.ApplicationID) return BadRequest(new { Error = "ID mismatch." });
@@ -89,6 +96,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // PATCH: api/welfareapplicationapi/{id}/status
         [HttpPatch("{id}/status")]
+        // OVERRIDE: Only Welfare Officers and Admins can approve/reject/update status
+        [Authorize(Roles = "Admin,WelfareOfficer")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
         {
             var result = await _welfareApplicationService.UpdateApplicationStatusAsync(id, status);
@@ -98,6 +107,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // DELETE: api/welfareapplicationapi/{id}
         [HttpDelete("{id}")]
+        // OVERRIDE: Only Welfare Officers and Admins can delete an application
+        [Authorize(Roles = "Admin,WelfareOfficer")]
         public async Task<IActionResult> Delete(int id)
         {
             if (!await _welfareApplicationService.ApplicationExistsAsync(id)) return NotFound();

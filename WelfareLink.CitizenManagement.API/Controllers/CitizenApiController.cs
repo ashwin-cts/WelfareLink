@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.CitizenManagement.API.Data;
 using WelfareLink.CitizenManagement.API.Interfaces;
@@ -7,6 +8,8 @@ namespace WelfareLink.CitizenManagement.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: These roles can read citizen data (GET requests)
+    [Authorize(Roles = "Admin,Citizen,WelfareOfficer,ComplianceOfficer,GovernmentAuditor")]
     public class CitizenApiController : ControllerBase
     {
         private readonly ICitizenService _citizenService;
@@ -80,6 +83,8 @@ namespace WelfareLink.CitizenManagement.API.Controllers
 
         // POST: api/citizenapi
         [HttpPost]
+        // OVERRIDE: Crucial! Users don't have a token yet when they are registering.
+        [AllowAnonymous]
         public async Task<IActionResult> CreateProfile([FromBody] CreateCitizenRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -125,6 +130,8 @@ namespace WelfareLink.CitizenManagement.API.Controllers
 
         // PUT: api/citizenapi/{id}
         [HttpPut("{id}")]
+        // OVERRIDE: Only the Citizen themselves (or an Admin) should be able to update their profile info.
+        [Authorize(Roles = "Admin,Citizen")]
         public async Task<IActionResult> UpdateProfile(int id, [FromBody] Citizen citizen)
         {
             if (id != citizen.CitizenId) return BadRequest(new { Error = "ID mismatch." });
@@ -146,6 +153,8 @@ namespace WelfareLink.CitizenManagement.API.Controllers
 
         // PUT: api/citizenapi/application/{id}
         [HttpPut("application/{id}")]
+        // OVERRIDE: Only the Citizen resubmits their application. Officers have their own endpoints for approval.
+        [Authorize(Roles = "Citizen")]
         public async Task<IActionResult> UpdateApplication(int id, [FromBody] WelfareApplication application)
         {
             if (id != application.ApplicationID) return BadRequest(new { Error = "ID mismatch." });
@@ -177,6 +186,8 @@ namespace WelfareLink.CitizenManagement.API.Controllers
 
         // POST: api/citizenapi/apply
         [HttpPost("apply")]
+        // OVERRIDE: Only Citizens can apply for programs.
+        [Authorize(Roles = "Citizen")]
         public async Task<IActionResult> ApplyForProgram([FromBody] CitizenApplyRequest request)
         {
             if (request.CitizenID <= 0 || request.ProgramID <= 0)

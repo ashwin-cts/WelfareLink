@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
+using System.Security.Claims; // ADDED FOR JWT CLAIM EXTRACTION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.WelfareOfficerManagement.API.Interfaces;
 using WelfareLink.WelfareOfficerManagement.API.Models;
@@ -6,6 +8,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: Internal staff can view disbursements for processing, metrics, and audits
+    [Authorize(Roles = "Admin,WelfareOfficer,ProgramManager,GovernmentAuditor,ComplianceOfficer")]
     public class DisbursementApiController : ControllerBase
     {
         private readonly IDisbursementService _disbursementService;
@@ -20,6 +24,15 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
             _disbursementService = disbursementService;
             _benefitService = benefitService;
             _resourceService = resourceService;
+        }
+
+        // Helper method to securely extract UserId from JWT token
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                              ?? HttpContext?.User.FindFirst("UserId")?.Value;
+
+            return int.TryParse(userIdClaim, out int id) ? id : 0;
         }
 
         // GET: api/disbursementapi
@@ -201,12 +214,17 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // POST: api/disbursementapi
         [HttpPost]
+        // OVERRIDE: Only Welfare Officers and Admins can create disbursements
+        [Authorize(Roles = "WelfareOfficer")]
         public async Task<IActionResult> Create([FromBody] Disbursement disbursement)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             try
             {
+                // SECURITY FIX: Force the OfficerID to be the currently logged-in user making the request
+                disbursement.OfficerID = GetCurrentUserId();
+
                 var created = await _disbursementService.CreateDisbursementAsync(disbursement);
                 return Ok(new { Message = $"Disbursement #{created.DisbursementID} created successfully.", Disbursement = created });
             }
@@ -218,6 +236,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // PUT: api/disbursementapi/{id}
         [HttpPut("{id}")]
+        // OVERRIDE: Only Welfare Officers and Admins can modify disbursements
+        [Authorize(Roles = "Admin,WelfareOfficer")]
         public async Task<IActionResult> Update(int id, [FromBody] Disbursement disbursement)
         {
             if (id != disbursement.DisbursementID) return BadRequest(new { Error = "ID mismatch." });
@@ -225,6 +245,9 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
             try
             {
+                // SECURITY FIX: Force the OfficerID to be the currently logged-in user making the request
+                disbursement.OfficerID = GetCurrentUserId();
+
                 var updated = await _disbursementService.UpdateDisbursementAsync(disbursement);
                 return Ok(new { Message = $"Disbursement #{updated.DisbursementID} updated successfully.", Disbursement = updated });
             }
@@ -236,6 +259,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // DELETE: api/disbursementapi/{id}
         [HttpDelete("{id}")]
+        // OVERRIDE: Only Welfare Officers and Admins can delete disbursements
+        [Authorize(Roles = "Admin,WelfareOfficer")]
         public async Task<IActionResult> Delete(int id)
         {
             var disbursement = await _disbursementService.GetDisbursementByIdAsync(id);

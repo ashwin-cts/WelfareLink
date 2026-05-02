@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
+using System.Security.Claims; // ADDED FOR JWT CLAIM EXTRACTION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.UserManagement.API.Interfaces;
 using WelfareLink.UserManagement.API.Models;
@@ -8,6 +9,8 @@ namespace WelfareLink.UserManagement.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: Any valid logged-in user can access general endpoints (like GetUser, UpdateProfile, ChangePassword)
+    [Authorize]
     public class UserApiController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -23,7 +26,22 @@ namespace WelfareLink.UserManagement.API.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
+        // Helper method to securely extract UserId from JWT token
+        private int? GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                              ?? _httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value;
+
+            if (int.TryParse(userIdClaim, out int id))
+            {
+                return id;
+            }
+            return null;
+        }
+
         [HttpPost]
+        // OVERRIDE: Only Admins can directly create raw system users here
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<User>> CreateUser([FromBody] User user)
         {
             if (!ModelState.IsValid)
@@ -35,7 +53,9 @@ namespace WelfareLink.UserManagement.API.Controllers
             {
                 var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
                 var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-                var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+
+                // FIXED: Using JWT Claims instead of Session
+                var currentUserId = GetCurrentUserId();
 
                 // Add user to database
                 var createdUser = await _userRepository.AddAsync(user);
@@ -58,7 +78,7 @@ namespace WelfareLink.UserManagement.API.Controllers
             {
                 var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
                 var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-                var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+                var currentUserId = GetCurrentUserId();
 
                 await _auditLogService.LogActionAsync(
                     userId: currentUserId,
@@ -76,6 +96,7 @@ namespace WelfareLink.UserManagement.API.Controllers
         }
 
         [HttpPost("login")]
+        // OVERRIDE: Crucial! Users don't have a token when they are trying to log in.
         [AllowAnonymous]
         public async Task<ActionResult<User>> Login([FromBody] LoginRequest loginRequest)
         {
@@ -182,11 +203,12 @@ namespace WelfareLink.UserManagement.API.Controllers
         }
 
         [HttpGet("{id}")]
+        // Falls back to Base Rule: Any valid token can access
         public async Task<ActionResult<User>> GetUser(int id)
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+            var currentUserId = GetCurrentUserId();
 
             try
             {
@@ -240,6 +262,7 @@ namespace WelfareLink.UserManagement.API.Controllers
         }
 
         [HttpPut("{id}/profile")]
+        // Falls back to Base Rule: Any valid token can access
         public async Task<ActionResult<User>> UpdateProfile(int id, [FromBody] UpdateProfileRequest request)
         {
             if (!ModelState.IsValid)
@@ -249,7 +272,7 @@ namespace WelfareLink.UserManagement.API.Controllers
 
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+            var currentUserId = GetCurrentUserId();
 
             try
             {
@@ -328,6 +351,7 @@ namespace WelfareLink.UserManagement.API.Controllers
         }
 
         [HttpPut("{id}/password")]
+        // Falls back to Base Rule: Any valid token can access
         public async Task<IActionResult> ChangePassword(int id, [FromBody] ChangePasswordRequest request)
         {
             if (!ModelState.IsValid)
@@ -337,7 +361,7 @@ namespace WelfareLink.UserManagement.API.Controllers
 
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+            var currentUserId = GetCurrentUserId();
 
             try
             {
@@ -409,11 +433,13 @@ namespace WelfareLink.UserManagement.API.Controllers
         }
 
         [HttpPut("{id}/block")]
+        // OVERRIDE: Only Admins can block users
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> BlockUser(int id)
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+            var currentUserId = GetCurrentUserId();
 
             try
             {
@@ -476,11 +502,13 @@ namespace WelfareLink.UserManagement.API.Controllers
         }
 
         [HttpPut("{id}/unblock")]
+        // OVERRIDE: Only Admins can unblock users
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UnblockUser(int id)
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+            var currentUserId = GetCurrentUserId();
 
             try
             {

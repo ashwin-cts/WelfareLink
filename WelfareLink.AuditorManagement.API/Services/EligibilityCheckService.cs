@@ -1,3 +1,4 @@
+using System.Security.Claims; // ADDED THIS FOR JWT CLAIMS
 using WelfareLink.AuditorManagement.API.Exceptions;
 using WelfareLink.AuditorManagement.API.Interfaces;
 using WelfareLink.AuditorManagement.API.Models;
@@ -28,7 +29,16 @@ public class EligibilityCheckService : IEligibilityCheckService
 
     private int? GetCurrentUserId()
     {
-        return _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
+        // Securely extracts the UserId from the JWT Token sent by Postman/Client
+        var userIdClaim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                       ?? _httpContextAccessor?.HttpContext?.User?.FindFirst("UserId")?.Value;
+
+        if (int.TryParse(userIdClaim, out int userId))
+        {
+            return userId;
+        }
+
+        return null;
     }
 
     public async Task<IEnumerable<EligibilityCheck>> GetAllChecksAsync()

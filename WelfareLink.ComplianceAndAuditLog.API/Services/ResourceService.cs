@@ -1,6 +1,7 @@
 using WelfareLink.ComplianceAndAuditLog.API.Exceptions;
 using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
 using WelfareLink.ComplianceAndAuditLog.API.Models;
+using System.Security.Claims; // Included for JWT Claims
 
 namespace WelfareLink.ComplianceAndAuditLog.API.Services;
 
@@ -21,7 +22,16 @@ public class ResourceService : IResourceService
 
     private int? GetCurrentUserId()
     {
-        return _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
+        // Securely extracts the UserId from the JWT Token sent by Postman/Client
+        var userIdClaim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                       ?? _httpContextAccessor?.HttpContext?.User?.FindFirst("UserId")?.Value;
+
+        if (int.TryParse(userIdClaim, out int userId))
+        {
+            return userId;
+        }
+
+        return null;
     }
 
     public async Task<IEnumerable<Resource>> GetAllResourcesAsync()

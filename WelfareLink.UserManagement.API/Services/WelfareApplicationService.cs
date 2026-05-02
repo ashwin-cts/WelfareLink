@@ -1,3 +1,5 @@
+using System.Security.Claims; // ADDED THIS FOR JWT CLAIMS
+using WelfareLink.UserManagement.API.Exceptions;
 using WelfareLink.UserManagement.API.Interfaces;
 using WelfareLink.UserManagement.API.Models;
 
@@ -20,7 +22,16 @@ public class WelfareApplicationService : IWelfareApplicationService
 
     private int? GetCurrentUserId()
     {
-        return _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
+        // Securely extracts the UserId from the JWT Token sent by Postman/Client
+        var userIdClaim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                       ?? _httpContextAccessor?.HttpContext?.User?.FindFirst("UserId")?.Value;
+
+        if (int.TryParse(userIdClaim, out int userId))
+        {
+            return userId;
+        }
+
+        return null;
     }
 
     public async Task<IEnumerable<WelfareApplication>> GetAllApplicationsAsync()
@@ -38,7 +49,7 @@ public class WelfareApplicationService : IWelfareApplicationService
         // Business logic validation
         if (application == null)
         {
-            throw new ArgumentNullException(nameof(application));
+            throw new BadRequestException("Application cannot be null.");
         }
 
         // Set default values
@@ -64,12 +75,12 @@ public class WelfareApplicationService : IWelfareApplicationService
     {
         if (application == null)
         {
-            throw new ArgumentNullException(nameof(application));
+            throw new BadRequestException("Application cannot be null.");
         }
 
         if (!await _applicationRepository.ExistsAsync(application.ApplicationID))
         {
-            throw new InvalidOperationException($"Application with ID {application.ApplicationID} not found.");
+            throw new NotFoundException($"Application with ID {application.ApplicationID} not found.");
         }
 
         var oldStatus = (await _applicationRepository.GetByIdAsync(application.ApplicationID))?.Status;
@@ -99,7 +110,7 @@ public class WelfareApplicationService : IWelfareApplicationService
         var application = await _applicationRepository.GetByIdAsync(id);
         if (application == null)
         {
-            throw new InvalidOperationException($"Application with ID {id} not found.");
+            throw new NotFoundException($"Application with ID {id} not found.");
         }
 
         await _applicationRepository.DeleteAsync(id);
@@ -129,7 +140,7 @@ public class WelfareApplicationService : IWelfareApplicationService
     {
         if (string.IsNullOrWhiteSpace(status))
         {
-            throw new ArgumentException("Status cannot be null or empty.", nameof(status));
+            throw new BadRequestException("Status cannot be null or empty.");
         }
 
         return await _applicationRepository.GetByStatusAsync(status);
@@ -139,7 +150,7 @@ public class WelfareApplicationService : IWelfareApplicationService
     {
         if (startDate > endDate)
         {
-            throw new ArgumentException("Start date cannot be after end date.");
+            throw new BadRequestException("Start date cannot be after end date.");
         }
 
         return await _applicationRepository.GetApplicationsByDateRangeAsync(startDate, endDate);
@@ -151,7 +162,7 @@ public class WelfareApplicationService : IWelfareApplicationService
         var validStatuses = new[] { "Pending", "Under Review", "Approved", "Rejected", "Fully Disbursed" };
         if (!validStatuses.Contains(status))
         {
-            throw new ArgumentException($"Invalid status. Must be one of: {string.Join(", ", validStatuses)}");
+            throw new BadRequestException($"Invalid status. Must be one of: {string.Join(", ", validStatuses)}");
         }
 
         var result = await _applicationRepository.UpdateStatusAsync(applicationId, status);

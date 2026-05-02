@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
 using WelfareLink.ComplianceAndAuditLog.API.Models;
@@ -6,6 +7,8 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: ONLY the Admin role can access any endpoint in this controller.
+    [Authorize(Roles = "Admin")]
     public class AuditLogApiController : ControllerBase
     {
         private readonly IAuditLogService _auditLogService;

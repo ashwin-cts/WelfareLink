@@ -1,13 +1,16 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.AuditorManagement.API.Interfaces;
 using WelfareLink.AuditorManagement.API.Models;
-using WelfareLink.AuditorManagement.API.ViewModels;
 using WelfareLink.AuditorManagement.API.Utilities;
+using WelfareLink.AuditorManagement.API.ViewModels;
 
 namespace WelfareLink.AuditorManagement.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: Auditors, Compliance Officers, and Program Managers can view the financial/utilization dashboards
+    [Authorize(Roles = "GovernmentAuditor,ComplianceOfficer,ProgramManager")]
     public class GovernmentAuditorApiController : ControllerBase
     {
         private readonly IBenefitAnalyticsService _benefitAnalyticsService;
@@ -407,6 +410,8 @@ namespace WelfareLink.AuditorManagement.API.Controllers
         /// Get Audit Logs with pagination
         /// </summary>
         [HttpGet("audit-logs")]
+        // OVERRIDE: Admin tracks System Logs. Auditors and Compliance Officers audit them. Program Managers EXCLUDED.
+        [Authorize(Roles = "Admin,GovernmentAuditor,ComplianceOfficer")]
         public async Task<ActionResult<dynamic>> GetAuditLogs(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10)
@@ -462,6 +467,8 @@ namespace WelfareLink.AuditorManagement.API.Controllers
         /// Get Audit Logs by Date Range
         /// </summary>
         [HttpGet("audit-logs/date-range")]
+        // OVERRIDE: Admin tracks System Logs. Auditors and Compliance Officers audit them. Program Managers EXCLUDED.
+        [Authorize(Roles = "Admin,GovernmentAuditor,ComplianceOfficer")]
         public async Task<ActionResult<dynamic>> GetAuditLogsByDateRange(
             [FromQuery] DateTime startDate,
             [FromQuery] DateTime endDate,
@@ -521,6 +528,8 @@ namespace WelfareLink.AuditorManagement.API.Controllers
         /// Get Audit Logs by Entity Type
         /// </summary>
         [HttpGet("audit-logs/entity-type/{entityType}")]
+        // OVERRIDE: Admin tracks System Logs. Auditors and Compliance Officers audit them. Program Managers EXCLUDED.
+        [Authorize(Roles = "Admin,GovernmentAuditor,ComplianceOfficer")]
         public async Task<ActionResult<dynamic>> GetAuditLogsByEntityType(
             string entityType,
             [FromQuery] int pageNumber = 1,

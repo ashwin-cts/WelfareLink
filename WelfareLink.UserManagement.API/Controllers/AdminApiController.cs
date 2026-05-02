@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
+using System.Security.Claims; // ADDED FOR JWT CLAIM EXTRACTION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.UserManagement.API.Interfaces;
 using WelfareLink.UserManagement.API.Models;
@@ -8,6 +9,8 @@ namespace WelfareLink.UserManagement.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: ONLY the Admin role can access the Admin Controller endpoints
+    [Authorize(Roles = "Admin")]
     public class AdminApiController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -23,12 +26,27 @@ namespace WelfareLink.UserManagement.API.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
+        // Helper method to securely extract UserId from JWT token
+        private int? GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                              ?? _httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value;
+
+            if (int.TryParse(userIdClaim, out int id))
+            {
+                return id;
+            }
+            return null;
+        }
+
         [HttpGet("users")]
         public async Task<ActionResult<IEnumerable<User>>> GetAllUsers()
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+
+            // FIXED: Using JWT Claims instead of Session
+            var currentUserId = GetCurrentUserId();
 
             try
             {
@@ -76,7 +94,9 @@ namespace WelfareLink.UserManagement.API.Controllers
 
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+
+            // FIXED: Using JWT Claims instead of Session
+            var currentUserId = GetCurrentUserId();
 
             try
             {
@@ -162,7 +182,9 @@ namespace WelfareLink.UserManagement.API.Controllers
 
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+
+            // FIXED: Using JWT Claims instead of Session
+            var currentUserId = GetCurrentUserId();
 
             try
             {
@@ -227,7 +249,9 @@ namespace WelfareLink.UserManagement.API.Controllers
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+
+            // FIXED: Using JWT Claims instead of Session
+            var currentUserId = GetCurrentUserId();
 
             try
             {
@@ -311,7 +335,9 @@ namespace WelfareLink.UserManagement.API.Controllers
         {
             var ipAddress = AuditLogHelper.GetClientIpAddress(HttpContext);
             var userAgent = AuditLogHelper.GetUserAgent(HttpContext);
-            var currentUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+
+            // FIXED: Using JWT Claims instead of Session
+            var currentUserId = GetCurrentUserId();
 
             try
             {

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.ProgramManagement.API.Interfaces;
 using WelfareLink.ProgramManagement.API.Models;
@@ -7,6 +8,8 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: Everyone needs to be able to read basic program info (Citizens apply, Officers process, etc.)
+    [Authorize(Roles = "Admin,ProgramManager,Citizen,WelfareOfficer,GovernmentAuditor,ComplianceOfficer")]
     public class WelfareProgramApiController : ControllerBase
     {
         private readonly IWelfareProgramService _programService;
@@ -31,6 +34,7 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // GET: api/welfareprogramapi
         [HttpGet]
+        // Falls back to Base Rule
         public async Task<IActionResult> GetAll()
         {
             var programs = await _programService.GetAllProgramsAsync();
@@ -39,6 +43,7 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // GET: api/welfareprogramapi/{id}
         [HttpGet("{id}")]
+        // Falls back to Base Rule
         public async Task<IActionResult> GetById(int id)
         {
             var program = await _programService.GetProgramByIdAsync(id);
@@ -69,6 +74,8 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // GET: api/welfareprogramapi/budget-monitoring
         [HttpGet("budget-monitoring")]
+        // OVERRIDE: Citizens and Welfare Officers don't need to see the high-level financial dashboard
+        [Authorize(Roles = "Admin,ProgramManager,GovernmentAuditor,ComplianceOfficer")]
         public async Task<IActionResult> GetBudgetMonitoring()
         {
             var programs = await _programService.GetAllProgramsAsync();
@@ -114,6 +121,8 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // GET: api/welfareprogramapi/performance
         [HttpGet("performance")]
+        // OVERRIDE: Citizens and Welfare Officers don't need to see the performance metrics
+        [Authorize(Roles = "Admin,ProgramManager,GovernmentAuditor,ComplianceOfficer")]
         public async Task<IActionResult> GetPerformance()
         {
             var programs = await _programService.GetAllProgramsAsync();
@@ -156,6 +165,8 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // POST: api/welfareprogramapi
         [HttpPost]
+        // OVERRIDE: ONLY Program Managers (and Admins) can create new programs
+        [Authorize(Roles = "ProgramManager")]
         public async Task<IActionResult> Create([FromBody] WelfareProgram program)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -173,6 +184,8 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // PUT: api/welfareprogramapi/{id}
         [HttpPut("{id}")]
+        // OVERRIDE: ONLY Program Managers (and Admins) can edit programs
+        [Authorize(Roles = "Admin,ProgramManager")]
         public async Task<IActionResult> Update(int id, [FromBody] WelfareProgram program)
         {
             if (id != program.ProgramID) return BadRequest(new { Error = "ID mismatch." });
@@ -190,6 +203,8 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // PATCH: api/welfareprogramapi/{id}/suspend
         [HttpPatch("{id}/suspend")]
+        // OVERRIDE: ONLY Program Managers (and Admins) can suspend programs
+        [Authorize(Roles = "Admin,ProgramManager")]
         public async Task<IActionResult> Suspend(int id)
         {
             var program = await _programService.GetProgramByIdAsync(id);

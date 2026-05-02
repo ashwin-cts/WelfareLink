@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
+using System.Security.Claims; // ADDED FOR JWT CLAIM EXTRACTION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
 using WelfareLink.ComplianceAndAuditLog.API.Models;
@@ -8,6 +10,8 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: Only Admins and Compliance Officers can access this dashboard and its actions
+    [Authorize(Roles = "Admin,ComplianceOfficer")]
     public class ComplianceOfficerDashboardApiController : ControllerBase
     {
         private readonly WelfareLinkDbContext _context;
@@ -19,6 +23,13 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
         {
             _context = context;
             _complianceService = complianceService;
+        }
+
+        // Helper method to extract UserId from JWT token
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("UserId")?.Value;
+            return int.TryParse(userIdClaim, out int id) ? id : 0;
         }
 
         /// <summary>
@@ -135,7 +146,8 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
             if (string.IsNullOrWhiteSpace(request.Description))
                 return BadRequest(new { Error = "Description is required" });
 
-            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            // FIXED: Using JWT Claims instead of Session
+            var userId = GetCurrentUserId();
 
             ComplainceRecord compliance;
 
@@ -207,7 +219,8 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
             if (disbursement == null)
                 return NotFound(new { Error = "Disbursement not found" });
 
-            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            // FIXED: Using JWT Claims instead of Session
+            var userId = GetCurrentUserId();
 
             var compliance = new ComplainceRecord
             {
@@ -236,7 +249,8 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
             if (record == null)
                 return NotFound(new { Error = "Compliance record not found" });
 
-            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            // FIXED: Using JWT Claims instead of Session
+            var userId = GetCurrentUserId();
 
             record.Status = "Resolved";
             record.ResolvedDate = DateTime.UtcNow;
@@ -272,7 +286,8 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
             if (record.RaisedByUserId == null)
                 return BadRequest(new { Error = "Cannot flag: No officer identified for this violation" });
 
-            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            // FIXED: Using JWT Claims instead of Session
+            var userId = GetCurrentUserId();
 
             // Create a new note indicating the officer has been flagged
             record.Notes = $"[FLAGGED] Officer flagged on {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}: {request.Reason}";

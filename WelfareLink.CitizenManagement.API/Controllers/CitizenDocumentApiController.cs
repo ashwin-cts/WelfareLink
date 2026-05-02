@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.CitizenManagement.API.Interfaces;
 using WelfareLink.CitizenManagement.API.Models;
@@ -6,6 +7,8 @@ namespace WelfareLink.CitizenManagement.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: These roles can read/download citizen documents
+    [Authorize(Roles = "Admin,Citizen,WelfareOfficer,ComplianceOfficer")]
     public class CitizenDocumentApiController : ControllerBase
     {
         private readonly ICitizenService _citizenService;
@@ -48,6 +51,8 @@ namespace WelfareLink.CitizenManagement.API.Controllers
 
         // POST: api/citizendocumentapi/upload
         [HttpPost("upload")]
+        // OVERRIDE: Only Citizens can upload their documents
+        [Authorize(Roles = "Citizen")]
         public async Task<IActionResult> Upload([FromForm] int citizenId, [FromForm] string docType, [FromForm] string documentName, IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -76,6 +81,8 @@ namespace WelfareLink.CitizenManagement.API.Controllers
 
         // PUT: api/citizendocumentapi/{id}/reupload
         [HttpPut("{id}/reupload")]
+        // OVERRIDE: Only Citizens can re-upload their documents
+        [Authorize(Roles = "Citizen")]
         public async Task<IActionResult> Reupload(int id, IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -92,6 +99,8 @@ namespace WelfareLink.CitizenManagement.API.Controllers
 
         // PATCH: api/citizendocumentapi/{id}/verify
         [HttpPatch("{id}/verify")]
+        // OVERRIDE: CRITICAL! Only Welfare Officers (and Admins as fallback) can verify a document.
+        [Authorize(Roles = "WelfareOfficer")]
         public async Task<IActionResult> UpdateVerificationStatus(int id, [FromBody] string status)
         {
             var document = await _documentService.GetDocumentByIdAsync(id);
@@ -105,6 +114,7 @@ namespace WelfareLink.CitizenManagement.API.Controllers
 
         // GET: api/citizendocumentapi/{id}/file
         [HttpGet("{id}/file")]
+        // No override needed here. The base rule allows viewing the file.
         public async Task<IActionResult> GetFile(int id)
         {
             var document = await _documentService.GetDocumentByIdAsync(id);
@@ -137,6 +147,8 @@ namespace WelfareLink.CitizenManagement.API.Controllers
 
         // DELETE: api/citizendocumentapi/{id}
         [HttpDelete("{id}")]
+        // OVERRIDE: Only Citizens (and Admins) can delete documents
+        [Authorize(Roles = "Admin,Citizen")]
         public async Task<IActionResult> Delete(int id)
         {
             var document = await _documentService.GetDocumentByIdAsync(id);

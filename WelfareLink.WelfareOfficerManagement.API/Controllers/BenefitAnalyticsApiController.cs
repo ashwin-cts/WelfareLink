@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.WelfareOfficerManagement.API.Interfaces;
 
@@ -5,6 +6,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: Internal staff tracking money flow and performance can view analytics
+    [Authorize(Roles = "Admin,WelfareOfficer,ProgramManager,GovernmentAuditor,ComplianceOfficer")]
     public class BenefitAnalyticsApiController : ControllerBase
     {
         private readonly IBenefitAnalyticsService _analyticsService;

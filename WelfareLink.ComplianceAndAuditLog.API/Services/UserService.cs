@@ -1,3 +1,4 @@
+using System.Security.Claims; // ADDED THIS FOR JWT CLAIMS
 using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
 using WelfareLink.ComplianceAndAuditLog.API.Models;
 
@@ -16,8 +17,16 @@ public class UserService : IUserService
 
     private int? GetCurrentUserId()
     {
-        var userIdClaim = _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
-        return userIdClaim;
+        // Securely extracts the UserId from the JWT Token sent by Postman/Client
+        var userIdClaim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                       ?? _httpContextAccessor?.HttpContext?.User?.FindFirst("UserId")?.Value;
+
+        if (int.TryParse(userIdClaim, out int userId))
+        {
+            return userId;
+        }
+
+        return null;
     }
 
     public async Task LogUserCreationAsync(User user)

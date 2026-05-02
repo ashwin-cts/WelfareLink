@@ -1,6 +1,7 @@
+using System.Security.Claims; // ADDED THIS FOR JWT CLAIMS
+using WelfareLink.UserManagement.API.Exceptions;
 using WelfareLink.UserManagement.API.Interfaces;
 using WelfareLink.UserManagement.API.Models;
-
 
 namespace WelfareLink.UserManagement.API.Services
 {
@@ -29,7 +30,16 @@ namespace WelfareLink.UserManagement.API.Services
 
         private int? GetCurrentUserId()
         {
-            return _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
+            // Securely extracts the UserId from the JWT Token sent by Postman/Client
+            var userIdClaim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                           ?? _httpContextAccessor?.HttpContext?.User?.FindFirst("UserId")?.Value;
+
+            if (int.TryParse(userIdClaim, out int userId))
+            {
+                return userId;
+            }
+
+            return null;
         }
 
         public async Task<IEnumerable<Benefit>> GetAllBenefitsAsync()
@@ -41,7 +51,7 @@ namespace WelfareLink.UserManagement.API.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentException("Benefit ID must be greater than zero.", nameof(id));
+                throw new BadRequestException("Benefit ID must be greater than zero.");
             }
             return await _benefitRepository.GetByIdAsync(id);
         }
@@ -92,13 +102,13 @@ namespace WelfareLink.UserManagement.API.Services
         {
             if (benefit.BenefitID <= 0)
             {
-                throw new ArgumentException("Benefit ID must be greater than zero.", nameof(benefit.BenefitID));
+                throw new BadRequestException("Benefit ID must be greater than zero.");
             }
 
             var existingBenefit = await _benefitRepository.GetByIdAsync(benefit.BenefitID);
             if (existingBenefit == null)
             {
-                throw new InvalidOperationException($"Benefit with ID {benefit.BenefitID} does not exist.");
+                throw new BusinessValidationException($"Benefit with ID {benefit.BenefitID} does not exist.");
             }
 
             ValidateBenefit(benefit);
@@ -144,19 +154,19 @@ namespace WelfareLink.UserManagement.API.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentException("Benefit ID must be greater than zero.", nameof(id));
+                throw new BadRequestException("Benefit ID must be greater than zero.");
             }
 
             if (!await _benefitRepository.ExistsAsync(id))
             {
-                throw new InvalidOperationException($"Benefit with ID {id} does not exist.");
+                throw new BusinessValidationException($"Benefit with ID {id} does not exist.");
             }
 
             // Block deletion if any disbursement for this benefit has been completed
             var disbursements = await _disbursementRepository.GetByBenefitIdAsync(id);
             if (disbursements.Any(d => d.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new InvalidOperationException("Cannot delete a benefit that has completed disbursements.");
+                throw new BusinessValidationException("Cannot delete a benefit that has completed disbursements.");
             }
 
             // Capture application ID before deleting so we can reset its status
@@ -216,7 +226,7 @@ namespace WelfareLink.UserManagement.API.Services
         {
             if (benefit == null)
             {
-                throw new ArgumentNullException(nameof(benefit), "Benefit cannot be null.");
+                throw new BadRequestException("Benefit cannot be null.");
             }
 
             ValidateApplicationId(benefit.ApplicationID);
@@ -230,7 +240,7 @@ namespace WelfareLink.UserManagement.API.Services
         {
             if (applicationId <= 0)
             {
-                throw new ArgumentException("Application ID must be greater than zero.", nameof(applicationId));
+                throw new BadRequestException("Application ID must be greater than zero.");
             }
         }
 
@@ -238,12 +248,12 @@ namespace WelfareLink.UserManagement.API.Services
         {
             if (string.IsNullOrWhiteSpace(type))
             {
-                throw new ArgumentException("Benefit type is required.", nameof(type));
+                throw new BadRequestException("Benefit type is required.");
             }
 
             if (!_validBenefitTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
             {
-                throw new ArgumentException($"Invalid benefit type. Valid types are: {string.Join(", ", _validBenefitTypes)}", nameof(type));
+                throw new BadRequestException($"Invalid benefit type. Valid types are: {string.Join(", ", _validBenefitTypes)}");
             }
         }
 
@@ -251,12 +261,12 @@ namespace WelfareLink.UserManagement.API.Services
         {
             if (amount <= 0)
             {
-                throw new ArgumentException("Amount must be greater than zero.", nameof(amount));
+                throw new BadRequestException("Amount must be greater than zero.");
             }
 
             if (amount > 10000000) // 1 crore max limit
             {
-                throw new ArgumentException("Amount exceeds maximum allowed limit.", nameof(amount));
+                throw new BadRequestException("Amount exceeds maximum allowed limit.");
             }
         }
 
@@ -264,17 +274,17 @@ namespace WelfareLink.UserManagement.API.Services
         {
             if (date == default)
             {
-                throw new ArgumentException("Date is required.", nameof(date));
+                throw new BadRequestException("Date is required.");
             }
 
             if (date > DateTime.Now.AddDays(1))
             {
-                throw new ArgumentException("Date cannot be in the future.", nameof(date));
+                throw new BadRequestException("Date cannot be in the future.");
             }
 
             if (date < DateTime.Now.AddYears(-10))
             {
-                throw new ArgumentException("Date cannot be older than 10 years.", nameof(date));
+                throw new BadRequestException("Date cannot be older than 10 years.");
             }
         }
 
@@ -282,12 +292,12 @@ namespace WelfareLink.UserManagement.API.Services
         {
             if (string.IsNullOrWhiteSpace(status))
             {
-                throw new ArgumentException("Status is required.", nameof(status));
+                throw new BadRequestException("Status is required.");
             }
 
             if (!_validStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
             {
-                throw new ArgumentException($"Invalid status. Valid statuses are: {string.Join(", ", _validStatuses)}", nameof(status));
+                throw new BadRequestException($"Invalid status. Valid statuses are: {string.Join(", ", _validStatuses)}");
             }
         }
 
@@ -306,7 +316,7 @@ namespace WelfareLink.UserManagement.API.Services
             // 1. Benefit amount must not exceed the programme's total budget
             if ((decimal)benefit.Amount > program.Budget)
             {
-                throw new InvalidOperationException(
+                throw new BusinessValidationException(
                     $"Budget Exceeded: Benefit amount \u20B9{benefit.Amount:N2} exceeds the programme budget of \u20B9{(double)program.Budget:N2}. " +
                     $"Programme '{program.Title}' has a total budget of \u20B9{(double)program.Budget:N2}. " +
                     $"Please reduce the benefit amount or contact the Programme Manager to increase the budget.");
@@ -333,14 +343,14 @@ namespace WelfareLink.UserManagement.API.Services
             {
                 if (remainingResources <= 0)
                 {
-                    throw new InvalidOperationException(
+                    throw new BusinessValidationException(
                         $"Resource Exhausted: Programme '{program.Title}' has no remaining resource allocation. " +
                         $"Total resources: \u20B9{totalResourceAllocation:N2}, Already allocated to benefits: \u20B9{alreadyAllocated:N2}. " +
                         $"Please contact the Programme Manager to increase resource allocation.");
                 }
                 else
                 {
-                    throw new InvalidOperationException(
+                    throw new BusinessValidationException(
                         $"Resource Insufficient: Benefit amount \u20B9{benefit.Amount:N2} exceeds available resources \u20B9{remainingResources:N2}. " +
                         $"Programme '{program.Title}' \u2014 Total resources: \u20B9{totalResourceAllocation:N2}, " +
                         $"Already allocated: \u20B9{alreadyAllocated:N2}, Remaining: \u20B9{remainingResources:N2}. " +
@@ -350,7 +360,7 @@ namespace WelfareLink.UserManagement.API.Services
             //Check if the Max Benefit exceeds.
             if ((decimal)benefit.Amount > program.MaxBenefitPerCitizen)
             {
-                throw new InvalidOperationException(
+                throw new BusinessValidationException(
                     $"Budget Exceeded: Benefit amount \u20B9{benefit.Amount:N2} exceeds the Max budget per citizen of \u20B9{(double)program.MaxBenefitPerCitizen:N2}. " +
                     $"Programme '{program.Title}' has a Max budget per citizen of \u20B9{(double)program.MaxBenefitPerCitizen:N2}. " +
                     $"Please reduce the benefit amount or contact the Programme Manager");
@@ -369,7 +379,7 @@ namespace WelfareLink.UserManagement.API.Services
                     latestCheck.ResultCode.Equals("Rejected", StringComparison.OrdinalIgnoreCase) ||
                     latestCheck.ResultCode.Equals("REJECTED", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException($"Cannot create benefit for application #{applicationId}. The application has been rejected in the eligibility check.");
+                    throw new BusinessValidationException($"Cannot create benefit for application #{applicationId}. The application has been rejected in the eligibility check.");
                 }
             }
         }

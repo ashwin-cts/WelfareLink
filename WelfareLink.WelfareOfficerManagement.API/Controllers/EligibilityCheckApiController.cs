@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.WelfareOfficerManagement.API.Interfaces;
 using WelfareLink.WelfareOfficerManagement.API.Models;
@@ -6,6 +7,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: Internal staff can view eligibility checks for processing, metrics, and audits
+    [Authorize(Roles = "Admin,WelfareOfficer,ProgramManager,GovernmentAuditor,ComplianceOfficer")]
     public class EligibilityCheckApiController : ControllerBase
     {
         private readonly IEligibilityCheckService _eligibilityCheckService;
@@ -88,6 +91,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // POST: api/eligibilitycheckapi
         [HttpPost]
+        // OVERRIDE: Only Welfare Officers and Admins can create eligibility checks
+        [Authorize(Roles = "WelfareOfficer")]
         public async Task<IActionResult> Create([FromBody] EligibilityCheck check, [FromQuery] int? applicationId = null)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -98,6 +103,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // PUT: api/eligibilitycheckapi/{id}
         [HttpPut("{id}")]
+        // OVERRIDE: Only Welfare Officers and Admins can update eligibility checks
+        [Authorize(Roles = "Admin,WelfareOfficer")]
         public async Task<IActionResult> Update(int id, [FromBody] EligibilityCheck check)
         {
             if (id != check.CheckID) return BadRequest(new { Error = "ID mismatch." });
@@ -109,6 +116,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // DELETE: api/eligibilitycheckapi/{id}
         [HttpDelete("{id}")]
+        // OVERRIDE: Only Welfare Officers and Admins can delete eligibility checks
+        [Authorize(Roles = "Admin,WelfareOfficer")]
         public async Task<IActionResult> Delete(int id)
         {
             if (!await _eligibilityCheckService.CheckExistsAsync(id)) return NotFound();

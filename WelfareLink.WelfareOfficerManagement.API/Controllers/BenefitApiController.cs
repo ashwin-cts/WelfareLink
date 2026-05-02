@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
+using System.Security.Claims; // ADDED FOR JWT CLAIM EXTRACTION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.WelfareOfficerManagement.API.Interfaces;
 using WelfareLink.WelfareOfficerManagement.API.Models;
@@ -6,6 +8,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Base Rule: Internal staff can view benefits for processing, metrics, and audits
+    [Authorize(Roles = "Admin,WelfareOfficer,ProgramManager,GovernmentAuditor,ComplianceOfficer")]
     public class BenefitApiController : ControllerBase
     {
         private readonly IBenefitService _benefitService;
@@ -20,6 +24,15 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
             _benefitService = benefitService;
             _welfareApplicationService = welfareApplicationService;
             _resourceService = resourceService;
+        }
+
+        // Helper method to securely extract UserId from JWT token
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                              ?? HttpContext?.User.FindFirst("UserId")?.Value;
+
+            return int.TryParse(userIdClaim, out int id) ? id : 0;
         }
 
         // GET: api/benefit
@@ -131,7 +144,7 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
                 a.ProgramID,
                 ProgramTitle = a.Program?.Title ?? $"Program #{a.ProgramID}",
                 ProgramDesc = a.Program?.Description ?? "-",
-                ProgramMaxBenefit=a.Program?.MaxBenefitPerCitizen,
+                ProgramMaxBenefit = a.Program?.MaxBenefitPerCitizen,
                 ProgramBudget = a.Program?.Budget,
                 ProgramStatus = a.Program?.Status ?? "-",
                 SubmittedDate = a.SubmittedDate.ToString("dd MMM yyyy"),
@@ -143,13 +156,18 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // POST: api/benefit
         [HttpPost]
+        // OVERRIDE: Only Welfare Officers and Admins can allocate benefits
+        [Authorize(Roles ="WelfareOfficer")]
         public async Task<IActionResult> Create([FromBody] Benefit benefit, [FromQuery] int officerId = 0)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             try
             {
-                var created = await _benefitService.CreateBenefitAsync(benefit, officerId);
+                // SECURITY FIX: Ignore the query parameter and use the true JWT token identity
+                int trueOfficerId = GetCurrentUserId();
+
+                var created = await _benefitService.CreateBenefitAsync(benefit, trueOfficerId);
 
                 return Ok(new
                 {
@@ -165,6 +183,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // PUT: api/benefit/{id}
         [HttpPut("{id}")]
+        // OVERRIDE: Only Welfare Officers and Admins can modify benefits
+        [Authorize(Roles = "Admin,WelfareOfficer")]
         public async Task<IActionResult> Update(int id, [FromBody] Benefit benefit, [FromQuery] int officerId = 0)
         {
             if (id != benefit.BenefitID) return BadRequest(new { Error = "ID mismatch" });
@@ -172,7 +192,10 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
             try
             {
-                var updated = await _benefitService.UpdateBenefitAsync(benefit, officerId);
+                // SECURITY FIX: Ignore the query parameter and use the true JWT token identity
+                int trueOfficerId = GetCurrentUserId();
+
+                var updated = await _benefitService.UpdateBenefitAsync(benefit, trueOfficerId);
 
                 return Ok(new
                 {
@@ -188,6 +211,8 @@ namespace WelfareLink.WelfareOfficerManagement.API.Controllers
 
         // DELETE: api/benefit/{id}
         [HttpDelete("{id}")]
+        // OVERRIDE: Only Welfare Officers and Admins can delete benefits
+        [Authorize(Roles = "WelfareOfficer")]
         public async Task<IActionResult> Delete(int id)
         {
             var benefit = await _benefitService.GetBenefitByIdAsync(id);

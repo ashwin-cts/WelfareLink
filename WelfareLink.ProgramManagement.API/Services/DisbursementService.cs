@@ -1,3 +1,4 @@
+using System.Security.Claims; // ADDED THIS FOR JWT CLAIMS
 using WelfareLink.ProgramManagement.API.Exceptions;
 using WelfareLink.ProgramManagement.API.Interfaces;
 using WelfareLink.ProgramManagement.API.Models;
@@ -29,7 +30,16 @@ namespace WelfareLink.ProgramManagement.API.Services
 
         private int? GetCurrentUserId()
         {
-            return _httpContextAccessor?.HttpContext?.Session.GetInt32("UserId");
+            // Securely extracts the UserId from the JWT Token sent by Postman/Client
+            var userIdClaim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                           ?? _httpContextAccessor?.HttpContext?.User?.FindFirst("UserId")?.Value;
+
+            if (int.TryParse(userIdClaim, out int userId))
+            {
+                return userId;
+            }
+
+            return null;
         }
 
         public async Task<IEnumerable<Disbursement>> GetAllDisbursementsAsync()
