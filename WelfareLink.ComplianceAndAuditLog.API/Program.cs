@@ -103,10 +103,11 @@ namespace WelfareLink.ComplianceAndAuditLog.API
                 {
                     options.AddPolicy("AllowWelfareLinkMvc", policy =>
                     {
-                        policy.WithOrigins("https://localhost:7100", "http://localhost:5000")
+                        policy.AllowAnyOrigin()
                               .AllowAnyMethod()
-                              .AllowAnyHeader()
-                              .AllowCredentials();
+                              .AllowAnyHeader();
+                              
+                              
                     });
                 });
 
