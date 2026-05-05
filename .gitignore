@@ -1,26 +1,59 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files
 
-# Compiled output
+# =========================
+# Dependencies
+# =========================
+/node_modules
+npm-debug.log
+yarn-error.log
+
+# =========================
+# Compiled Output & Builds
+# =========================
 /dist
 /tmp
 /out-tsc
 /bazel-out
 
-# Node
-/node_modules
-npm-debug.log
-yarn-error.log
+# =========================
+# Angular & Caching
+# =========================
+/.angular
+.sass-cache/
 
-# IDEs and editors
+# =========================
+# Testing & Miscellaneous
+# =========================
+/coverage
+/typings
+__screenshots__/
+/connect.lock
+/libpeerconnection.log
+testem.log
+
+# =========================
+# System Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDEs and Editors
+# =========================
 .idea/
 .project
 .classpath
 .c9/
-*.launch
 .settings/
+*.launch
 *.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Visual Studio Code
+# Visual Studio Code specific
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -28,17 +61,3 @@ yarn-error.log
 !.vscode/extensions.json
 !.vscode/mcp.json
 .history/*
-
-# Miscellaneous
-/.angular/cache
-.sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
-__screenshots__/
-
-# System files
-.DS_Store
-Thumbs.db
