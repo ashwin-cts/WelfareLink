@@ -27,11 +27,12 @@
             "styles": [
               "src/styles.css"
             ],
-            
+            "polyfills": [
+              "zone.js"
+            ],
             "security": {
               "allowedHosts": []
             }
-            
           },
           "configurations": {
             "production": {

@@ -2,8 +2,13 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { AdminService } from '../../core/services/admin/admin.service';
-import { AuthService } from '../../core/services/auth/auth.service';
+
+// 1. Updated Service Imports based on new structure
+import { AuthService } from '../../auth/login/services/auth.service';
+import { AdminService } from '../services/admin.service';
+
+// 2. Import the Interfaces we created
+import { UserProfile, SystemLog } from '../models/admin.model';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -15,8 +20,11 @@ import { AuthService } from '../../core/services/auth/auth.service';
 export class AdminDashboard implements OnInit {
   activeTab: 'users' | 'logs' | 'create-officer' | 'create-admin' | 'profile' = 'users';
 
-  usersList: any[] = [];
-  logsList: any[] = [];
+  // 3. Apply the interfaces here instead of using 'any'
+  usersList: UserProfile[] = [];
+  logsList: SystemLog[] = [];
+  currentProfile: UserProfile | null = null;
+  
   currentAdminId: number | null = null;
   
   isLoading = false;
@@ -36,8 +44,6 @@ export class AdminDashboard implements OnInit {
   isFormLoading = false;
   isPwdLoading = false;
   
-  currentProfile: any = null;
-
   constructor(
     private adminService: AdminService,
     private authService: AuthService,
@@ -79,18 +85,15 @@ export class AdminDashboard implements OnInit {
   }
 
   extractUserIdFromToken() {
-    // 1. Check if the token is saved under a different name (adjust if your auth service uses a different key!)
     const token = localStorage.getItem('token') || localStorage.getItem('jwt'); 
     
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        console.log("JWT Payload Decoded:", payload); // <-- This will show you exactly what C# sent!
+        console.log("JWT Payload Decoded:", payload); 
 
-        // ASP.NET sometimes maps claims to full schemas, we check all possible variations
         const nameIdentifier = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
         
-        // Force the ID to be a Number
         this.currentAdminId = Number(payload.UserId || payload.sub || nameIdentifier);
         console.log("Extracted Admin ID:", this.currentAdminId);
 
@@ -124,7 +127,10 @@ export class AdminDashboard implements OnInit {
     });
   }
 
-  toggleUserStatus(user: any) {
+  // 4. Apply the interface to the parameter here
+  toggleUserStatus(user: UserProfile) {
+    if (!user.userId) return; // Added safety check
+    
     if (user.isActive) {
       this.adminService.blockUser(user.userId).subscribe(() => { user.isActive = false; this.cdr.detectChanges(); });
     } else {
@@ -137,7 +143,6 @@ export class AdminDashboard implements OnInit {
     this.isLogsLoading = true;
     this.adminService.getSystemLogs(pageNumber, 10).subscribe({
       next: (res) => {
-        // --- MAGIC FIX #2: CATCH ALL PAGINATION JSON FORMATS ---
         this.logsList = res.items || res.data || res.records || (Array.isArray(res) ? res : []); 
         this.currentPage = res.pageNumber || res.currentPage || 1; 
         this.totalPages = res.totalPages || 1;
@@ -153,10 +158,10 @@ export class AdminDashboard implements OnInit {
   }
 
   loadProfile() {
-    // 2. If the ID is missing, stop the spinner and show an error!
     if (!this.currentAdminId) {
       console.error("Cannot load profile: currentAdminId is null!");
-      this.currentProfile = { username: 'Unknown User' }; // Fakes a profile to stop the spinner
+      // Temporarily cast fallback object so TypeScript doesn't complain
+      this.currentProfile = { username: 'Unknown User' } as UserProfile; 
       this.formErrorMessage = "Session error: Could not extract User ID. Please try logging out and back in.";
       this.cdr.detectChanges();
       return;
@@ -175,9 +180,8 @@ export class AdminDashboard implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        // 3. If the C# API fails, stop the spinner and show the error!
         console.error("Profile API Error:", err);
-        this.currentProfile = { username: 'Error Loading Profile' }; // Stop the spinner
+        this.currentProfile = { username: 'Error Loading Profile' } as UserProfile; 
         this.formErrorMessage = "Failed to load profile from the server. Check console for details.";
         this.cdr.detectChanges();
       }
@@ -207,10 +211,7 @@ export class AdminDashboard implements OnInit {
     if (vals.newPassword !== vals.confirmPassword) {
       this.pwdErrorMessage = "New passwords do not match!";
       return;
-
-    }
-      //currentPassword: ['', Validators.required],
-    else if(vals.currentPassword==vals.newPassword){
+    } else if(vals.currentPassword === vals.newPassword) {
       this.pwdErrorMessage = "You cannot use the old password!";
       return;
     }

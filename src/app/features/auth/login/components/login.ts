@@ -2,7 +2,11 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../../core/services/auth/auth.service';
+import { HttpErrorResponse } from '@angular/common/http';
+
+// Make sure these paths match your folder structure!
+import { AuthService } from '../services/auth.service';
+import { AuthResponse, AuthErrorResponse } from '../models/auth.model'; 
 
 @Component({
   selector: 'app-login',
@@ -50,14 +54,14 @@ export class Login {
     this.cdr.detectChanges(); 
 
     this.authService.login(this.loginForm.value).subscribe({
-      next: (res) => {
+      // We expect the strict AuthResponse here
+      next: (res: AuthResponse) => {
         this.isLoading = false;
         this.cdr.detectChanges();
         
-        // --- MAGIC FIX: Save the token to the browser's memory! ---
-        // (We use res.token || res.Token just in case C# capitalized it)
-        if (res.token || res.Token) {
-          localStorage.setItem('token', res.token || res.Token);
+        const validToken = res.token || res.Token;
+        if (validToken) {
+          localStorage.setItem('token', validToken);
         }
         
         if (res.role === 'Admin' || res.Role === 'Admin') {
@@ -66,23 +70,25 @@ export class Login {
           this.router.navigate(['/dashboard']); 
         }
       },
-      error: (err) => {
+      
+      // Use HttpErrorResponse to strict type the error instead of 'any'
+      error: (err: HttpErrorResponse) => {
         this.isLoading = false;
+        const errData = err.error as AuthErrorResponse; // Cast it to our strict error model
         
-        // 1. Check for manual C# business logic errors (e.g., "Account is inactive")
-        if (err.error && err.error.error) {
-          this.errorMessage = err.error.error; 
+        // 1. Check for manual C# business logic errors 
+        if (errData && errData.error) {
+          this.errorMessage = errData.error; 
         } 
-        // 2. NEW: Check for C# Model Data Annotation errors (e.g., Password Regex fails)
-        else if (err.error && err.error.errors) {
-          // Grabs the first validation error from the dictionary and displays it
-          const firstErrorKey = Object.keys(err.error.errors)[0];
-          this.errorMessage = err.error.errors[firstErrorKey][0];
+        // 2. NEW: Check for C# Model Data Annotation errors 
+        else if (errData && errData.errors) {
+          const firstErrorKey = Object.keys(errData.errors)[0];
+          this.errorMessage = errData.errors[firstErrorKey][0];
         } 
         // Catches your custom capitalized "Error" from UserManagement Program.cs!
-       else if (err.error && err.error.Error) {
-             this.errorMessage = err.error.Error;
-       }
+        else if (errData && errData.Error) {
+          this.errorMessage = errData.Error;
+        }
         // 3. Fallback for server crashes
         else {
           this.errorMessage = 'Invalid username or password. Please try again.';

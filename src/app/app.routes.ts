@@ -2,8 +2,8 @@ import { Routes } from '@angular/router';
 
 // Make sure these paths exactly match your actual file names!
 // Usually Angular adds '.component' to the file name.
-import { Login } from './features/auth/login/login'; 
-import { AdminDashboard } from './features/admin-dashboard/admin-dashboard';
+import { Login } from './features/auth/login/components/login'; 
+import { AdminDashboard } from './features/admin-dashboard/components/admin-dashboard';
 
 // Import our new Bouncer
 import { authGuard } from './core/guards/auth-guard'; 
