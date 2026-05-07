@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -19,7 +20,7 @@ namespace WelfareLink.Authentication.API.Configuration
             IConfiguration configuration)
         {
             var jwtSettings = configuration.GetSection("JwtSettings");
-            var secret = jwtSettings["Secret"] 
+            var secret = jwtSettings["Secret"]
                 ?? throw new InvalidOperationException("JwtSettings:Secret is not configured");
             var issuer = jwtSettings["Issuer"]
                 ?? throw new InvalidOperationException("JwtSettings:Issuer is not configured");
@@ -48,26 +49,12 @@ namespace WelfareLink.Authentication.API.Configuration
                     ClockSkew = TimeSpan.Zero
                 };
 
-                // Handle authorization failure
+                // Handle authorization failure (CRASH-PROOF IMPLEMENTATION)
                 options.Events = new JwtBearerEvents
                 {
-                    OnAuthenticationFailed = context =>
+                    OnChallenge = async context =>
                     {
-                        if (!context.Response.HasStarted)
-                        {
-                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                            context.Response.ContentType = "application/json";
-                            return context.Response.WriteAsJsonAsync(new 
-                            { 
-                                error = "Token validation failed",
-                                details = context.Exception.Message 
-                            });
-                        }
-                        return Task.CompletedTask;
-                    },
-                    OnChallenge = context =>
-                    {
-                        // Prevent default challenge behavior
+                        // 1. Tell the framework we are handling the response manually
                         context.HandleResponse();
 
                         // Check if endpoint allows anonymous access
@@ -77,32 +64,32 @@ namespace WelfareLink.Authentication.API.Configuration
                         if (allowAnonymous != null)
                         {
                             // This endpoint allows anonymous access, skip sending challenge
-                            return Task.CompletedTask;
+                            return;
                         }
 
-                        // Only set response if not already started
-                        if (!context.Response.HasStarted)
-                        {
-                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                            context.Response.ContentType = "application/json";
-                            return context.Response.WriteAsJsonAsync(new 
-                            { 
-                                error = "Unauthorized - Valid JWT token required" 
-                            });
-                        }
+                        // 2. Set the Status Code and Headers FIRST
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.ContentType = "application/json";
 
-                        return Task.CompletedTask;
+                        // 3. Write the body LAST
+                        var result = JsonSerializer.Serialize(new { Error = "Unauthorized - Valid JWT token required to access this resource." });
+                        await context.Response.WriteAsync(result);
+                    },
+                    OnForbidden = async context =>
+                    {
+                        // 1. Set the Status Code and Headers FIRST
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        context.Response.ContentType = "application/json";
+
+                        // 2. Write the body LAST
+                        var result = JsonSerializer.Serialize(new { Error = "Forbidden - You do not have the required permissions to perform this action." });
+                        await context.Response.WriteAsync(result);
                     }
                 };
             });
 
-            // Add Authorization with global [Authorize] policy
-            services.AddAuthorization(options =>
-            {
-                options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-            });
+            // ✅ THIS IS THE FIX! We removed the strict Fallback Policy.
+            services.AddAuthorization();
 
             return services;
         }
