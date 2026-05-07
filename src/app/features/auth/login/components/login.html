@@ -1,83 +1,119 @@
-<!-- We use Bootstrap flexbox to center everything vertically and horizontally -->
 <div class="login-page d-flex align-items-center justify-content-center vh-100">
   
-  <!-- The Bootstrap Card with a softer shadow -->
-  <div class="card shadow border-0 rounded-lg p-4 custom-card" style="width: 100%; max-width: 450px;">
+  <div class="card shadow border-0 rounded-lg p-4 custom-card" [style.max-width]="isLoginMode ? '450px' : '650px'" style="width: 100%;">
     
     <div class="card-body">
-      <!-- Header -->
       <div class="text-center mb-4">
         <h2 class="fw-bold custom-title">WelfareLink</h2>
-        <p class="text-muted">Access your portal</p>
+        <p class="text-muted">{{ isLoginMode ? 'Access your portal' : 'Create a Citizen Account' }}</p>
       </div>
 
-      <!-- Error Message Alert -->
       <div *ngIf="errorMessage" class="alert alert-danger text-center border-0" role="alert">
         {{ errorMessage }}
       </div>
+      <div *ngIf="successMessage" class="alert alert-success text-center border-0" role="alert">
+        {{ successMessage }}
+      </div>
 
-      <!-- The Form -->
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        
-        <!-- Role Selection -->
-        <div class="mb-3">
-          <label for="userType" class="form-label fw-semibold text-secondary">I am logging in as:</label>
-          <select id="userType" class="form-select form-select-lg custom-input" formControlName="userType">
-            <option *ngFor="let role of userRoles" [value]="role.id">
-              {{ role.label }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Username Input -->
-        <div class="mb-3">
-          <label for="username" class="form-label fw-semibold text-secondary">Username</label>
-          <input 
-            type="text" 
-            id="username" 
-            class="form-control form-control-lg custom-input" 
-            formControlName="username" 
-            placeholder="Enter your username"
-            [class.is-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
-        </div>
-
-        <!-- Password Input -->
-        <div class="mb-4">
-          <label for="password" class="form-label fw-semibold text-secondary">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            class="form-control form-control-lg custom-input" 
-            formControlName="password" 
-            placeholder="Enter your password"
-            [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-        </div>
-
-        <!-- Submit Button -->
-        <button 
-          type="submit" 
-          class="btn btn-primary btn-lg w-100 fw-bold custom-btn" 
-          [disabled]="loginForm.invalid || isLoading">
+      <div *ngIf="isLoginMode">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
           
-          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-          {{ isLoading ? 'Verifying...' : 'Login' }}
-        </button>
+          <div class="mb-3">
+            <label for="userType" class="form-label fw-semibold text-secondary">I am logging in as:</label>
+            <select id="userType" class="form-select form-select-lg custom-input" formControlName="userType">
+              <option *ngFor="let role of userRoles" [value]="role.id">{{ role.label }}</option>
+            </select>
+          </div>
 
-      </form>
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-secondary">Username</label>
+            <input type="text" class="form-control form-control-lg custom-input" formControlName="username" placeholder="Enter your username"
+                   [class.is-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+          </div>
 
-      <!-- CONDITIONAL REGISTER LINK -->
-      <div class="mt-4 text-center border-top pt-4">
-        <!-- Shows only for Citizens -->
-        <div *ngIf="isCitizenSelected">
-          <p class="text-muted mb-2">New to WelfareLink?</p>
-          <a routerLink="/register" class="btn btn-outline-secondary w-100 fw-bold custom-btn-outline">Register as a Citizen</a>
+          <div class="mb-4">
+            <label class="form-label fw-semibold text-secondary">Password</label>
+            <input type="password" class="form-control form-control-lg custom-input" formControlName="password" placeholder="Enter your password"
+                   [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold custom-btn" [disabled]="loginForm.invalid || isLoading">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isLoading ? 'Verifying...' : 'Login' }}
+          </button>
+        </form>
+
+        <div class="mt-4 text-center border-top pt-4">
+          <div *ngIf="isCitizenSelected">
+            <p class="text-muted mb-2">New to WelfareLink?</p>
+            <button (click)="toggleMode()" class="btn btn-outline-secondary w-100 fw-bold custom-btn-outline">Register as a Citizen</button>
+          </div>
+          <div *ngIf="!isCitizenSelected">
+            <small class="text-muted" style="font-size: 0.85rem;">Staff accounts are provisioned by System Administrators.</small>
+          </div>
         </div>
-        
-        <!-- Shows for Staff Roles -->
-        <div *ngIf="!isCitizenSelected">
-          <small class="text-muted" style="font-size: 0.85rem;">
-            Staff accounts are provisioned by System Administrators.
-          </small>
+      </div>
+
+      <div *ngIf="!isLoginMode">
+        <form [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()">
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-secondary">Full Name</label>
+              <input type="text" class="form-control custom-input" formControlName="fullName" placeholder="Legal Name">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-secondary">Username</label>
+              <input type="text" class="form-control custom-input" formControlName="username" placeholder="Choose a username">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-secondary">Email Address</label>
+              <input type="email" class="form-control custom-input" formControlName="email" placeholder="name@example.com">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-secondary">Password</label>
+              <input type="password" class="form-control custom-input" formControlName="password" placeholder="Create a password">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-secondary">Date of Birth</label>
+              <input type="date" class="form-control custom-input" formControlName="dateOfBirth">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-secondary">Gender</label>
+              <select class="form-select custom-input" formControlName="gender">
+                <option value="">Select...</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-secondary">Contact Number</label>
+            <input type="text" class="form-control custom-input" formControlName="contactInfo" placeholder="Mobile number">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold text-secondary">Full Address</label>
+            <textarea class="form-control custom-input" formControlName="address" rows="2" placeholder="Street, City, Zip"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-success btn-lg w-100 fw-bold" [disabled]="registerForm.invalid || isLoading">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isLoading ? 'Registering...' : 'Complete Registration' }}
+          </button>
+        </form>
+
+        <div class="mt-4 text-center border-top pt-4">
+          <p class="text-muted mb-2">Already have an account?</p>
+          <button (click)="toggleMode()" class="btn btn-outline-secondary w-100 fw-bold custom-btn-outline">Back to Login</button>
         </div>
       </div>
 
