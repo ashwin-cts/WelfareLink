@@ -62,4 +62,8 @@ export class ProgramManagerService {
   getResourceUtilisation(): Observable<any> {
     return this.http.get(`${this.config.resourceApi}/utilisation`);
   }
+  getUtilisationReport(): Observable<any[]> {
+    // Note: ensure this matches your exact endpoint path from swagger
+    return this.http.get<any[]>(`${this.config.programApi.replace('WelfareProgramApi', 'ResourceApi')}/utilisation`);
+  }
 }

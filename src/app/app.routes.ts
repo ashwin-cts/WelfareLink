@@ -12,6 +12,10 @@ import { ProgramListComponent } from './features/program-manager/components/prog
 import { ProgramFormComponent } from './features/program-manager/components/program-form.component/program-form.component';
 import { BudgetStatsComponent } from './features/program-manager/components/budget-stats.component/budget-stats.component';
 import { PerformanceMetricsComponent } from './features/program-manager/components/performance-metrics.component/performance-metrics.component';
+import { ResourceListComponent } from './features/program-manager/components/resource-list.component/resource-list.component';
+import { ManageResourcesComponent } from './features/program-manager/components/manage-resources.component/manage-resources.component';
+import { ResourceFormComponent } from './features/program-manager/components/resource-form.component/resource-form.component';
+import { UtilisationReportComponent } from './features/program-manager/components/utilisation-report.component/utilisation-report.component';
 // Import our new Bouncer
 import { authGuard } from './core/guards/auth-guard';
 
@@ -35,6 +39,26 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'resource-manager/program/:id',
+    component: ManageResourcesComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'resource-manager/allocate', // For CREATING
+    component: ResourceFormComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'resource-manager/edit/:id', // For EDITING
+    component: ResourceFormComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'resource-manager/utilisation',
+    component: UtilisationReportComponent,
+    canActivate: [authGuard]
+  },
+  {
     path: 'program-manager/details/:id',
     component: ProgramDetailsComponent,
     canActivate: [authGuard]
@@ -42,6 +66,11 @@ export const routes: Routes = [
   {
     path: 'program-manager/list',
     component: ProgramListComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'resource-manager',
+    component: ResourceListComponent,
     canActivate: [authGuard]
   },
   {
