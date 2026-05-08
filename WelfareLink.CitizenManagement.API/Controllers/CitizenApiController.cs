@@ -55,26 +55,7 @@ namespace WelfareLink.CitizenManagement.API.Controllers
         // PUT: api/citizenapi/{id}/password
         [HttpPut("{id}/password")]
         [Authorize(Roles = "Admin,Citizen")]
-        public async Task<IActionResult> ChangePassword(int id, [FromBody] ChangePasswordRequest request)
-        {
-            // 1. Find the citizen
-            var citizen = await _citizenService.GetCitizenByIdAsync(id);
-            if (citizen == null) return NotFound(new { Error = "Citizen not found." });
-
-            // 2. Find the associated User account
-            var user = _context.Users.FirstOrDefault(u => u.UserId == citizen.UserId);
-            if (user == null) return NotFound(new { Error = "User account not found." });
-
-            // 3. Verify current password
-            if (user.Password != request.CurrentPassword)
-                return BadRequest(new { Error = "Incorrect current password." });
-
-            // 4. Update and save
-            user.Password = request.NewPassword;
-            await _context.SaveChangesAsync();
-
-            return Ok(new { Message = "Password updated successfully." });
-        }
+        
     
         // GET: api/citizenapi/{citizenId}/dashboard
         [HttpGet("{citizenId}/dashboard")]
@@ -286,8 +267,8 @@ namespace WelfareLink.CitizenManagement.API.Controllers
         }
     }
 }
-public class ChangePasswordRequest
-{
-    public string CurrentPassword { get; set; }
-    public string NewPassword { get; set; }
-}
+//public class ChangePasswordRequest
+//{
+//    public string CurrentPassword { get; set; }
+//    public string NewPassword { get; set; }
+//}
