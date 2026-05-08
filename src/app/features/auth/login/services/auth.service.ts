@@ -45,6 +45,6 @@ export class AuthService {
 
   // Only Citizens self-register
   registerCitizen(citizenData: RegisterCitizenRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiConfig.authApi}/citizenapi`, citizenData);
+    return this.http.post<AuthResponse>(`${this.apiConfig.citizenApi}/citizenapi`, citizenData);
   }
 }

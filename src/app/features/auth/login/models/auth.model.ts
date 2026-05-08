@@ -7,9 +7,13 @@ export interface LoginCredentials {
 
 export interface RegisterCitizenRequest {
   username: string;
-  password?: string;
-  email?: string;
-  fullName?: string;
+  password: string;      // Required! No '?'
+  email: string;         // Required!
+  fullName: string;      // Required!
+  dateOfBirth: string;   // Required! (HTML <input type="date"> outputs a string, C# will parse it)
+  gender: string;        // Required!
+  contactInfo: string;   // Required!
+  address: string;
   // Add any other specific fields your Citizen registration needs here!
 }
 

@@ -11,6 +11,12 @@ import { ChangePasswordComponent } from './features/account/components/change-pa
 // Import our new Bouncer
 import { authGuard } from './core/guards/auth-guard';
 
+
+
+// 1. IMPORT THE NEW CITIZEN DASHBOARD
+import { CitizenDashboard } from './features/citizen/components/dashboard/citizen-dashboard/citizen-dashboard';
+
+
 export const routes: Routes = [
   { path: 'login', component: Login },
 
@@ -42,6 +48,16 @@ export const routes: Routes = [
   //   anyone can type localhost:4200/admin-dashboard into their browser and see your dashboard,
   //  even if they aren't logged in! (The API calls will fail, but they will still see the empty HTML page).
   // To fix this, Angular uses things called Auth Guards.
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+
+
+  // 2. NEW ROUTE: Citizen Dashboard (Protected by the Guard)
+  {
+    path: 'citizen-dashboard',
+    component: CitizenDashboard,
+    canActivate: [authGuard]
+  },
+
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 
   // The Wildcard: If they type a URL that doesn't exist, send them to login
