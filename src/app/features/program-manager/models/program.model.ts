@@ -19,10 +19,27 @@ export interface Resource {
     status: string;
 }
 
-// Helper interface for Budget Monitoring endpoint
 export interface BudgetMonitoring {
-    programName: string;
-    allocatedBudget: number;
-    spentAmount: number;
+    programID: number;
+    programTitle: string;
+    totalBudget: number;
+    allocatedFunds: number;
+    disbursedFunds: number;
     remainingBudget: number;
+    utilisationPercentage: number;
+    status: string;
+    isCritical: boolean;
+}
+
+export interface ProgramPerformance {
+    programID: number;
+    programTitle: string;
+    totalApplications: number;
+    approvedApplications: number;
+    rejectedApplications: number;
+    pendingApplications: number;
+    approvalRate: number;
+    benefitsDisbursed: number;
+    citizenCount: number;
+    status: string;
 }

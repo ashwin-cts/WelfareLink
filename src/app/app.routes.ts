@@ -8,6 +8,10 @@ import { PmDashboardComponent } from './features/program-manager/components/pm-d
 import { ProgramDetailsComponent } from './features/program-manager/components/program-details.component/program-details.component';
 import { EditProfileComponent } from './features/account/components/edit-profile.component/edit-profile.component';
 import { ChangePasswordComponent } from './features/account/components/change-password.component/change-password.component';
+import { ProgramListComponent } from './features/program-manager/components/program-list.component/program-list.component';
+import { ProgramFormComponent } from './features/program-manager/components/program-form.component/program-form.component';
+import { BudgetStatsComponent } from './features/program-manager/components/budget-stats.component/budget-stats.component';
+import { PerformanceMetricsComponent } from './features/program-manager/components/performance-metrics.component/performance-metrics.component';
 // Import our new Bouncer
 import { authGuard } from './core/guards/auth-guard';
 
@@ -33,6 +37,31 @@ export const routes: Routes = [
   {
     path: 'program-manager/details/:id',
     component: ProgramDetailsComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'program-manager/list',
+    component: ProgramListComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'program-manager/create',
+    component: ProgramFormComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'program-manager/budget',
+    component: BudgetStatsComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'program-manager/performance',
+    component: PerformanceMetricsComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'program-manager/edit/:id',
+    component: ProgramFormComponent,
     canActivate: [authGuard]
   },
   {

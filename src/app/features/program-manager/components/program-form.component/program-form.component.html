@@ -1,0 +1,144 @@
+<app-program-manager-navbar></app-program-manager-navbar>
+
+<div class="container mt-4" style="padding-bottom: 40px; max-width: 900px;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0 text-primary fw-bold">
+                <i class="bi" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-plus-circle'"></i>
+                {{ isEditMode ? 'Edit Programme' : 'Create New Programme' }}
+            </h2>
+            <p class="text-muted mt-1 mb-0">
+                {{ isEditMode ? 'Update programme details, budget allocation, and eligibility.' : 'Set up a new welfare
+                initiative.' }}
+            </p>
+        </div>
+        <a routerLink="/program-manager/list" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger shadow-sm">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
+    </div>
+
+    <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-3 text-muted fw-bold">Loading programme details...</p>
+    </div>
+
+    <div class="card shadow-sm border-0" *ngIf="!isLoading">
+        <div class="card-body p-4">
+            <form [formGroup]="programForm" (ngSubmit)="onSubmit()">
+
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Programme Title</label>
+                        <input type="text" class="form-control form-control-lg bg-light" formControlName="title"
+                            placeholder="e.g., Housing Support" />
+                        <span *ngIf="programForm.get('title')?.touched && programForm.get('title')?.invalid"
+                            class="text-danger small">Title is required.</span>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Description & Objectives</label>
+                        <textarea class="form-control bg-light" rows="4" formControlName="description"
+                            placeholder="Describe the programme objectives and eligibility"></textarea>
+                        <span *ngIf="programForm.get('description')?.touched && programForm.get('description')?.invalid"
+                            class="text-danger small">Description is required.</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Start Date</label>
+                        <input type="date" class="form-control bg-light" formControlName="startDate" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">End Date</label>
+                        <input type="date" class="form-control bg-light" formControlName="endDate" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Budget Allocation</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">₹</span>
+                            <input type="number" step="0.01" class="form-control bg-light" formControlName="budget"
+                                placeholder="0.00" />
+                        </div>
+                        <small class="form-text text-muted">Total allocated budget for this programme</small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Max Benefit Per Citizen</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">₹</span>
+                            <input type="number" step="0.01" class="form-control bg-light"
+                                formControlName="maxBenefitPerCitizen" placeholder="0.00" />
+                        </div>
+                        <small class="form-text text-muted">Maximum benefit allowed per citizen</small>
+                    </div>
+
+                    <div class="col-md-6" *ngIf="isEditMode">
+                        <label class="form-label fw-bold">Programme Status</label>
+                        <select class="form-select bg-light" formControlName="status">
+                            <option value="Active">Active</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Suspended">Suspended</option>
+                            <option value="Expired">Expired</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12" *ngIf="!isEditMode">
+                        <div class="alert alert-info border-0 shadow-sm mt-2">
+                            <i class="bi bi-info-circle-fill me-2"></i> <strong>Note:</strong> Programme will be created
+                            with "Active" status automatically.
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4 pt-3 border-top">
+                        <label class="form-label fw-bold">Eligible Gender</label>
+                        <div class="d-flex flex-wrap gap-3 mt-2">
+                            <div class="form-check" *ngFor="let g of genderOptions">
+                                <input class="form-check-input" type="checkbox" [id]="'g' + g.value"
+                                    [checked]="selectedGenders.includes(g.value)"
+                                    (change)="onGenderChange(g.value, $event)">
+                                <label class="form-check-label fw-semibold text-dark" [for]="'g' + g.value">
+                                    <i class="bi me-1 {{ g.icon }}"></i> {{ g.label }}
+                                </label>
+                            </div>
+                        </div>
+                        <small class="text-muted mt-2 d-block"><i class="bi bi-info-circle"></i> "Anyone" cannot be
+                            combined with specific genders.</small>
+                    </div>
+
+                    <div class="col-12 mt-4 pt-3 border-top">
+                        <label class="form-label fw-bold">Required Documents</label>
+                        <div class="d-flex flex-wrap gap-3 mt-2">
+                            <div class="form-check" *ngFor="let doc of docOptions">
+                                <input class="form-check-input" type="checkbox" [id]="'rd' + doc.value"
+                                    [checked]="selectedDocs.includes(doc.value)"
+                                    (change)="onDocChange(doc.value, $event)">
+                                <label class="form-check-label fw-semibold text-dark" [for]="'rd' + doc.value">
+                                    <i class="bi me-1 {{ doc.icon }}"></i> {{ doc.label }}
+                                </label>
+                            </div>
+                        </div>
+                        <small class="text-muted mt-2 d-block"><i class="bi bi-info-circle"></i> "No Document Required"
+                            cannot be combined with other selections.</small>
+                    </div>
+
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-5 pt-4 border-top">
+                    <a routerLink="/program-manager/list" class="btn btn-light border px-4 fw-bold text-muted">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" [disabled]="isSaving">
+                        <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+                        <i *ngIf="!isSaving" class="bi bi-check-circle me-1"></i>
+                        {{ isEditMode ? 'Update Programme' : 'Create Programme' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
