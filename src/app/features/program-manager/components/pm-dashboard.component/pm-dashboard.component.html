@@ -1,0 +1,92 @@
+<app-program-manager-navbar></app-program-manager-navbar>
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-speedometer2"></i> Program Dashboard</h1>
+            <p class="text-muted">Overview of active welfare programmes and overall budget.</p>
+        </div>
+        <a routerLink="/program-manager/create" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-circle"></i> Add Programme
+        </a>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-white h-100"
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body">
+                    <h6 class="text-uppercase opacity-75">Total Budget</h6>
+                    <h2 class="mb-0">{{ totalBudget | currency:'INR' }}</h2>
+                    <i class="bi bi-wallet2 position-absolute end-0 bottom-0 m-3 opacity-25"
+                        style="font-size: 3rem;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-white h-100"
+                style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <div class="card-body">
+                    <h6 class="text-uppercase opacity-75">Allocated Budget</h6>
+                    <h2 class="mb-0">{{ allocatedBudget | currency:'INR' }}</h2>
+                    <i class="bi bi-check2-circle position-absolute end-0 bottom-0 m-3 opacity-25"
+                        style="font-size: 3rem;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-white h-100"
+                style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">
+                <div class="card-body">
+                    <h6 class="text-uppercase opacity-75">Remaining Budget</h6>
+                    <h2 class="mb-0">{{ remainingBudget | currency:'INR' }}</h2>
+                    <i class="bi bi-clock-history position-absolute end-0 bottom-0 m-3 opacity-25"
+                        style="font-size: 3rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 text-primary">Recent Welfare Programmes</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Programme Title</th>
+                            <th>Budget</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for(program of programs; track program.programID){
+                        <tr>
+                            <td><strong>PRG-{{ program.programID }}</strong></td>
+                            <td>{{ program.title }}</td>
+                            <td>{{ program.budget | currency:'INR' }}</td>
+                            <td>{{ program.endDate | date:'MMM dd, yyyy' }}</td>
+                            <td>
+                                <span class="badge rounded-pill"
+                                    [ngClass]="{'bg-success': program.status === 'Active', 'bg-warning': program.status === 'Suspended', 'bg-danger': program.status === 'Expired'}">
+                                    {{ program.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <a [routerLink]="['/program-manager/details', program.programID]"
+                                    class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

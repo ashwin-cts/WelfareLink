@@ -1,0 +1,62 @@
+<header>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" routerLink="/program-manager/dashboard">
+                <i class="bi bi-heart-pulse-fill"></i> WelfareLink
+            </a>
+
+            <div class="navbar-collapse collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" routerLink="/program-manager/dashboard" routerLinkActive="active">
+                            <i class="bi bi-diagram-3"></i> Program
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" routerLink="/resource-manager" routerLinkActive="active">
+                            <i class="bi bi-box-seam"></i> Resource
+                        </a>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> {{ userName() }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                            <li><span class="dropdown-item-text"><strong>Role:</strong> {{ userRole() }}</span></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" routerLink="/account/edit-profile"><i
+                                        class="bi bi-person-gear"></i> Edit Profile</a></li>
+                            <li><a class="dropdown-item" routerLink="/account/change-password"><i
+                                        class="bi bi-lock-fill"></i> Change Password</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-danger" (click)="logout()" style="cursor:pointer;"><i
+                                        class="bi bi-box-arrow-right"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="sub-navbar">
+        <div class="container">
+            <ul class="sub-nav-list">
+                <li><a routerLink="/program-manager/dashboard" routerLinkActive="active"><i
+                            class="bi bi-speedometer2"></i> Dashboard</a></li>
+                <li><a routerLink="/program-manager/list" routerLinkActive="active"><i class="bi bi-list-ul"></i> All
+                        Programs</a></li>
+                <li><a routerLink="/program-manager/manage" routerLinkActive="active"><i class="bi bi-plus-circle"></i>
+                        Add Program</a></li>
+                <li><a routerLink="/program-manager/budget" routerLinkActive="active"><i
+                            class="bi bi-currency-dollar"></i> Budget</a></li>
+                <li><a routerLink="/program-manager/performance" routerLinkActive="active"><i
+                            class="bi bi-bar-chart-line"></i> Performance</a></li>
+            </ul>
+        </div>
+    </nav>
+</header>

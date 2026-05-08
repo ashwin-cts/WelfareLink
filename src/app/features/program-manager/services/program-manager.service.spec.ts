@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { Admin } from './admin';
+import { ProgramManagerService } from './program-manager.service';
 
-describe('Admin', () => {
-  let service: Admin;
+describe('ProgramManager', () => {
+  let service: ProgramManagerService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Admin);
+    service = TestBed.inject(ProgramManagerService);
   });
 
   it('should be created', () => {
