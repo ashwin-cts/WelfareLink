@@ -164,6 +164,10 @@ export class ProgramFormComponent implements OnInit {
 
   handleError(err: any) {
     this.isSaving = false;
+
     this.errorMessage = err.error?.message || err.error?.title || 'An error occurred while saving the program.';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    console.error(err);
+
   }
 }

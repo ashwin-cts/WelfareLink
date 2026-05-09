@@ -14,6 +14,21 @@
     transition: all 0.2s ease;
 }
 
+.table-dark-blue th {
+    background-color: #214b8a !important;
+    /* Matches your MVC screenshot */
+    color: white !important;
+    font-weight: 600;
+    border-bottom: none;
+    padding: 15px 10px;
+    /* Gives the header some breathing room */
+}
+
+.table-custom td {
+    vertical-align: middle;
+    padding: 15px 10px;
+}
+
 .custom-table tbody tr:hover {
     background-color: #f8fafc;
     transform: scale(1.002);

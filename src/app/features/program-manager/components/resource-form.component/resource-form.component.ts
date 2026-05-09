@@ -141,7 +141,8 @@ export class ResourceFormComponent implements OnInit {
 
   handleError(err: any) {
     this.isSaving = false;
-    this.errorMessage = err.error?.message || err.error?.title || 'An error occurred while saving.';
+    this.errorMessage = err.error?.detail || err.error?.title || 'An error occurred while saving.';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     console.error(err);
   }
 }

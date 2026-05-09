@@ -1,6 +1,6 @@
 <app-program-manager-navbar></app-program-manager-navbar>
 
-<div class="container-fluid mt-4 px-4 pb-5">
+<div class="container mt-4 px-4 pb-5">
 
     <div class="d-flex justify-content-between align-items-center bg-white p-4 rounded-4 shadow-sm mb-4">
         <div>
@@ -35,8 +35,7 @@
 
             <div class="table-responsive" *ngIf="!isLoading">
                 <table class="table table-hover align-middle mb-0 custom-table">
-                    <thead class="bg-light text-uppercase text-muted"
-                        style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                    <thead class="table-dark-blue" style="font-size: 0.85rem; letter-spacing: 0.5px;">
                         <tr>
                             <th class="py-3 px-3">Program ID</th>
                             <th class="py-3">Title</th>
@@ -88,7 +87,7 @@
                                         class="btn btn-sm btn-outline-info shadow-sm" title="View Details">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a [routerLink]="['/resource-manager/allocate', item.programID]"
+                                    <a [routerLink]="['/resource-manager/program', item.programID]"
                                         class="btn btn-sm btn-outline-success shadow-sm" title="Allocate Resources">
                                         <i class="bi bi-box-seam"></i>
                                     </a>
