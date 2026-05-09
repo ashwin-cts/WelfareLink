@@ -7,11 +7,12 @@
 
 /* Pure white card with a soft, elegant floating shadow */
 .custom-card {
-  background-color: #ffffff; 
+  background-color: #ffffff;
   border-radius: 16px;
   /* Double shadow: one for depth, one to give a subtle color reflection */
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 5px 15px rgba(16, 185, 129, 0.1) !important;
-  backdrop-filter: blur(10px); /* Just a touch of modern glassmorphism */
+  backdrop-filter: blur(10px);
+  /* Just a touch of modern glassmorphism */
 }
 
 /* Bold, deep blue title for high contrast and trust */
@@ -19,6 +20,7 @@
   color: #1e3a8a;
   letter-spacing: -0.5px;
 }
+
 
 /* Clean inputs with a very light grey background so the white card pops */
 .custom-input {
@@ -50,7 +52,8 @@
 .custom-btn:hover:not(:disabled) {
   transform: translateY(-3px);
   box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
-  background: linear-gradient(to right, #0284c7, #059669); /* Slightly darker on hover */
+  background: linear-gradient(to right, #0284c7, #059669);
+  /* Slightly darker on hover */
 }
 
 .custom-btn:disabled {
