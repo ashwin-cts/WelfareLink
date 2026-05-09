@@ -45,20 +45,17 @@ export class ManageResourcesComponent implements OnInit {
       resourceData: this.programService.getResourcesByProgram(programId)
     }).subscribe({
       next: (result: any) => {
-        // Handle potential C# wrappers
-        const p = result.programData.program || result.programData;
-        this.program.set(p);
 
-        // Handle Resource array
-        const resList = result.resourceData.resources || result.resourceData || [];
-        this.resources.set(resList);
+        // 1. Set the Program
+        this.program.set(result.programData.program);
 
-        // --- THE FIX: Use the exact C# backend calculations! ---
-        // We use || to handle both camelCase and PascalCase from the C# serializer
-        this.totalAllocated.set(result.programData.totalAllocatedFunds || result.programData.TotalAllocatedFunds || 0);
-        this.remainingBudget.set(result.programData.remainingBudget || result.programData.RemainingBudget || 0);
-        this.utilisationPercentage.set(result.programData.utilisationPercentage || result.programData.UtilisationPercentage || 0);
-        // -------------------------------------------------------
+        // 2. Set the Resources (Pulling from programData because it has the correct properties!)
+        this.resources.set(result.programData.resources || []);
+
+
+        this.totalAllocated.set(result.programData.totalAllocatedFunds || 0);
+        this.remainingBudget.set(result.programData.remainingBudget || 0);
+        this.utilisationPercentage.set(result.programData.utilisationPercentage || 0);
 
         this.isLoading.set(false);
       },
