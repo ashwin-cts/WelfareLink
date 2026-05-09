@@ -6,15 +6,17 @@ import { CitizenService } from '../../../services/citizen.service';
 import { AuthService } from '../../../../auth/login/services/auth.service';
 import { CitizenDocument, WelfareProgram, WelfareApplication } from '../../../models/citizen.model';
 
+// IMPORT YOUR REUSABLE COMPONENT HERE
+import { ChangePasswordComponent } from '../../../../account/components/change-password.component/change-password.component'; 
+
 @Component({
   selector: 'app-citizen-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ChangePasswordComponent],
   templateUrl: './citizen-dashboard.html',
   styleUrl: './citizen-dashboard.css'
 })
 export class CitizenDashboard implements OnInit {
-  // NEW: Added 'apply' to the allowed tabs
   activeTab: 'overview' | 'upload' | 'status' | 'programs' | 'applications' | 'profile' | 'apply' = 'overview';
   
   currentUserId: number | null = null;
@@ -25,13 +27,11 @@ export class CitizenDashboard implements OnInit {
   programs: WelfareProgram[] = [];
   applications: WelfareApplication[] = [];
 
-  // NEW: Application Form State Variables
   selectedProgramToApply: WelfareProgram | null = null;
   requiredDocTypes: string[] = [];
   selectedDocIdsForApp: number[] = [];
 
   profileForm: FormGroup;
-  passwordForm: FormGroup;
   documentForm: FormGroup;
   selectedFile: File | null = null;
   showRemarks = false;
@@ -54,12 +54,6 @@ export class CitizenDashboard implements OnInit {
       address: ['', Validators.required],
       dateOfBirth: ['', Validators.required],
       gender: ['', Validators.required]
-    });
-
-    this.passwordForm = this.fb.group({
-      currentPassword: ['', Validators.required],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required]
     });
 
     this.documentForm = this.fb.group({
@@ -110,7 +104,7 @@ export class CitizenDashboard implements OnInit {
           rejected: res.rejectedDocuments || 0 
         };
         this.documents = res.documents || []; 
-        this.loadApplications(); // Ensure applications are loaded to check button status
+        this.loadApplications(); 
         this.cdr.detectChanges();
       },
       error: (err) => console.error("Dashboard Load Error:", err)
@@ -206,7 +200,6 @@ export class CitizenDashboard implements OnInit {
     });
   }
 
-  // NEW: Checks if the user already applied to disable the button
   hasApplied(programId: number): boolean {
     return this.applications.some(app => app.programID === programId);
   }
@@ -216,23 +209,19 @@ export class CitizenDashboard implements OnInit {
     return prog ? prog.title : `Program #${programId}`;
   }
 
-  // NEW: Opens the interactive application form view
   openApplyView(programId: number) {
     const prog = this.programs.find(p => p.programID === programId);
     if (!prog) return;
 
     this.selectedProgramToApply = prog;
     
-    // Parse required documents from the C# string (e.g., "ID Proof, Residence Proof")
     const reqDocs = prog.requiredDocuments || 'None';
     this.requiredDocTypes = reqDocs.toLowerCase() === 'none' ? [] : reqDocs.split(',').map(s => s.trim());
     
-    // Reset selections
     this.selectedDocIdsForApp = [];
     this.switchTab('apply');
   }
 
-  // NEW: Toggles document selection checkboxes
   toggleDocumentSelection(docId: number, event: any) {
     if (event.target.checked) {
       this.selectedDocIdsForApp.push(docId);
@@ -241,23 +230,18 @@ export class CitizenDashboard implements OnInit {
     }
   }
 
-  // NEW: Checks if a specific required document type has been selected
   isRequirementMet(docType: string): boolean {
     return this.selectedDocIdsForApp.some(id => {
       const doc = this.documents.find(d => d.documentID === id);
-      // Case-insensitive comparison just in case
       return doc && doc.docType.toLowerCase() === docType.toLowerCase();
     });
   }
 
-  // NEW: Determines if the final Submit button should be enabled
   canSubmitApplication(): boolean {
-    if (this.requiredDocTypes.length === 0) return true; // No docs needed
-    // Every required type must have at least one matching document selected
+    if (this.requiredDocTypes.length === 0) return true; 
     return this.requiredDocTypes.every(type => this.isRequirementMet(type));
   }
 
-  // REFACTORED: The actual API call now fires from the new Apply view
   submitFinalApplication() {
     const idToUse = this.citizenData?.id || this.citizenData?.citizenId;
     if (!idToUse || !this.selectedProgramToApply) return;
@@ -274,7 +258,7 @@ export class CitizenDashboard implements OnInit {
         this.showMessage('Successfully applied for program!', false);
         this.isLoading = false;
         this.loadApplications(); 
-        this.switchTab('applications'); // Route them to view their new app
+        this.switchTab('applications');
       },
       error: (err) => {
         const errorMsg = err.error?.Error || err.error?.error || 'Failed to apply. Check documents.';
@@ -295,32 +279,8 @@ export class CitizenDashboard implements OnInit {
     });
   }
 
-  submitPasswordChange() {
-    const idToUse = this.citizenData?.id || this.citizenData?.citizenId;
-    if (this.passwordForm.invalid || !idToUse) return;
-
-    const vals = this.passwordForm.value;
-    if (vals.newPassword !== vals.confirmPassword) {
-      this.showMessage("New passwords do not match!", true);
-      return;
-    }
-
-    const payload = { currentPassword: vals.currentPassword, newPassword: vals.newPassword };
-
-    this.citizenService.changePassword(idToUse, payload).subscribe({
-      next: () => {
-        this.showMessage('Password changed successfully!', false);
-        this.passwordForm.reset();
-      },
-      error: (err) => {
-        const errorMsg = err.error?.Error || 'Failed to change password.';
-        this.showMessage(errorMsg, true);
-      }
-    });
-  }
-
   showMessage(text: string, isError: boolean) {
     this.message = { text, isError };
     this.cdr.detectChanges();
   }
-}
+} // <--- THIS is the one and only closing brace for the whole class!

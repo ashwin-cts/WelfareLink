@@ -2,31 +2,23 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 
-import { ChangePasswordRequest, UpdateProfileRequest } from '../../models/account.model';
+import { ChangePasswordRequest } from '../../models/account.model';
 import { AccountService } from '../../services/account.service';
-// Import your Navbar component
-import { ProgramManagerNavbarComponent } from '../../../program-manager/components/program-manager-navbar.component/program-manager-navbar.component';
 
 @Component({
   selector: 'app-change-password',
   standalone: true,
-  // Ensure the navbar is in your imports array
-  imports: [CommonModule, ReactiveFormsModule, ProgramManagerNavbarComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './change-password.component.html',
-  styleUrls: ['./change-password.component.css']
+  styleUrls: ['./change-password.component.css'] // Make sure this file exists, even if empty
 })
 export class ChangePasswordComponent implements OnInit {
   passwordForm: FormGroup;
   currentUserId: number | null = null;
-
-  // Variable to hold the role for dynamic navbar display
-  userRole: string = '';
-
   isLoading = false;
   successMessage = '';
   errorMessage = '';
 
-  // Visibility toggle states for the eye icons
   showCurrent = false;
   showNew = false;
   showConfirm = false;
@@ -45,16 +37,11 @@ export class ChangePasswordComponent implements OnInit {
 
   ngOnInit() {
     this.extractUserIdFromToken();
-
-    // Grab the user role from local storage when the page loads
-    this.userRole = localStorage.getItem('userRole') || '';
   }
 
-  // Custom validator to check if passwords match in real-time
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     const newPassword = control.get('newPassword')?.value;
     const confirmPassword = control.get('confirmPassword')?.value;
-
     if (newPassword && confirmPassword && newPassword !== confirmPassword) {
       return { passwordMismatch: true };
     }
@@ -72,7 +59,6 @@ export class ChangePasswordComponent implements OnInit {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        // Handle variations in token claim names
         const nameIdentifier = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
         this.currentUserId = Number(payload.UserId || payload.sub || nameIdentifier);
       } catch (e) {
@@ -98,12 +84,9 @@ export class ChangePasswordComponent implements OnInit {
         this.isLoading = false;
         this.successMessage = 'Password updated successfully!';
         this.passwordForm.reset();
-
-        // Reset visibility toggles upon successful update
         this.showCurrent = false;
         this.showNew = false;
         this.showConfirm = false;
-
         this.cdr.detectChanges();
       },
       error: (err) => {

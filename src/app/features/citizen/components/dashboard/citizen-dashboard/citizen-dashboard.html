@@ -312,6 +312,7 @@
 
     </div>
   </div>
+  
   <div *ngIf="activeTab === 'profile'" class="tab-content">
     
     <div class="card mb-4">
@@ -330,26 +331,9 @@
       </form>
     </div>
 
-    <div class="card border-danger">
-      <h3 class="text-danger">Change Password</h3>
-      <form [formGroup]="passwordForm" (ngSubmit)="submitPasswordChange()">
-        <div class="form-group">
-          <label>Current Password</label>
-          <input type="password" formControlName="currentPassword">
-        </div>
-        <div class="form-row" style="display: flex; gap: 15px;">
-          <div class="form-group" style="flex: 1;">
-            <label>New Password</label>
-            <input type="password" formControlName="newPassword">
-          </div>
-          <div class="form-group" style="flex: 1;">
-            <label>Confirm New Password</label>
-            <input type="password" formControlName="confirmPassword">
-          </div>
-        </div>
-        <button type="submit" class="btn-danger" [disabled]="passwordForm.invalid">Change Password</button>
-      </form>
-    </div>
+    <!-- REUSABLE CHANGE PASSWORD COMPONENT -->
+    <app-change-password></app-change-password>
+
   </div>
 
 </div>

@@ -2,22 +2,19 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-// Reusing your existing Admin Service!
 import { AccountService } from '../../services/account.service';
-import { ChangePasswordRequest, UpdateProfileRequest } from '../../models/account.model';
-import { ProgramManagerNavbarComponent } from '../../../program-manager/components/program-manager-navbar.component/program-manager-navbar.component';
+import { UpdateProfileRequest } from '../../models/account.model';
 
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ProgramManagerNavbarComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './edit-profile.component.html'
 })
 export class EditProfileComponent implements OnInit {
   profileForm: FormGroup;
   currentUserId: number | null = null;
   isLoading = false;
-  userRole: string = "";
   isSaving = false;
   successMessage = '';
   errorMessage = '';
@@ -35,7 +32,6 @@ export class EditProfileComponent implements OnInit {
 
   ngOnInit() {
     this.extractUserIdFromToken();
-    this.userRole = localStorage.getItem('userRole') || '';
     if (this.currentUserId) {
       this.loadProfile();
     }
