@@ -6,13 +6,18 @@ import { CitizenService } from '../../../services/citizen.service';
 import { AuthService } from '../../../../auth/login/services/auth.service';
 import { CitizenDocument, WelfareProgram, WelfareApplication } from '../../../models/citizen.model';
 
-// IMPORT YOUR REUSABLE COMPONENT HERE
+// REUSABLE COMPONENTS
 import { ChangePasswordComponent } from '../../../../account/components/change-password.component/change-password.component'; 
+import { EditProfileComponent } from '../../../../account/components/edit-profile.component/edit-profile.component'; 
+
+// IMPORT THE NEW NAVBAR HERE
+import { CitizenNavbarComponent } from '../../../citizen-navbar.component/citizen-navbar.component'; 
 
 @Component({
   selector: 'app-citizen-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ChangePasswordComponent],
+  // ADD CitizenNavbarComponent to the imports array
+  imports: [CommonModule, ReactiveFormsModule, ChangePasswordComponent, EditProfileComponent, CitizenNavbarComponent],
   templateUrl: './citizen-dashboard.html',
   styleUrl: './citizen-dashboard.css'
 })
@@ -31,12 +36,10 @@ export class CitizenDashboard implements OnInit {
   requiredDocTypes: string[] = [];
   selectedDocIdsForApp: number[] = [];
 
-  profileForm: FormGroup;
   documentForm: FormGroup;
   selectedFile: File | null = null;
   showRemarks = false;
   
-  isDropdownOpen = false;
   isLoading = false;
   message = { text: '', isError: false };
 
@@ -47,15 +50,6 @@ export class CitizenDashboard implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {
-    this.profileForm = this.fb.group({
-      name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      contactInfo: ['', Validators.required],
-      address: ['', Validators.required],
-      dateOfBirth: ['', Validators.required],
-      gender: ['', Validators.required]
-    });
-
     this.documentForm = this.fb.group({
       documentType: ['', Validators.required],
       remarks: ['']
@@ -84,8 +78,6 @@ export class CitizenDashboard implements OnInit {
     this.citizenService.getProfile(this.currentUserId).subscribe({
       next: (data) => {
         this.citizenData = data;
-        if (data.dateOfBirth) data.dateOfBirth = data.dateOfBirth.split('T')[0]; 
-        this.profileForm.patchValue(data);
         this.loadDashboardData();
       },
       error: (err) => console.error("Error loading profile", err)
@@ -117,10 +109,6 @@ export class CitizenDashboard implements OnInit {
     if (tab === 'programs') this.loadPrograms();
     if (tab === 'applications') this.loadApplications();
     if (tab === 'status') this.loadDashboardData(); 
-  }
-
-  toggleDropdown() {
-    this.isDropdownOpen = !this.isDropdownOpen;
   }
 
   logout() {
@@ -268,19 +256,8 @@ export class CitizenDashboard implements OnInit {
     });
   }
 
-  // --- PROFILE LOGIC ---
-  updateProfile() {
-    const idToUse = this.citizenData?.id || this.citizenData?.citizenId;
-    if (this.profileForm.invalid || !idToUse) return;
-
-    this.citizenService.updateProfile(idToUse, this.profileForm.value).subscribe({
-      next: () => this.showMessage('Profile updated!', false),
-      error: () => this.showMessage('Update failed.', true)
-    });
-  }
-
   showMessage(text: string, isError: boolean) {
     this.message = { text, isError };
     this.cdr.detectChanges();
   }
-} // <--- THIS is the one and only closing brace for the whole class!
+}

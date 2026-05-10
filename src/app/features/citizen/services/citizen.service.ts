@@ -61,8 +61,10 @@ export class CitizenService {
   }
 
   // --- PROGRAMS & APPLICATIONS ---
+// --- PROGRAMS & APPLICATIONS ---
   getPrograms(): Observable<WelfareProgram[]> {
-    return this.http.get<WelfareProgram[]>(`${this.apiConfig.programApi}/WelfareProgramApi`);
+    // FIX: Just call this.apiConfig.programApi directly since it already contains the full path!
+    return this.http.get<WelfareProgram[]>(this.apiConfig.programApi);
   }
 
   getApplications(citizenId: number): Observable<WelfareApplication[]> {

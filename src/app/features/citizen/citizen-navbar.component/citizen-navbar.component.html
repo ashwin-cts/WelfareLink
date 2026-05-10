@@ -1,0 +1,22 @@
+<nav class="navbar">
+  <div class="nav-brand">
+    <i class="fa fa-heartbeat"></i> WelfareLink
+  </div>
+  <div class="nav-links">
+    <button [class.active]="activeTab === 'overview'" (click)="switchTab('overview')"><i class="fa fa-dashboard"></i> Dashboard</button>
+    <button [class.active]="activeTab === 'upload'" (click)="switchTab('upload')"><i class="fa fa-upload"></i> Upload Document</button>
+    <button [class.active]="activeTab === 'status'" (click)="switchTab('status')"><i class="fa fa-file"></i> Document Status</button>
+    <button [class.active]="activeTab === 'applications'" (click)="switchTab('applications')"><i class="fa fa-users"></i> My Applications</button>
+    <button [class.active]="activeTab === 'programs' || activeTab === 'apply'" (click)="switchTab('programs')"><i class="fa fa-th"></i> Program List</button>
+  </div>
+  
+  <div class="profile-menu">
+    <button class="profile-btn" (click)="toggleDropdown()">
+      <i class="fa fa-user-circle"></i> {{ citizenName || 'User' }} <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content" *ngIf="isDropdownOpen">
+      <a (click)="switchTab('profile')" style="cursor:pointer">Edit Profile</a>
+      <a (click)="logout()" style="cursor:pointer">Logout</a>
+    </div>
+  </div>
+</nav>
