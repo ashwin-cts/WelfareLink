@@ -31,20 +31,26 @@
       
       <ul class="navbar-nav ms-auto">
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" id="welfareUserDropdown" data-bs-toggle="dropdown">
+          
+          <a class="nav-link dropdown-toggle text-white d-flex align-items-center" 
+             style="cursor: pointer;"
+             (click)="toggleDropdown($event)">
             <i class="bi bi-person-circle me-2 fs-5"></i> {{ userName() }}
           </a>
-          <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+          
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" 
+              [class.show]="isDropdownOpen">
+            
             <li><span class="dropdown-item-text"><strong>Role:</strong> {{ userRole() }}</span></li>
             <li><hr class="dropdown-divider"></li>
             
             <li>
-              <a class="dropdown-item py-2" routerLink="/welfare-officer/profile">
+              <a class="dropdown-item py-2" routerLink="/welfare-officer/profile" (click)="isDropdownOpen = false">
                 <i class="bi bi-person-gear me-2"></i> Edit Profile
               </a>
             </li>
             <li>
-              <a class="dropdown-item py-2" routerLink="/welfare-officer/profile">
+              <a class="dropdown-item py-2" routerLink="/welfare-officer/profile" (click)="isDropdownOpen = false">
                 <i class="bi bi-lock-fill me-2"></i> Change Password
               </a>
             </li>
@@ -57,8 +63,9 @@
               </a>
             </li>
           </ul>
+
         </li>
-      </ul>
+    </ul>
       </div>
   </div>
 </nav>

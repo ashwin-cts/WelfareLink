@@ -1,22 +1,21 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs'; 
+import { API_CONFIG } from '../../../core/config/api.config';
 import { WelfareApplication, EligibilityCheck } from '../models/welfare-officer models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WelfareOfficerService {
-  private apiUrl = 'https://localhost:7143/api/WelfareApplicationApi';
-  private eligibilityApiUrl = 'https://localhost:7143/api/EligibilityCheckApi';
-
-  constructor(private http: HttpClient) { }
+  // 1. Switched to inject() to match ProgramManagerService perfectly
+  private http = inject(HttpClient);
+  private config = inject(API_CONFIG);
 
   /* --- APPLICATION METHODS --- */
 
   getApplications(): Observable<WelfareApplication[]> {
-    // No manual mapping needed! The API and Model match perfectly now.
-    return this.http.get<WelfareApplication[]>(this.apiUrl);
+    return this.http.get<WelfareApplication[]>(this.config.welfareApplicationApi);
   }
 
   getPendingApplications(): Observable<WelfareApplication[]> {
@@ -26,45 +25,92 @@ export class WelfareOfficerService {
   }
 
   getApplicationById(id: number): Observable<WelfareApplication> {
-    return this.http.get<WelfareApplication>(`${this.apiUrl}/${id}`);
+    return this.http.get<WelfareApplication>(`${this.config.welfareApplicationApi}/${id}`);
   }
 
-  updateApplicationStatus(id: number, status: string): Observable<any> {
+  updateApplicationStatus(id: number, status: string): Observable<void> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const body = JSON.stringify(status); 
-    return this.http.patch(`${this.apiUrl}/${id}/status`, body, { headers });
+    return this.http.patch<void>(`${this.config.welfareApplicationApi}/${id}/status`, body, { headers });
   }
 
-  deleteApplication(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+  deleteApplication(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.config.welfareApplicationApi}/${id}`);
   }
 
   /* --- ELIGIBILITY CHECK METHODS --- */
 
+  // 1. GET: /api/EligibilityCheckApi
   getAllEligibilityChecks(): Observable<EligibilityCheck[]> {
-    return this.http.get<EligibilityCheck[]>(this.eligibilityApiUrl).pipe(
+    return this.http.get<EligibilityCheck[]>(this.config.eligibilityApi).pipe(
       map(checks => checks.map(c => ({
         ...c,
-        // Normalizing the ID: Backend might send applicationID or application_id
-        applicationId: c.applicationId || (c as any).applicationID || (c as any).application_id
+        applicationId: c.applicationID || (c as unknown as { applicationID: number }).applicationID
       })))
     );
   }
 
+  // 2. GET: /api/EligibilityCheckApi/{id}
   getEligibilityCheckById(id: number): Observable<EligibilityCheck> {
-    return this.http.get<EligibilityCheck>(`${this.eligibilityApiUrl}/${id}`).pipe(
+    return this.http.get<EligibilityCheck>(`${this.config.eligibilityApi}/${id}`).pipe(
       map(c => ({
         ...c,
-        applicationId: c.applicationId || (c as any).applicationID || (c as any).application_id
+        applicationId: c.applicationID || (c as unknown as { applicationID: number }).applicationID
       }))
     );
   }
 
-  updateEligibilityCheck(id: number, check: EligibilityCheck): Observable<any> {
-    return this.http.put(`${this.eligibilityApiUrl}/${id}`, check);
+  // 3. POST: /api/EligibilityCheckApi (with applicationId query parameter)
+  createEligibilityCheck(check: EligibilityCheck, applicationId?: number): Observable<EligibilityCheck> {
+    let url = this.config.eligibilityApi;
+    if (applicationId) {
+      url += `?applicationId=${applicationId}`;
+    }
+    return this.http.post<EligibilityCheck>(url, check);
   }
 
+  // 4. PUT: /api/EligibilityCheckApi/{id}
+  updateEligibilityCheck(id: number, check: EligibilityCheck): Observable<EligibilityCheck> {
+    return this.http.put<EligibilityCheck>(`${this.config.eligibilityApi}/${id}`, check);
+  }
+
+  // 5. DELETE: /api/EligibilityCheckApi/{id}
+  deleteEligibilityCheck(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.config.eligibilityApi}/${id}`);
+  }
+
+  // 6. GET: /api/EligibilityCheckApi/application/{applicationId}
   getEligibilityHistory(applicationId: number): Observable<EligibilityCheck[]> {
-    return this.http.get<EligibilityCheck[]>(`${this.eligibilityApiUrl}/application/${applicationId}`);
+    return this.http.get<EligibilityCheck[]>(`${this.config.eligibilityApi}/application/${applicationId}`);
+  }
+
+  // 7. GET: /api/EligibilityCheckApi/application/{applicationId}/latest
+  getLatestEligibilityCheck(applicationId: number): Observable<EligibilityCheck> {
+    return this.http.get<EligibilityCheck>(`${this.config.eligibilityApi}/application/${applicationId}/latest`);
+  }
+
+  // 8. GET: /api/EligibilityCheckApi/summary
+  getEligibilitySummary(): Observable<unknown> {
+    return this.http.get<unknown>(`${this.config.eligibilityApi}/summary`);
+  }
+
+  // 9. GET: /api/EligibilityCheckApi/application-info/{applicationId}
+  getApplicationInfoForCheck(applicationId: number): Observable<unknown> {
+    return this.http.get<unknown>(`${this.config.eligibilityApi}/application-info/${applicationId}`);
+  }
+
+  /* --- DOCUMENT METHODS --- */
+
+  // 10. PATCH: /api/CitizencitizenDocumentApi/{id}/verify
+  updateDocumentStatus(documentId: number, status: string): Observable<void> {
+    const url = `${this.config.citizenDocumentApi}/${documentId}/verify`;
+    
+    // This perfectly mimics JsonSerializer.Serialize(status) from your C# code
+    const body = JSON.stringify(status); 
+    
+    // This perfectly mimics Encoding.UTF8, "application/json"
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    
+    return this.http.patch<void>(url, body, { headers });
   }
 }

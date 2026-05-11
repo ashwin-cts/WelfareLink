@@ -111,12 +111,10 @@
           <button class="btn btn-warning text-white fw-bold py-2" [routerLink]="['/eligibility-edit', check.checkID]">
             <i class="bi bi-pencil-square me-2"></i> Edit Check
           </button>
-          <button class="btn btn-cyan text-white fw-bold py-2" [routerLink]="['/details', check.applicationId]">
-            <i class="bi bi-file-earmark-text me-2"></i> View Application
+          <button class="btn btn-danger fw-bold py-2" (click)="openDeleteConfirm()">
+              <i class="bi bi-trash me-2"></i> Delete Check
           </button>
-          <button class="btn btn-danger fw-bold py-2">
-            <i class="bi bi-trash me-2"></i> Delete Check
-          </button>
+         
           <button class="btn btn-navy-outline fw-bold py-2" routerLink="/eligibility-list">
             <i class="bi bi-arrow-left me-2"></i> Back to List
           </button>
@@ -172,3 +170,9 @@
     </div>
   </div>
 </div>
+<app-delete-confirm 
+  *ngIf="showDeleteModal" 
+  [applicationData]="selectedCheckForDelete"
+  (confirmed)="handleDelete($event)"
+  (canceled)="closeModal()">
+</app-delete-confirm>

@@ -21,12 +21,12 @@ export interface WelfareApplication {
 
 export interface EligibilityCheck {
   checkID: number;
-  applicationId: number; 
+  applicationID: number; // Make sure this matches the exact casing expected by your backend
   officerID: number;
-  date: string;
   result: string;
   resultCode: string;
-  notes?: string;
+  date: string;
+  notes: string;
 }
 
 export interface DashboardStats {

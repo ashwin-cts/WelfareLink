@@ -78,7 +78,7 @@
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
           <div class="p-4 bg-white border-bottom d-flex justify-content-between align-items-center">
             <h5 class="fw-bold text-navy mb-0"><i class="bi bi-clipboard-check me-2"></i>Eligibility Check History</h5>
-            <button class="btn btn-navy btn-sm px-3" [routerLink]="['/eligibility-check', application.applicationID]">
+            <button class="btn btn-navy btn-sm px-3" [routerLink]="['/eligibility-create']" [queryParams]="{ applicationId: application.applicationID }">
               <i class="bi bi-plus-lg me-1"></i> New Check
             </button>
           </div>
@@ -128,7 +128,7 @@
               <i class="bi bi-arrow-repeat me-2"></i> Update Status
             </button>
             
-            <button class="btn btn-navy py-2 shadow-sm rounded-3" [routerLink]="['/eligibility-check', application.applicationID]">
+            <button class="btn btn-navy py-2 shadow-sm rounded-3" [routerLink]="['/eligibility-create']" [queryParams]="{ applicationId: application.applicationID }">
               <i class="bi bi-clipboard-check me-2"></i> Eligibility Check
             </button>
           </div>

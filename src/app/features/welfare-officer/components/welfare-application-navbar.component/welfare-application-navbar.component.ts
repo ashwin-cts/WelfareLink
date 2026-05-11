@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, HostListener, ElementRef } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -10,30 +10,41 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./welfare-application-navbar.component.css']
 })
 export class WelfareApplicationNavbarComponent implements OnInit {
-  // 1. Made router public so HTML can read the active URL
   public router = inject(Router);
-
-  // 2. Signals to hold API-driven user data
+  
   userName = signal<string>('Loading...');
   userRole = signal<string>('Welfare Officer');
 
+  // 1. ADD THIS: Variable to track if dropdown is open
+  isDropdownOpen = false;
+
+  // 2. ADD THIS: Inject ElementRef so Angular knows where this component is on the screen
+  constructor(private eRef: ElementRef) {}
+
   ngOnInit(): void {
-    // These values should be saved in localStorage after a successful API login
     const savedName = localStorage.getItem('userName');
     const savedRole = localStorage.getItem('userRole');
 
-    if (savedName) {
-      this.userName.set(savedName);
-    } else {
-      this.userName.set('Officer John Doe'); // Fallback
-    }
+    if (savedName) this.userName.set(savedName);
+    else this.userName.set('Officer John Doe'); 
 
-    if (savedRole) {
-      this.userRole.set(savedRole);
+    if (savedRole) this.userRole.set(savedRole);
+  }
+
+  // 3. ADD THIS: Method to manually toggle the dropdown
+  toggleDropdown(event: Event) {
+    event.preventDefault(); // Prevents the page from jumping to top
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  // 4. ADD THIS: Closes the dropdown if you click anywhere else on the page
+  @HostListener('document:click', ['$event'])
+  clickout(event: Event) {
+    if (!this.eRef.nativeElement.contains(event.target)) {
+      this.isDropdownOpen = false;
     }
   }
 
-  // 3. The Force Reload trick for the Welfare Officer Dashboard
   goToDashboard(event: Event) {
     event.preventDefault();
     if (this.router.url === '/welfare-officer/dashboard') {
@@ -45,9 +56,7 @@ export class WelfareApplicationNavbarComponent implements OnInit {
     }
   }
 
-  // 4. Secure Logout Logic
   logout() {
-    // Clears session to prevent "Invalid Login" cache issues
     localStorage.clear();
     this.router.navigate(['/login']);
   }

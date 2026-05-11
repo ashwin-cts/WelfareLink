@@ -20,7 +20,8 @@ import { ResourceListComponent } from './features/program-manager/components/res
 import { ManageResourcesComponent } from './features/program-manager/components/manage-resources.component/manage-resources.component';
 import { ResourceFormComponent } from './features/program-manager/components/resource-form.component/resource-form.component';
 import { UtilisationReportComponent } from './features/program-manager/components/utilisation-report.component/utilisation-report.component';
-
+import { WelfareOfficerProfileComponent } from './features/welfare-officer/components/welfare-officer-profile.component/welfare-officer-profile.component';
+import{EligibilityFormComponent} from './features/welfare-officer/components/eligibility-form.component/eligibility-form.component';
 // Admin & Auth
 import { AdminProfileComponent } from './features/admin-dashboard/components/admin-profile-component/admin-profile-component';
 import { authGuard } from './core/guards/auth-guard';
@@ -32,7 +33,6 @@ import { DetailsComponent } from './features/welfare-officer/components/details/
 // 5. Eligibility Section Imports (Unified)
 import { EligibilityListComponent } from './features/welfare-officer/components/eligibility-list/eligibility-list.component';
 import { EligibilityDetailsComponent } from './features/welfare-officer/components/eligibility-details.component/eligibility-details.component';
-import { EligibilityEditComponent } from './features/welfare-officer/components/eligibility-edit.component/eligibility-edit.component';
 
 // 6. Citizen Imports
 // Citizen Dashboard
@@ -54,8 +54,14 @@ export const routes: Routes = [
   // Eligibility Section
   { path: 'eligibility-list', component: EligibilityListComponent, canActivate: [authGuard] },
   { path: 'eligibility-details/:id', component: EligibilityDetailsComponent, canActivate: [authGuard] },
-  { path: 'eligibility-edit/:id', component: EligibilityEditComponent, canActivate: [authGuard] },
+ // For creating a new check (POST)
+{ path: 'eligibility-create', component: EligibilityFormComponent },
 
+// For editing an existing check (PUT)
+{ path: 'eligibility-edit/:id', component: EligibilityFormComponent },
+
+// For editing an existing check:
+{ path: 'eligibility-edit/:id', component: EligibilityFormComponent },
   // Program Manager Section
   { path: 'program-manager/dashboard', component: PmDashboardComponent, canActivate: [authGuard] },
   { path: 'program-manager/details/:id', component: ProgramDetailsComponent, canActivate: [authGuard] },
@@ -67,6 +73,10 @@ export const routes: Routes = [
   { path: 'account/edit-profile', component: EditProfileComponent, canActivate: [authGuard] },
   { path: 'account/change-password', component: ChangePasswordComponent, canActivate: [authGuard] },
 
+  { 
+  path: 'welfare-officer/profile', 
+  component: WelfareOfficerProfileComponent 
+},
   // Catch-all redirect
 
   {

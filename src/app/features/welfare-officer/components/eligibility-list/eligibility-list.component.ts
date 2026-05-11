@@ -1,26 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms'; // 1. Added FormsModule for the filter dropdown
+import { FormsModule } from '@angular/forms';
 import { WelfareOfficerService } from '../../services/welfare-officer services';
 import { WelfareApplicationNavbarComponent } from '../welfare-application-navbar.component/welfare-application-navbar.component';
-import { EligibilityCheck } from '../../models/welfare-officer models'; // 2. Imported your interface
+import { EligibilityCheck } from '../../models/welfare-officer models';
+
+// 1. IMPORT YOUR CUSTOM MODAL
+import { DeleteConfirmComponent } from '../delete-confirm/delete-confirm.component';
 
 @Component({
   selector: 'app-eligibility-list',
   standalone: true,
-  // 3. Added FormsModule to imports
-  imports: [CommonModule, RouterModule, FormsModule, WelfareApplicationNavbarComponent],
+  // 2. ADD TO IMPORTS ARRAY
+  imports: [CommonModule, RouterModule, FormsModule, WelfareApplicationNavbarComponent, DeleteConfirmComponent],
   templateUrl: './eligibility-list.component.html',
   styleUrls: ['./eligibility-list.component.css']
 })
 export class EligibilityListComponent implements OnInit {
-  // 4. Replaced 'any[]' with strictly typed interface arrays
   checks: EligibilityCheck[] = []; 
   filteredChecks: EligibilityCheck[] = []; 
-  
-  // 5. Property to track the selected dropdown value
   selectedResult: string = 'All Results'; 
+
+  // 3. MODAL STATE VARIABLES
+  showDeleteModal = false;
+  selectedCheckForDelete: any = null;
 
   constructor(
     private welfareService: WelfareOfficerService,
@@ -32,18 +36,15 @@ export class EligibilityListComponent implements OnInit {
   }
 
   loadChecks(): void {
-    // 6. Strongly typed the incoming data
     this.welfareService.getAllEligibilityChecks().subscribe({
       next: (data: EligibilityCheck[]) => {
         this.checks = data;
-        this.filteredChecks = [...this.checks]; // Initialize the table with all data
-        console.log('Retrieved Checks:', this.checks);
+        this.filteredChecks = [...this.checks]; 
       },
       error: (err) => console.error('Error fetching checks:', err)
     });
   }
 
-  // 7. Added the filter logic
   applyFilter(): void {
     if (this.selectedResult === 'All Results') {
       this.filteredChecks = [...this.checks];
@@ -58,19 +59,42 @@ export class EligibilityListComponent implements OnInit {
     this.router.navigate(['/welfare-officer/dashboard']);
   }
 
-  // 8. Replaced 'any' with 'number' for IDs
   handleEdit(applicationId: number): void {
     if (applicationId) {
       this.router.navigate(['/eligibility-edit', applicationId]);
-    } else {
-      console.error('Cannot edit: Application ID is missing.');
-      alert('Error: This record does not have a valid Application ID.');
     }
   }
 
+  // --- 4. NEW MODAL LOGIC ---
+
+  openDeleteConfirm(check: EligibilityCheck): void {
+    // We map the checkID to 'applicationID' so your existing modal reads it correctly without throwing an error
+    this.selectedCheckForDelete = {
+      applicationID: check.checkID, 
+      citizen: { firstName: 'Eligibility', lastName: 'Assessment' } // Placeholder name for the modal UI
+    };
+    this.showDeleteModal = true;
+  }
+
+  closeModal(): void {
+    this.showDeleteModal = false;
+    this.selectedCheckForDelete = null;
+  }
+
   handleDelete(id: number): void {
-    if(confirm('Are you sure you want to delete this check?')) {
-      // Logic for deletion service call would go here
-    }
+    this.welfareService.deleteEligibilityCheck(id).subscribe({
+      next: () => {
+        // Remove from both arrays to update UI instantly
+        this.checks = this.checks.filter(c => c.checkID !== id);
+        this.applyFilter(); 
+        
+        this.closeModal(); // Hide the modal
+      },
+      error: (err) => {
+        console.error('Failed to delete check:', err);
+        alert('Could not delete the check. Please try again.');
+        this.closeModal();
+      }
+    });
   }
 }
