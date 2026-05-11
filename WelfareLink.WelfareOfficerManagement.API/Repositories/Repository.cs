@@ -32,23 +32,47 @@ namespace WelfareLink.WelfareOfficerManagement.API.Repositories
             return entity;
         }
 
+        //public virtual async Task UpdateAsync(T entity)
+        //{
+        //    // Check if the entity is already being tracked
+        //    var local = _context.Set<T>()
+        //        .Local
+        //        .FirstOrDefault(e => EF.Property<int>(e, GetKeyPropertyName()) == GetEntityKey(entity));
+
+        //    if (local != null)
+        //    {
+        //        // Detach the local entity if it exists
+        //        _context.Entry(local).State = EntityState.Detached;
+        //    }
+
+        //    _context.Entry(entity).State = EntityState.Modified;
+        //    await _context.SaveChangesAsync();
+        //}
+        //if any error occurs here just comment below one and use above
         public virtual async Task UpdateAsync(T entity)
         {
-            // Check if the entity is already being tracked
+            // Check if the entity is already being tracked in memory
             var local = _context.Set<T>()
                 .Local
-                .FirstOrDefault(e => EF.Property<int>(e, GetKeyPropertyName()) == GetEntityKey(entity));
+                .FirstOrDefault(e =>
+                {
+                    // Use standard C# Reflection to get the value since we are working in-memory
+                    var propertyInfo = e.GetType().GetProperty(GetKeyPropertyName());
+                    var propertyValue = propertyInfo?.GetValue(e);
+
+                    return propertyValue != null && (int)propertyValue == GetEntityKey(entity);
+                });
 
             if (local != null)
             {
-                // Detach the local entity if it exists
+                // Detach the local entity if it exists to prevent tracking collisions
                 _context.Entry(local).State = EntityState.Detached;
             }
 
+            // Now we can safely attach and update the new entity
             _context.Entry(entity).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
-
         private string GetKeyPropertyName()
         {
             // Try common key property names
@@ -93,7 +117,12 @@ namespace WelfareLink.WelfareOfficerManagement.API.Repositories
 
         public virtual async Task<bool> ExistsAsync(int id)
         {
-            return await _dbSet.AnyAsync(e => EF.Property<int>(e, "ApplicationID") == id);
+            //return await _dbSet.AnyAsync(e => EF.Property<int>(e, "ApplicationID") == id);
+            //if any error occurs here just comment below one and use above
+            var entity = await _dbSet.FindAsync(id);
+
+            // If it returns an object, it exists. If it returns null, it doesn't.
+            return entity != null;
         }
     }
 }
