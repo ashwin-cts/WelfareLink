@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from '../../../core/config/api.config';
-import { WelfareProgram, Resource, BudgetMonitoring } from '../models/program.model';
+import { WelfareProgram, Resource, BudgetMonitoring, ProgramPerformance } from '../models/program.model';
 
 @Injectable({
   providedIn: 'root'
@@ -33,10 +33,14 @@ export class ProgramManagerService {
     return this.http.patch<void>(`${this.config.programApi}/${id}/suspend`, {});
   }
 
+  // Find your existing getBudgetMonitoring and add the new getPerformanceMetrics
   getBudgetMonitoring(): Observable<BudgetMonitoring[]> {
     return this.http.get<BudgetMonitoring[]>(`${this.config.programApi}/budget-monitoring`);
   }
 
+  getPerformanceMetrics(): Observable<ProgramPerformance[]> {
+    return this.http.get<ProgramPerformance[]>(`${this.config.programApi}/performance`);
+  }
   // --- Resource Endpoints ---
 
   getResources(): Observable<Resource[]> {
@@ -57,5 +61,9 @@ export class ProgramManagerService {
 
   getResourceUtilisation(): Observable<any> {
     return this.http.get(`${this.config.resourceApi}/utilisation`);
+  }
+  getUtilisationReport(): Observable<any[]> {
+    // Note: ensure this matches your exact endpoint path from swagger
+    return this.http.get<any[]>(`${this.config.programApi.replace('WelfareProgramApi', 'ResourceApi')}/utilisation`);
   }
 }

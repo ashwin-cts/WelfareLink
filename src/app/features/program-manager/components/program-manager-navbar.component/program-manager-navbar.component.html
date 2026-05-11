@@ -1,14 +1,19 @@
 <header>
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <a class="navbar-brand" routerLink="/program-manager/dashboard">
+            <!-- 1. Updated Logo Link -->
+            <a class="navbar-brand" (click)="goToDashboard($event)" style="cursor: pointer;">
                 <i class="bi bi-heart-pulse-fill"></i> WelfareLink
             </a>
 
             <div class="navbar-collapse collapse">
                 <ul class="navbar-nav ms-auto">
+                    <!-- 2. Updated Dashboard Link -->
                     <li class="nav-item">
-                        <a class="nav-link" routerLink="/program-manager/dashboard" routerLinkActive="active">
+                        <a class="nav-link" 
+                           (click)="goToDashboard($event)" 
+                           [class.active]="router.url === '/program-manager/dashboard'" 
+                           style="cursor: pointer;">
                             <i class="bi bi-diagram-3"></i> Program
                         </a>
                     </li>
@@ -27,15 +32,27 @@
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" routerLink="/account/edit-profile"><i
-                                        class="bi bi-person-gear"></i> Edit Profile</a></li>
-                            <li><a class="dropdown-item" routerLink="/account/change-password"><i
-                                        class="bi bi-lock-fill"></i> Change Password</a></li>
+                            
+                            <!-- 3. FIXED PROFILE LINKS -->
+                            <li>
+                                <a class="dropdown-item" routerLink="/program-manager/profile">
+                                    <i class="bi bi-person-gear"></i> Edit Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" routerLink="/program-manager/profile">
+                                    <i class="bi bi-lock-fill"></i> Change Password
+                                </a>
+                            </li>
+                            
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item text-danger" (click)="logout()" style="cursor:pointer;"><i
-                                        class="bi bi-box-arrow-right"></i> Logout</a></li>
+                            <li>
+                                <a class="dropdown-item text-danger" (click)="logout()" style="cursor:pointer;">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
@@ -46,11 +63,12 @@
     <nav class="sub-navbar">
         <div class="container">
             <ul class="sub-nav-list">
+                <!-- Ensure sub-nav dashboard link also uses the click event if needed, but routerLink is fine here if it's just for highlighting -->
                 <li><a routerLink="/program-manager/dashboard" routerLinkActive="active"><i
                             class="bi bi-speedometer2"></i> Dashboard</a></li>
                 <li><a routerLink="/program-manager/list" routerLinkActive="active"><i class="bi bi-list-ul"></i> All
                         Programs</a></li>
-                <li><a routerLink="/program-manager/manage" routerLinkActive="active"><i class="bi bi-plus-circle"></i>
+                <li><a routerLink="/program-manager/create" routerLinkActive="active"><i class="bi bi-plus-circle"></i>
                         Add Program</a></li>
                 <li><a routerLink="/program-manager/budget" routerLinkActive="active"><i
                             class="bi bi-currency-dollar"></i> Budget</a></li>

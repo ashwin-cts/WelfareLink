@@ -1,29 +1,25 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 
-// 1. Updated Service Imports based on new structure
-import { AuthService } from '../../auth/login/services/auth.service';
-import { AdminService } from '../services/admin.service';
+// Import Admin Navbar
+import { AdminNavbarComponent } from './admin-navbar/admin-navbar';
 
-// 2. Import the Interfaces we created
+import { AdminService } from '../services/admin.service';
 import { UserProfile, SystemLog } from '../models/admin.model';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AdminNavbarComponent],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css'
 })
 export class AdminDashboard implements OnInit {
-  activeTab: 'users' | 'logs' | 'create-officer' | 'create-admin' | 'profile' = 'users';
+  activeTab: 'users' | 'logs' | 'create-officer' | 'create-admin' = 'users';
 
-  // 3. Apply the interfaces here instead of using 'any'
   usersList: UserProfile[] = [];
   logsList: SystemLog[] = [];
-  currentProfile: UserProfile | null = null;
   
   currentAdminId: number | null = null;
   
@@ -34,20 +30,13 @@ export class AdminDashboard implements OnInit {
 
   officerForm: FormGroup;
   adminForm: FormGroup;
-  profileForm: FormGroup;
-  passwordForm: FormGroup; 
   
   formSuccessMessage = '';
   formErrorMessage = '';
-  pwdSuccessMessage = '';
-  pwdErrorMessage = '';
   isFormLoading = false;
-  isPwdLoading = false;
   
   constructor(
     private adminService: AdminService,
-    private authService: AuthService,
-    private router: Router,
     private cdr: ChangeDetectorRef,
     private fb: FormBuilder 
   ) {
@@ -66,17 +55,6 @@ export class AdminDashboard implements OnInit {
       fullName: [''],
       email: ['']
     });
-
-    this.profileForm = this.fb.group({
-      fullName: [''],
-      email: ['']
-    });
-
-    this.passwordForm = this.fb.group({
-      currentPassword: ['', Validators.required],
-      newPassword: ['', [Validators.required, Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s])\S{8,}$/)]],
-      confirmPassword: ['', Validators.required]
-    });
   }
 
   ngOnInit() {
@@ -90,33 +68,21 @@ export class AdminDashboard implements OnInit {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        console.log("JWT Payload Decoded:", payload); 
-
         const nameIdentifier = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
         
         this.currentAdminId = Number(payload.UserId || payload.sub || nameIdentifier);
-        console.log("Extracted Admin ID:", this.currentAdminId);
-
       } catch (e) {
         console.error("Could not decode token", e);
       }
-    } else {
-      console.warn("No token found in localStorage!");
     }
   }
 
-  logout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
-
-  switchTab(tabName: 'users' | 'logs' | 'create-officer' | 'create-admin' | 'profile') {
+  switchTab(tabName: 'users' | 'logs' | 'create-officer' | 'create-admin') {
     this.activeTab = tabName;
     this.clearMessages();
     
     if (tabName === 'users') this.loadUsers();
     if (tabName === 'logs') this.loadLogs(1);
-    if (tabName === 'profile') this.loadProfile();
   }
 
   loadUsers() {
@@ -127,9 +93,8 @@ export class AdminDashboard implements OnInit {
     });
   }
 
-  // 4. Apply the interface to the parameter here
   toggleUserStatus(user: UserProfile) {
-    if (!user.userId) return; // Added safety check
+    if (!user.userId) return; 
     
     if (user.isActive) {
       this.adminService.blockUser(user.userId).subscribe(() => { user.isActive = false; this.cdr.detectChanges(); });
@@ -157,84 +122,6 @@ export class AdminDashboard implements OnInit {
     });
   }
 
-  loadProfile() {
-    if (!this.currentAdminId) {
-      console.error("Cannot load profile: currentAdminId is null!");
-      // Temporarily cast fallback object so TypeScript doesn't complain
-      this.currentProfile = { username: 'Unknown User' } as UserProfile; 
-      this.formErrorMessage = "Session error: Could not extract User ID. Please try logging out and back in.";
-      this.cdr.detectChanges();
-      return;
-    }
-
-    console.log(`Sending request to UserApi for ID: ${this.currentAdminId}`);
-
-    this.adminService.getProfile(this.currentAdminId).subscribe({
-      next: (data) => {
-        console.log("Profile Data Received:", data);
-        this.currentProfile = data;
-        this.profileForm.patchValue({
-          fullName: data.fullName,
-          email: data.email
-        });
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error("Profile API Error:", err);
-        this.currentProfile = { username: 'Error Loading Profile' } as UserProfile; 
-        this.formErrorMessage = "Failed to load profile from the server. Check console for details.";
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  updateProfile() {
-    if (this.profileForm.invalid || !this.currentAdminId) return;
-    this.isFormLoading = true;
-    this.clearMessages();
-    
-    this.adminService.updateProfile(this.currentAdminId, this.profileForm.value).subscribe({
-      next: (res) => {
-        this.isFormLoading = false;
-        this.formSuccessMessage = 'Profile updated successfully!';
-        this.currentProfile = res; 
-        this.cdr.detectChanges();
-      },
-      error: (err) => this.handleFormError(err, 'profile')
-    });
-  }
-
-  submitPasswordChange() {
-    if (this.passwordForm.invalid || !this.currentAdminId) return;
-
-    const vals = this.passwordForm.value;
-    if (vals.newPassword !== vals.confirmPassword) {
-      this.pwdErrorMessage = "New passwords do not match!";
-      return;
-    } else if(vals.currentPassword === vals.newPassword) {
-      this.pwdErrorMessage = "You cannot use the old password!";
-      return;
-    }
-
-    this.isPwdLoading = true;
-    this.clearMessages();
-
-    const payload = {
-      currentPassword: vals.currentPassword,
-      newPassword: vals.newPassword
-    };
-
-    this.adminService.changePassword(this.currentAdminId, payload).subscribe({
-      next: () => {
-        this.isPwdLoading = false;
-        this.pwdSuccessMessage = 'Password changed successfully!';
-        this.passwordForm.reset();
-        this.cdr.detectChanges();
-      },
-      error: (err) => this.handleFormError(err, 'password')
-    });
-  }
-
   submitOfficer() {
     if (this.officerForm.invalid) return;
     this.isFormLoading = true;
@@ -247,7 +134,7 @@ export class AdminDashboard implements OnInit {
         this.officerForm.reset({ role: '' }); 
         this.cdr.detectChanges();
       },
-      error: (err) => this.handleFormError(err, 'profile')
+      error: (err) => this.handleFormError(err)
     });
   }
 
@@ -263,13 +150,12 @@ export class AdminDashboard implements OnInit {
         this.adminForm.reset({ role: 'Admin' });
         this.cdr.detectChanges();
       },
-      error: (err) => this.handleFormError(err, 'profile')
+      error: (err) => this.handleFormError(err)
     });
   }
 
-  private handleFormError(err: any, formType: 'profile' | 'password') {
+  private handleFormError(err: any) {
     this.isFormLoading = false;
-    this.isPwdLoading = false;
     
     let errorText = 'An error occurred. Please try again.';
     if (err.error && err.error.Error) errorText = err.error.Error; 
@@ -279,17 +165,13 @@ export class AdminDashboard implements OnInit {
       errorText = err.error.errors[firstErrorKey][0]; 
     }
 
-    if (formType === 'password') this.pwdErrorMessage = errorText;
-    else this.formErrorMessage = errorText;
-    
+    this.formErrorMessage = errorText;
     this.cdr.detectChanges();
   }
 
   private clearMessages() {
     this.formSuccessMessage = '';
     this.formErrorMessage = '';
-    this.pwdSuccessMessage = '';
-    this.pwdErrorMessage = '';
     this.cdr.detectChanges();
   }
 }

@@ -20,7 +20,7 @@ export const defaultApiConfig: ApiConfig = {
   userApi: 'https://localhost:7203/api/UserApi',
   auditApi: 'https://localhost:7255/api/AuditLogApi',
   authApi: 'https://localhost:7242/api',
-  citizenApi: 'https://localhost:7114/api/',
+  citizenApi: 'https://localhost:7114/api',
   programApi: 'https://localhost:7029/api/WelfareProgramApi',
   resourceApi: 'https://localhost:7029/api/ResourceApi',
   

@@ -10,7 +10,8 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./program-manager-navbar.component.css']
 })
 export class ProgramManagerNavbarComponent implements OnInit {
-  private router = inject(Router);
+  // 1. Made router public so HTML can read the active URL
+  public router = inject(Router);
 
   // Signals to hold API-driven user data
   userName = signal<string>('Loading...');
@@ -23,6 +24,18 @@ export class ProgramManagerNavbarComponent implements OnInit {
 
     if (savedName) this.userName.set(savedName);
     if (savedRole) this.userRole.set(savedRole);
+  }
+
+  // 2. Add the Force Reload trick
+  goToDashboard(event: Event) {
+    event.preventDefault();
+    if (this.router.url === '/program-manager/dashboard') {
+      this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+          this.router.navigate(['/program-manager/dashboard']);
+      });
+    } else {
+      this.router.navigate(['/program-manager/dashboard']);
+    }
   }
 
   logout() {

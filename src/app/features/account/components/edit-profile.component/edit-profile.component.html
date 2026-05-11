@@ -1,38 +1,33 @@
-<app-program-manager-navbar></app-program-manager-navbar>
+<div class="text-center py-5" *ngIf="isLoading">
+    <div class="spinner-border text-primary" role="status"></div>
+    <div class="mt-2 text-muted fw-bold">Loading Profile...</div>
+</div>
 
-<div class="container mt-5" style="max-width: 500px;">
-
-    <div class="text-center py-5" *ngIf="isLoading">
-        <div class="spinner-border text-primary" role="status"></div>
-        <div class="mt-2 text-muted fw-bold">Loading Profile...</div>
+<div class="card shadow border-0 rounded-3 h-100" *ngIf="!isLoading">
+    <div class="card-header bg-primary text-white py-3 rounded-top-3">
+        <h5 class="mb-0"><i class="bi bi-person-gear me-2"></i> Edit Profile</h5>
     </div>
+    <div class="card-body p-4">
+        <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+        <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
 
-    <div class="card shadow-sm border-0" *ngIf="!isLoading">
-        <div class="card-header bg-primary text-white py-3">
-            <h5 class="mb-0"><i class="bi bi-person-gear me-2"></i> Edit Profile</h5>
-        </div>
-        <div class="card-body p-4">
-            <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
-            <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
 
-            <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+                <label class="form-label fw-bold text-secondary">Full Name</label>
+                <input type="text" class="form-control shadow-none" formControlName="fullName">
+            </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Full Name</label>
-                    <input type="text" class="form-control" formControlName="fullName">
-                </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold text-secondary">Email Address</label>
+                <input type="email" class="form-control shadow-none" formControlName="email">
+            </div>
 
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Email Address</label>
-                    <input type="email" class="form-control" formControlName="email">
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100 fw-bold"
-                    [disabled]="profileForm.invalid || isSaving">
-                    <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
-                    Save Changes
-                </button>
-            </form>
-        </div>
+            <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm"
+                [disabled]="profileForm.invalid || isSaving">
+                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+                Save Changes
+            </button>
+        </form>
     </div>
 </div>

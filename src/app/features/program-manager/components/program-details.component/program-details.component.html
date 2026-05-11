@@ -1,5 +1,5 @@
 <app-program-manager-navbar></app-program-manager-navbar>
-<div class="container-fluid mt-4 pb-5" *ngIf="program() as p; else loading">
+<div class="container mt-4 pb-5" *ngIf="program() as p; else loading">
     <div class="row mb-3">
         <div class="col-md-12">
             <nav aria-label="breadcrumb">
@@ -52,8 +52,12 @@
                         <a [routerLink]="['/program-manager/edit', p.programID]" class="btn btn-primary px-4">
                             <i class="bi bi-pencil"></i> Edit Details
                         </a>
-                        <a routerLink="/program-manager/dashboard" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        <a [routerLink]="['/resource-manager/program', p.programID]"
+                            class="btn btn-success fw-bold px-3 py-2">
+                            <i class="bi bi-box me-2"></i> Manage Resources
+                        </a>
+                        <a routerLink="/program-manager/list" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to List
                         </a>
                     </div>
                 </div>

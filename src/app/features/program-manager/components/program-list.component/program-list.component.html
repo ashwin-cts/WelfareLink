@@ -1,0 +1,103 @@
+<app-program-manager-navbar></app-program-manager-navbar>
+
+<div class="container mt-4 px-4 pb-5">
+
+    <div class="d-flex justify-content-between align-items-center bg-white p-4 rounded-4 shadow-sm mb-4">
+        <div>
+            <h2 class="mb-1 fw-bold" style="color: #1e3c72;">
+                <i class="bi bi-diagram-3 text-info me-2"></i> Programme List
+            </h2>
+            <p class="text-muted mb-0">Search and manage all welfare programmes.</p>
+        </div>
+        <a routerLink="/program-manager/create" class="btn btn-primary px-4 py-2 rounded-3 fw-bold shadow-sm"
+            style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border: none;">
+            <i class="bi bi-plus-circle me-1"></i> Add New Programme
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+
+            <div class="mb-4" style="max-width: 500px;">
+                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+                    <span class="input-group-text bg-white border-end-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0 ps-0 search-input"
+                        placeholder="Search by Program ID or Title..." [(ngModel)]="searchTerm" (input)="onSearch()">
+                </div>
+            </div>
+
+            <div *ngIf="isLoading" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-3 text-muted fw-bold">Loading programmes...</p>
+            </div>
+
+            <div class="table-responsive" *ngIf="!isLoading">
+                <table class="table table-hover align-middle mb-0 custom-table">
+                    <thead class="table-dark-blue" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                        <tr>
+                            <th class="py-3 px-3">Program ID</th>
+                            <th class="py-3">Title</th>
+                            <th class="py-3">Start Date</th>
+                            <th class="py-3">End Date</th>
+                            <th class="py-3">Budget</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="filteredPrograms.length === 0">
+                            <td colspan="7" class="text-center py-5">
+                                <i class="bi bi-inbox text-muted opacity-50" style="font-size: 3rem;"></i>
+                                <p class="text-muted mt-2 mb-0 fw-bold">No programmes found.</p>
+                            </td>
+                        </tr>
+
+                        <tr *ngFor="let item of filteredPrograms">
+                            <td class="px-3"><span class="fw-bold text-dark">PRG-{{ item.programID }}</span></td>
+                            <td class="fw-semibold text-primary">{{ item.title }}</td>
+                            <td class="text-muted">{{ item.startDate | date:'MMM dd, yyyy' }}</td>
+                            <td class="text-muted">{{ item.endDate | date:'MMM dd, yyyy' }}</td>
+                            <td><span class="fw-bold text-success">₹{{ item.budget | number:'1.0-0' }}</span></td>
+                            <td>
+                                <span class="badge rounded-pill px-3 py-2 custom-badge" [ngClass]="{
+                                    'status-active': item.status === 'Active',
+                                    'status-completed': item.status === 'Completed',
+                                    'status-suspended': item.status === 'Suspended',
+                                    'status-expired': item.status === 'Expired',
+                                    'status-pending': item.status === 'Pending'
+                                }">
+                                    <i class="bi me-1" [ngClass]="{
+                                        'bi-check-circle-fill': item.status === 'Active',
+                                        'bi-flag-fill': item.status === 'Completed',
+                                        'bi-pause-circle-fill': item.status === 'Suspended',
+                                        'bi-x-circle-fill': item.status === 'Expired',
+                                        'bi-clock-fill': item.status === 'Pending'
+                                    }"></i> {{ item.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a [routerLink]="['/program-manager/edit', item.programID]"
+                                        class="btn btn-sm btn-outline-warning shadow-sm" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a [routerLink]="['/program-manager/details', item.programID]"
+                                        class="btn btn-sm btn-outline-info shadow-sm" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a [routerLink]="['/resource-manager/program', item.programID]"
+                                        class="btn btn-sm btn-outline-success shadow-sm" title="Allocate Resources">
+                                        <i class="bi bi-box-seam"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>

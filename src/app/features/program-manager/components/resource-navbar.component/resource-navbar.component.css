@@ -1,0 +1,53 @@
+.navbar-custom {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+    padding: 1rem 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+}
+
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.sub-navbar {
+    background: linear-gradient(135deg, #0f2557 0%, #1e3c72 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-bottom: 3px solid #00b4d8;
+}
+
+.sub-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.sub-nav-list a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.8rem 1.2rem;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    border-radius: 8px;
+}
+
+.sub-nav-list a.active {
+    background: rgba(0, 180, 216, 0.2);
+    color: white;
+    border-bottom: 2px solid #00b4d8;
+}

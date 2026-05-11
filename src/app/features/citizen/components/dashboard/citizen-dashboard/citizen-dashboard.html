@@ -1,25 +1,9 @@
-<nav class="navbar">
-  <div class="nav-brand">
-    <i class="fa fa-heartbeat"></i> WelfareLink
-  </div>
-  <div class="nav-links">
-    <button [class.active]="activeTab === 'overview'" (click)="switchTab('overview')"><i class="fa fa-dashboard"></i> Dashboard</button>
-    <button [class.active]="activeTab === 'upload'" (click)="switchTab('upload')"><i class="fa fa-upload"></i> Upload Document</button>
-    <button [class.active]="activeTab === 'status'" (click)="switchTab('status')"><i class="fa fa-file"></i> Document Status</button>
-    <button [class.active]="activeTab === 'applications'" (click)="switchTab('applications')"><i class="fa fa-users"></i> My Applications</button>
-    <button [class.active]="activeTab === 'programs' || activeTab === 'apply'" (click)="switchTab('programs')"><i class="fa fa-th"></i> Program List</button>
-  </div>
-  
-  <div class="profile-menu">
-    <button class="profile-btn" (click)="toggleDropdown()">
-      <i class="fa fa-user-circle"></i> {{ profileForm.value.name || 'User' }} <i class="fa fa-caret-down"></i>
-    </button>
-    <div class="dropdown-content" *ngIf="isDropdownOpen">
-      <a (click)="switchTab('profile'); toggleDropdown()">Edit Profile</a>
-      <a (click)="logout()">Logout</a>
-    </div>
-  </div>
-</nav>
+<app-citizen-navbar 
+    [activeTab]="activeTab" 
+    [citizenName]="citizenData?.name" 
+    (tabChange)="switchTab($event)" 
+    (logoutTrigger)="logout()">
+</app-citizen-navbar>
 
 <div class="dashboard-container">
   
@@ -28,7 +12,7 @@
   </div>
 
   <div *ngIf="activeTab === 'overview'" class="tab-content">
-    <h2>Welcome, {{ profileForm.value.name }}</h2>
+    <h2>Welcome, {{ citizenData?.name || 'Citizen' }}</h2>
     
     <div class="stats-grid">
       <div class="stat-card pending">
@@ -312,44 +296,13 @@
 
     </div>
   </div>
+  
   <div *ngIf="activeTab === 'profile'" class="tab-content">
     
-    <div class="card mb-4">
-      <h3>Edit Profile</h3>
-      <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
-        <div class="form-row" style="display: flex; gap: 15px;">
-          <div class="form-group" style="flex: 1;"><label>Full Name</label><input formControlName="name"></div>
-          <div class="form-group" style="flex: 1;"><label>Date of Birth</label><input type="date" formControlName="dateOfBirth"></div>
-        </div>
-        <div class="form-row" style="display: flex; gap: 15px;">
-          <div class="form-group" style="flex: 1;"><label>Email</label><input type="email" formControlName="email"></div>
-          <div class="form-group" style="flex: 1;"><label>Phone</label><input formControlName="contactInfo"></div>
-        </div>
-        <div class="form-group"><label>Address</label><textarea formControlName="address"></textarea></div>
-        <button type="submit" class="btn-primary" [disabled]="profileForm.invalid">Update Details</button>
-      </form>
-    </div>
+    <app-edit-profile></app-edit-profile>
 
-    <div class="card border-danger">
-      <h3 class="text-danger">Change Password</h3>
-      <form [formGroup]="passwordForm" (ngSubmit)="submitPasswordChange()">
-        <div class="form-group">
-          <label>Current Password</label>
-          <input type="password" formControlName="currentPassword">
-        </div>
-        <div class="form-row" style="display: flex; gap: 15px;">
-          <div class="form-group" style="flex: 1;">
-            <label>New Password</label>
-            <input type="password" formControlName="newPassword">
-          </div>
-          <div class="form-group" style="flex: 1;">
-            <label>Confirm New Password</label>
-            <input type="password" formControlName="confirmPassword">
-          </div>
-        </div>
-        <button type="submit" class="btn-danger" [disabled]="passwordForm.invalid">Change Password</button>
-      </form>
-    </div>
+    <app-change-password></app-change-password>
+
   </div>
 
 </div>

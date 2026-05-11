@@ -1,0 +1,76 @@
+/* Search Input Styling */
+.search-input:focus {
+    box-shadow: none;
+    border-color: #dee2e6;
+}
+
+/* Table Enhancements */
+.custom-table> :not(caption)>*>* {
+    padding: 1.2rem 0.5rem;
+    border-bottom-color: #f1f5f9;
+}
+
+.custom-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table-dark-blue th {
+    background-color: #214b8a !important;
+    /* Matches your MVC screenshot */
+    color: white !important;
+    font-weight: 600;
+    border-bottom: none;
+    padding: 15px 10px;
+    /* Gives the header some breathing room */
+}
+
+.table-custom td {
+    vertical-align: middle;
+    padding: 15px 10px;
+}
+
+.custom-table tbody tr:hover {
+    background-color: #f8fafc;
+    transform: scale(1.002);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    z-index: 1;
+    position: relative;
+    border-radius: 8px;
+}
+
+/* Custom Status Badges (Soft Backgrounds with Bold Text) */
+.custom-badge {
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    border: 1px solid transparent;
+}
+
+.status-active {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.status-completed {
+    background-color: rgba(14, 165, 233, 0.1);
+    color: #0284c7;
+    border-color: rgba(14, 165, 233, 0.2);
+}
+
+.status-suspended {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.status-expired {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.status-pending {
+    background-color: rgba(100, 116, 139, 0.1);
+    color: #475569;
+    border-color: rgba(100, 116, 139, 0.2);
+}

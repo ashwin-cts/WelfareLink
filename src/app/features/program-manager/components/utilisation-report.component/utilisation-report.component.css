@@ -1,0 +1,48 @@
+.table> :not(caption)>*>* {
+    padding: 1rem 0.5rem;
+    border-bottom-color: #f1f5f9;
+}
+
+/* --- PRINT MEDIA QUERIES --- */
+@media print {
+
+    /* Hide Angular layout components */
+    app-resource-navbar,
+    .hide-on-print,
+    .btn {
+        display: none !important;
+    }
+
+    /* Show print headers */
+    .show-on-print {
+        display: block !important;
+    }
+
+    /* Fix background colors for printing */
+    .print-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .print-table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+    }
+
+    .print-table th,
+    .print-table td {
+        border: 1px solid #ccc !important;
+    }
+
+    /* Force background colors to print (Chrome/Edge/Safari) */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}

@@ -2,15 +2,13 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-// Reusing your existing Admin Service!
-import { AdminService } from '../../../admin-dashboard/services/admin.service';
-import { UpdateProfileRequest } from '../../../admin-dashboard/models/admin.model';
-import { ProgramManagerNavbarComponent } from '../../../program-manager/components/program-manager-navbar.component/program-manager-navbar.component';
+import { AccountService } from '../../services/account.service';
+import { UpdateProfileRequest } from '../../models/account.model';
 
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ProgramManagerNavbarComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './edit-profile.component.html'
 })
 export class EditProfileComponent implements OnInit {
@@ -23,7 +21,7 @@ export class EditProfileComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private adminService: AdminService,
+    private accountService: AccountService,
     private cdr: ChangeDetectorRef
   ) {
     this.profileForm = this.fb.group({
@@ -54,7 +52,7 @@ export class EditProfileComponent implements OnInit {
 
   loadProfile() {
     this.isLoading = true;
-    this.adminService.getProfile(this.currentUserId!).subscribe({
+    this.accountService.getProfile(this.currentUserId!).subscribe({
       next: (data) => {
         this.profileForm.patchValue({
           fullName: data.fullName,
@@ -80,7 +78,7 @@ export class EditProfileComponent implements OnInit {
 
     const payload: UpdateProfileRequest = this.profileForm.value;
 
-    this.adminService.updateProfile(this.currentUserId, payload).subscribe({
+    this.accountService.updateProfile(this.currentUserId, payload).subscribe({
       next: (res) => {
         this.isSaving = false;
         this.successMessage = 'Profile updated successfully!';

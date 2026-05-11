@@ -1,0 +1,18 @@
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.15);
+    background-color: #ffffff !important;
+    border: 1px solid #1e3c72 !important;
+}
+
+.text-primary {
+    color: #1e3c72 !important;
+}
+
+/* Customizing the readonly input styling for edit mode */
+input[readonly],
+select[readonly] {
+    background-color: #e9ecef !important;
+    opacity: 1;
+    cursor: not-allowed;
+}

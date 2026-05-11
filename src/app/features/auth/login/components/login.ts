@@ -24,6 +24,8 @@ export class Login implements OnInit {
   isLoading = false;
   errorMessage = '';
   successMessage = '';
+  showLoginPassword = false;
+  showRegisterPassword = false;
 
   userRoles = [
     { id: 'Citizen', label: 'Citizen' },
@@ -56,6 +58,11 @@ export class Login implements OnInit {
       contactInfo: ['', Validators.required],
       address: ['', Validators.required]
     });
+  }
+
+  toggleVisibility(field: 'login' | 'register') {
+    if (field === 'login') this.showLoginPassword = !this.showLoginPassword;
+    if (field === 'register') this.showRegisterPassword = !this.showRegisterPassword;
   }
 
   // Wipes stale tokens every time the login page loads
