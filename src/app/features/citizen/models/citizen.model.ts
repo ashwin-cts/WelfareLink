@@ -10,28 +10,24 @@ export interface CreateCitizenRequest {
 }
 
 export interface CitizenDocument {
-  documentID: number;           // Replaced 'id'
-  docType: string;              // Replaced 'documentType'
-  uploadDate: string;
-  verificationStatus: string;   // Replaced 'status'
+  documentID: number;            
+  citizenId?: number;            // Added from your image
+  docType: string;               
+  documentName?: string;         
+  fileURI?: string;              // Added from your image
+  uploadedDate: string;          // FIXED: Was uploadDate, now matches backend
+  verificationStatus: string;   
   remarks?: string;
 }
 
 export interface WelfareProgram {
-  programID: number;            // Replaced 'id'
+  programID: number;             
   title: string;
   description?: string;
   duration: string;
   budget: number;
   eligibleGender?: string;
-  requiredDocuments: string;    // Replaced 'requiredDocs'
-  status: string;
-}
-
-export interface WelfareApplication {
-  applicationID: number;        // Replaced 'id'
-  programID: number;            // Replaced 'programName'
-  submittedDate: string;        // Replaced 'applicationDate'
+  requiredDocuments: string;    
   status: string;
 }
 
@@ -41,10 +37,10 @@ export interface CitizenDashboardStats {
   rejectedDocuments: number;
   documents: CitizenDocument[];
 }
-// Add these to your existing citizen.model.ts file
 
 export interface CitizenProfile {
-  id: number;
+  citizenId?: number; // We need this to update the profile!
+  userId?: number;
   username: string;
   name: string;
   email: string;
@@ -52,9 +48,12 @@ export interface CitizenProfile {
   address: string;
   contactInfo: string;
   gender: string;
+  status?: string;
+  createdAt?: string;
 }
 
 export interface UpdateCitizenProfileRequest {
+  citizenId?: number; // Adding this to fix the ID Mismatch!
   name: string;
   email: string;
   contactInfo: string;
@@ -62,11 +61,11 @@ export interface UpdateCitizenProfileRequest {
 }
 
 export interface ApplyProgramRequest {
-  citizenID: number;             // Matched to C# uppercase 'ID'
-  programID: number;             // Matched to C# uppercase 'ID'
-  selectedDocumentIds?: number[]; // Added the array for the documents!
+  citizenID: number;             
+  programID: number;             
+  selectedDocumentIds?: number[]; 
 }
-// A generic response for when C# just returns { "message": "Success!" }
+
 export interface ApiResponse {
   message?: string;
   success?: boolean;

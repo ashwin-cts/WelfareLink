@@ -1,0 +1,106 @@
+<app-citizen-navbar></app-citizen-navbar>
+
+<div class="container py-4">
+    <div class="page-header mb-4">
+        <h2><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Available Welfare Programs</h2>
+        <p class="text-muted">Browse and apply for programs you are eligible for.</p>
+    </div>
+
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <div class="card shadow-sm border-0" *ngIf="!isLoading">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Program Title</th>
+                            <th>Duration</th>
+                            <th>Budget</th>
+                            <th>Eligible Gender</th>
+                            <th>Required Docs</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let program of programs" [class.table-secondary]="isGenderBlocked(program.eligibleGender)">
+                            <td>
+                                <strong>{{ program.title }}</strong><br>
+                                <small class="text-muted text-truncate d-inline-block" style="max-width: 250px;">{{ program.description }}</small>
+                            </td>
+                            <td><span class="badge bg-light text-dark border"><i class="bi bi-calendar-range"></i> {{ program.duration }}</span></td>
+                            <td><strong>₹ {{ program.budget | number:'1.2-2' }}</strong></td>
+                            <td>
+                                <span *ngIf="!program.eligibleGender || program.eligibleGender === 'Anyone'" class="badge bg-success">Anyone</span>
+                                <span *ngIf="program.eligibleGender && program.eligibleGender !== 'Anyone'" 
+                                      class="badge" [ngClass]="isGenderBlocked(program.eligibleGender) ? 'bg-danger' : 'bg-primary'">
+                                    {{ program.eligibleGender }}
+                                </span>
+                            </td>
+                            <td>
+                                <span *ngIf="!program.requiredDocuments || program.requiredDocuments === 'None'" class="badge bg-secondary">None</span>
+                                <span *ngIf="program.requiredDocuments && program.requiredDocuments !== 'None'" class="badge bg-info text-dark">
+                                    {{ program.requiredDocuments }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-info" (click)="openModal(program)" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+
+                                    <ng-container *ngIf="isApplied(program.programID); else checkEligibility">
+                                        <button class="btn btn-sm btn-secondary" disabled><i class="bi bi-check-circle"></i> Applied</button>
+                                    </ng-container>
+
+                                    <ng-template #checkEligibility>
+                                        <button *ngIf="isGenderBlocked(program.eligibleGender)" class="btn btn-sm btn-outline-danger" disabled>Not Eligible</button>
+                                        <a *ngIf="!isGenderBlocked(program.eligibleGender) && program.status === 'Active'" 
+                                           [routerLink]="['/citizen/programs/apply', program.programID]" 
+                                           class="btn btn-sm btn-success">
+                                            <i class="bi bi-send me-1"></i> Apply
+                                        </a>
+                                    </ng-template>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr *ngIf="programs.length === 0">
+                            <td colspan="6" class="text-center py-4">No programs available at the moment.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" [class.show]="selectedProgram" [style.display]="selectedProgram ? 'block' : 'none'" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-diagram-3-fill me-2"></i>{{ selectedProgram?.title }}</h5>
+                <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+            </div>
+            <div class="modal-body p-4" *ngIf="selectedProgram">
+                <div class="row mb-3">
+                    <div class="col-md-6"><p><strong>Program ID:</strong> #{{ selectedProgram.programID }}</p></div>
+                    <div class="col-md-6"><p><strong>Status:</strong> <span class="badge bg-success">{{ selectedProgram.status }}</span></p></div>
+                    <div class="col-md-6"><p><strong>Budget:</strong> ₹ {{ selectedProgram.budget | number:'1.2-2' }}</p></div>
+                    <div class="col-md-6"><p><strong>Duration:</strong> {{ selectedProgram.duration }}</p></div>
+                    <div class="col-md-12 mt-2">
+                        <strong>Description:</strong>
+                        <p class="text-muted bg-light p-3 rounded mt-1">{{ selectedProgram.description }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+                <a *ngIf="selectedProgram && !isApplied(selectedProgram.programID) && !isGenderBlocked(selectedProgram.eligibleGender) && selectedProgram.status === 'Active'" 
+                   [routerLink]="['/citizen/programs/apply', selectedProgram.programID]" 
+                   class="btn btn-success">Apply Now</a>
+            </div>
+        </div>
+    </div>
+</div>

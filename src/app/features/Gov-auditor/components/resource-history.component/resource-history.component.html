@@ -1,0 +1,52 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Section 2: Resource Allocation History</h5>
+                <small class="text-muted">Resource Allocation History from Program Officer</small>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered">
+                        <thead class="table-dark">
+                            <tr><th>Date</th><th>Resource ID</th><th>Program Name</th><th>Allocated Resource (₹)</th><th>Remaining Allocation Pending (₹)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let resource of items">
+                                <td>{{ resource.date | date:'yyyy-MM-dd HH:mm' }}</td>
+                                <td><span class="badge bg-secondary">RES-{{ resource.resourceID }}</span></td>
+                                <td><strong>{{ resource.programName }}</strong></td>
+                                <td>₹ {{ resource.allocatedResource | number:'1.2-2' }}</td>
+                                <td><span [ngClass]="resource.remainingAllocationPending > 0 ? 'text-success' : 'text-danger'">₹ {{ resource.remainingAllocationPending | number:'1.2-2' }}</span></td>
+                            </tr>
+                            <tr *ngIf="items.length === 0"><td colspan="5" class="text-center"><em>No resource allocations found</em></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                 <div class="alert alert-info mt-3" *ngIf="items.length > 0">
+                    <strong>Note:</strong> Each row represents a separate resource allocation entry.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card"><div class="card-body"><h6 class="text-muted">Total Resource Allocations</h6><h3>{{ items.length }}</h3></div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card"><div class="card-body"><h6 class="text-muted">Total Allocated Resources</h6><h3>₹ {{ getTotalAllocatedResources() | number:'1.2-2' }}</h3></div></div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <button class="btn btn-secondary me-2" (click)="print.emit()"><i class="fas fa-print"></i> Print Report</button>
+                <button class="btn btn-success" (click)="export.emit()"><i class="fas fa-download"></i> Export to CSV</button>
+            </div>
+        </div>
+    </div>
+</div>

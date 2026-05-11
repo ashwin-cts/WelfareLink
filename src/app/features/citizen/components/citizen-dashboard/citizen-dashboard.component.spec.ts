@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CitizenDashboard } from './citizen-dashboard';
+import { CitizenDashboardComponent } from './citizen-dashboard.component';
 
 describe('CitizenDashboard', () => {
-  let component: CitizenDashboard;
-  let fixture: ComponentFixture<CitizenDashboard>;
+  let component: CitizenDashboardComponent;
+  let fixture: ComponentFixture<CitizenDashboardComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CitizenDashboard],
+      imports: [CitizenDashboardComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CitizenDashboard);
+    fixture = TestBed.createComponent(CitizenDashboardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

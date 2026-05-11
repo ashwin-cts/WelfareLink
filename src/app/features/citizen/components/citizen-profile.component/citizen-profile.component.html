@@ -1,0 +1,64 @@
+<app-citizen-navbar></app-citizen-navbar>
+
+<div class="container py-4">
+  <h2 class="mb-4">My Profile Settings</h2>
+  
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-person-vcard text-primary me-2"></i> Personal Information</h5>
+          <button class="btn btn-sm btn-outline-primary" (click)="toggleEdit()">
+            <i class="bi" [ngClass]="isEditing ? 'bi-x-circle' : 'bi-pencil-square'"></i> 
+            {{ isEditing ? 'Cancel Edit' : 'Edit' }}
+          </button>
+        </div>
+        <div class="card-body">
+          <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+          <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+          <div class="text-center py-4" *ngIf="isLoading">
+            <div class="spinner-border text-primary"></div>
+          </div>
+
+          <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">Full Name</label>
+                <input type="text" class="form-control" formControlName="name">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">Email</label>
+                <input type="email" class="form-control" formControlName="email">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">Contact Number</label>
+                <input type="text" class="form-control" formControlName="contactInfo">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-muted">Date of Birth</label>
+                <input type="date" class="form-control bg-light" formControlName="dateOfBirth">
+              </div>
+              <div class="col-md-12 mb-3">
+                <label class="form-label text-muted">Gender</label>
+                <input type="text" class="form-control bg-light" formControlName="gender">
+              </div>
+              <div class="col-md-12 mb-4">
+                <label class="form-label text-muted">Address</label>
+                <textarea class="form-control" formControlName="address" rows="2"></textarea>
+              </div>
+            </div>
+            
+            <button *ngIf="isEditing" type="submit" class="btn btn-primary w-100" [disabled]="profileForm.invalid || isSaving">
+              <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span> Save Changes
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+       <app-change-password></app-change-password>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,54 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Section 1: Program Breakdown</h5></div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Program Name</th><th>Status</th><th>Budget</th><th>Allocated Resource</th>
+                                <th>Citizens Applied</th><th>Total Disbursed</th><th>Remaining</th><th>Utilization %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let program of items">
+                                <td><strong>{{ program.programName }}</strong></td>
+                                <td>
+                                    <span class="badge" [ngClass]="{'bg-success': program.programStatus === 'Active', 'bg-danger': program.programStatus === 'Inactive', 'bg-warning text-dark': program.programStatus !== 'Active' && program.programStatus !== 'Inactive'}">
+                                        {{ program.programStatus }}
+                                    </span>
+                                </td>
+                                <td>₹ {{ program.programBudget | number:'1.2-2' }}</td>
+                                <td>₹ {{ program.allocatedResource | number:'1.2-2' }}</td>
+                                <td><span class="badge bg-info">{{ program.citizensApplied }}</span></td>
+                                <td>₹ {{ program.totalDisbursed | number:'1.2-2' }}</td>
+                                <td><span [style.color]="program.remainingResource > 0 ? '#28a745' : '#dc3545'">₹ {{ program.remainingResource | number:'1.2-2' }}</span></td>
+                                <td>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" [ngClass]="{'bg-danger': program.utilizationPercent >= 75, 'bg-warning': program.utilizationPercent >= 50 && program.utilizationPercent < 75, 'bg-success': program.utilizationPercent < 50}" [style.width.%]="program.utilizationPercent > 100 ? 100 : program.utilizationPercent">
+                                            {{ program.utilizationPercent | number:'1.1-1' }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr *ngIf="items.length === 0"><td colspan="8" class="text-center"><em>No programs found</em></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card"><div class="card-body"><h6 class="text-muted">Total Programs</h6><h3>{{ items.length }}</h3></div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card"><div class="card-body"><h6 class="text-muted">Total Budget</h6><h3>₹ {{ getTotalBudget() | number:'1.2-2' }}</h3></div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card"><div class="card-body"><h6 class="text-muted">Total Disbursed</h6><h3>₹ {{ getTotalDisbursed() | number:'1.2-2' }}</h3></div></div>
+    </div>
+</div>

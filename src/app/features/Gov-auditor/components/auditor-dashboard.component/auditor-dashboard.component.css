@@ -1,0 +1,28 @@
+.table-responsive {
+    overflow-x: auto;
+}
+
+.progress {
+    background-color: #e9ecef;
+    border-radius: 0.25rem;
+    display: flex;
+    height: 1rem;
+    overflow: hidden;
+}
+
+.progress-bar {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    text-align: center;
+    transition: width 0.6s ease;
+    font-size: 0.75rem;
+}
+
+.border-left-primary { border-left: .25rem solid #4e73df !important; }
+.border-left-success { border-left: .25rem solid #1cc88a !important; }
+.border-left-info { border-left: .25rem solid #36b9cc !important; }
+.border-left-warning { border-left: .25rem solid #f6c23e !important; }
+.border-left-danger { border-left: .25rem solid #e74a3b !important; }

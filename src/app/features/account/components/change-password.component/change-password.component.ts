@@ -91,7 +91,24 @@ export class ChangePasswordComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err.error?.Error || err.error?.message || 'Failed to update password.';
+        // Handle different error response formats from backend
+        let errorMsg = 'Failed to update password.';
+        
+        if (err.error) {
+          if (typeof err.error === 'string') {
+            errorMsg = err.error;
+          } else if (err.error.message) {
+            errorMsg = err.error.message;
+          } else if (err.error.error) {
+            errorMsg = err.error.error;
+          } else if (err.error.Error) {
+            errorMsg = err.error.Error;
+          }
+        } else if (err.message) {
+          errorMsg = err.message;
+        }
+        
+        this.errorMessage = errorMsg;
         this.cdr.detectChanges();
       }
     });

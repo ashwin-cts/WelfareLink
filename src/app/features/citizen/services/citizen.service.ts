@@ -3,12 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_CONFIG, ApiConfig } from '../../../core/config/api.config';
 
-// 1. Import all the strict types, including the new ones we just made!
+// 1. Import the robust application model from the shared auditor models
+import { WelfareApplication } from '../../Gov-auditor/models/auditor.model';
+
+// 2. Import the rest of the strict types from citizen models
 import { 
   CreateCitizenRequest, 
   CitizenDocument, 
   WelfareProgram, 
-  WelfareApplication, 
   CitizenDashboardStats,
   CitizenProfile,
   UpdateCitizenProfileRequest,
@@ -41,7 +43,7 @@ export class CitizenService {
   getDashboardStats(citizenId: number): Observable<CitizenDashboardStats> {
     return this.http.get<CitizenDashboardStats>(`${this.apiConfig.citizenApi}/CitizenApi/${citizenId}/dashboard`);
   }
-  // Add this inside CitizenService
+  
   changePassword(citizenId: number, passwordData: any): Observable<ApiResponse> {
     return this.http.put<ApiResponse>(`${this.apiConfig.citizenApi}/CitizenApi/${citizenId}/password`, passwordData);
   }
@@ -52,7 +54,6 @@ export class CitizenService {
   }
 
   uploadDocument(formData: FormData): Observable<ApiResponse> {
-    // FormData remains FormData because it is a native browser object for files
     return this.http.post<ApiResponse>(`${this.apiConfig.citizenApi}/CitizenDocumentApi/upload`, formData);
   }
 
@@ -61,9 +62,7 @@ export class CitizenService {
   }
 
   // --- PROGRAMS & APPLICATIONS ---
-// --- PROGRAMS & APPLICATIONS ---
   getPrograms(): Observable<WelfareProgram[]> {
-    // FIX: Just call this.apiConfig.programApi directly since it already contains the full path!
     return this.http.get<WelfareProgram[]>(this.apiConfig.programApi);
   }
 
@@ -73,5 +72,9 @@ export class CitizenService {
 
   applyForProgram(applicationData: ApplyProgramRequest): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.apiConfig.citizenApi}/CitizenApi/apply`, applicationData);
+  }
+  
+  getApplicationDetails(applicationId: number): Observable<WelfareApplication> {
+    return this.http.get<WelfareApplication>(`${this.apiConfig.citizenApi}/CitizenApi/application/${applicationId}`);
   }
 }
