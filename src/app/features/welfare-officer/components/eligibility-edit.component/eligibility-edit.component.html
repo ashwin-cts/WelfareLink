@@ -1,0 +1,79 @@
+<app-welfare-application-navbar></app-welfare-application-navbar>
+<div class="container py-4 bg-light min-vh-100" *ngIf="!loading">
+  <div class="mb-4">
+    <h1 class="display-6 fw-normal text-dark">Edit Eligibility Check</h1>
+    <p class="text-muted">Update eligibility assessment details</p>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-3 overflow-hidden mx-auto" style="max-width: 900px;">
+    <div class="form-header p-3" style="background-color: #ffc107;">
+      <h5 class="mb-0 fw-bold text-dark">Edit Assessment Form</h5>
+    </div>
+
+    <div class="card-body p-4 bg-white">
+      <form (ngSubmit)="onSave()">
+        <div class="row g-4">
+          
+          <div class="col-12">
+            <label class="form-label text-muted small fw-bold">Application ID</label>
+            <input type="text" 
+                   class="form-control bg-light" 
+                   [value]="check.applicationId || 'Loading...'" 
+                   readonly>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label text-muted small fw-bold">Officer ID</label>
+            <input type="number" class="form-control" [(ngModel)]="check.officerID" name="officerID">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label text-muted small fw-bold">Result</label>
+            <select class="form-select" [(ngModel)]="check.result" name="result">
+              <option value="Eligible">Eligible</option>
+              <option value="Ineligible">Ineligible</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label text-muted small fw-bold">Result Code</label>
+            <input type="text" class="form-control" [(ngModel)]="check.resultCode" name="resultCode">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label text-muted small fw-bold">Assessment Date</label>
+            <input type="date" 
+                   class="form-control" 
+                   [ngModel]="check.date | date:'yyyy-MM-dd'" 
+                   (ngModelChange)="check.date=$event" 
+                   name="date">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label text-muted small fw-bold">Notes</label>
+            <textarea class="form-control" rows="5" [(ngModel)]="check.notes" name="notes"></textarea>
+          </div>
+
+          <div class="col-12 d-flex justify-content-between pt-3">
+            <button type="button" class="btn btn-secondary px-4 py-2" (click)="onCancel()">
+              <i class="bi bi-arrow-left me-2"></i> Cancel
+            </button>
+            <button type="submit" class="btn btn-success px-4 py-2" [disabled]="loading">
+              <i class="bi bi-check-circle me-2"></i> 
+              {{ loading ? 'Saving...' : 'Save Changes' }}
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="text-center py-5">
+  <div class="spinner-border text-warning" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p class="mt-2 text-muted">Processing eligibility data...</p>
+</div>

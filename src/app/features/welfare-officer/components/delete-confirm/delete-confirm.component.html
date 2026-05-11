@@ -1,0 +1,40 @@
+<div class="modal-backdrop fade show"></div>
+<div class="modal d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      
+      <!-- Warning Header -->
+      <div class="modal-header bg-bright-red text-white border-0 py-3">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Deletion
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="onCancel()"></button>
+      </div>
+
+      <div class="modal-body p-4 text-center">
+        <div class="warning-icon-container mb-3 mx-auto">
+          <i class="bi bi-trash3 text-danger fs-1"></i>
+        </div>
+        
+        <h5 class="fw-bold text-navy mb-2">Are you absolutely sure?</h5>
+        <p class="text-muted mb-0">
+          You are about to delete application <strong>#{{applicationData?.applicationID}}</strong> 
+          submitted by <strong>{{applicationData?.citizen?.firstName}} {{applicationData?.citizen?.lastName}}</strong>.
+        </p>
+        <p class="small text-danger mt-3 fw-bold">
+          <i class="bi bi-info-circle me-1"></i> This action cannot be undone and will be recorded in the audit log.
+        </p>
+      </div>
+
+      <div class="modal-footer border-0 p-4 pt-0 d-flex gap-2">
+        <button type="button" class="btn btn-light px-4 py-2 flex-grow-1 fw-bold rounded-3" (click)="onCancel()">
+          Cancel, Keep it
+        </button>
+        <button type="button" class="btn btn-bright-red text-white px-4 py-2 flex-grow-1 fw-bold rounded-3 shadow-sm" (click)="onConfirm()">
+          Yes, Delete it
+        </button>
+      </div>
+      
+    </div>
+  </div>
+</div>

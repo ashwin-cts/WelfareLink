@@ -1,0 +1,174 @@
+/* --- LAYOUT WRAPPER --- */
+.dashboard-wrapper {
+    background-color: #f8f9fa;
+    min-height: 100vh; /* Fixed syntax error: min-vh-100 to min-height */
+}
+
+/* --- 1. TOP NAVIGATION BAR --- */
+.main-nav {
+    background: linear-gradient(90deg, #2c4a8a 0%, #1a2a4d 100%);
+    padding: 15px 0;
+}
+
+.active-nav {
+    border-bottom: 2px solid white;
+    font-weight: bold;
+}
+
+
+/* THE ACTIVE STATE: Matches the teal highlight in your image */
+.active-sub {
+    opacity: 1 !important;
+    border-bottom: 3px solid #00cfd5 !important; 
+    color: #00cfd5 !important;
+    font-weight: bold;
+}
+
+/* --- 3. HERO & STATISTICS CARDS --- */
+.hero-card {
+    border-radius: 15px;
+}
+
+.hero-icon-container {
+    width: 60px;
+    height: 60px;
+    background-color: #e0f7fa;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.title-navy {
+    color: #1a2a4d;
+}
+
+.stat-card {
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    cursor: pointer;
+}
+
+/* Visual feedback when a specific category is active */
+.active-card {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.card-navy { background-color: #2c4a8a; }
+.card-amber { background-color: #f39c12; }
+.card-green { background-color: #27ae60; }
+.card-red   { background-color: #e74c3c; }
+
+/* --- 4. STATUS PILLS (FILTERS) --- */
+.btn-pill {
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-pill-all { background-color: #eee; color: #555; }
+.btn-pill-pending { border-color: #f39c12; color: #f39c12; background: transparent; }
+.btn-pill-approved { border-color: #27ae60; color: #27ae60; background: transparent; }
+.btn-pill-rejected { border-color: #e74c3c; color: #e74c3c; background: transparent; }
+
+/* Styles for when the pill is the active filter */
+.btn-pill-pending.active { background-color: #f39c12; color: white; }
+.btn-pill-approved.active { background-color: #27ae60; color: white; }
+.btn-pill-rejected.active { background-color: #e74c3c; color: white; }
+
+.btn-pill:hover {
+    filter: brightness(0.9);
+}
+
+/* --- 5. TABLE STYLING --- */
+.bg-table-header {
+    background-color: #2c4a8a;
+}
+
+.table thead th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.bg-light-primary {
+    background-color: #eef2ff;
+}
+
+.hero-icon-container-sm {
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.text-navy {
+    color: #1a2a4d;
+}
+
+/* --- 6. BADGE STATUS COLORS --- */
+.badge-status {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.status-pending { background-color: #fef5d4; color: #f39c12; }
+.status-approved { background-color: #d1f2eb; color: #16a085; }
+.status-rejected { background-color: #fdedec; color: #e74c3c; }
+
+/* --- 7. ACTION BUTTONS --- */
+.btn-cyan {
+    background-color: #00cfd5;
+    border: none;
+}
+
+.btn-cyan:hover {
+    background-color: #00b8bc;
+}
+
+.btn-navy-outline {
+    border: 1px solid #2c4a8a;
+    color: #2c4a8a;
+}
+
+.btn-navy-outline:hover {
+    background-color: #2c4a8a;
+    color: white;
+}
+
+/* --- 8. CUSTOM ALERTS (For Pending Review Mode) --- */
+.alert-warning-custom {
+    background-color: #fff9e6;
+    color: #856404;
+    border-left: 5px solid #ffc107 !important;
+}
+
+.alert-success-custom {
+    background-color: #e6f4ea;
+    color: #0f5132;
+    border-left: 5px solid #198754 !important;
+}
+
+/* --- 9. UTILITIES --- */
+.bg-light-info {
+    background-color: #e7f6f8;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}

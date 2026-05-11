@@ -23,6 +23,6 @@ export const defaultApiConfig: ApiConfig = {
   citizenApi: 'https://localhost:7114/api/',
   programApi: 'https://localhost:7029/api/WelfareProgramApi',
   resourceApi: 'https://localhost:7029/api/ResourceApi',
-
+  
 
 };

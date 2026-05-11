@@ -110,7 +110,7 @@ export class Login implements OnInit {
           'Admin': '/admin-dashboard',
           'Citizen': '/citizen-dashboard',
           'ProgramManager': '/program-manager/dashboard',
-          'WelfareOfficer': '/officer-dashboard',
+          'WelfareOfficer': '/welfare-officer/dashboard',
           'ComplianceOfficer': '/compliance-dashboard',
           'GovernmentAuditor': '/auditor-dashboard'
         };

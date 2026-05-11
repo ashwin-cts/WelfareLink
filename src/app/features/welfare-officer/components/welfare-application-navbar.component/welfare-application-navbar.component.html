@@ -1,0 +1,77 @@
+<nav class="navbar navbar-expand-lg main-nav px-4 shadow-sm">
+  <div class="container-fluid">
+    
+    <a class="navbar-brand text-white fw-bold d-flex align-items-center" 
+       (click)="goToDashboard($event)" 
+       style="cursor: pointer;">
+      <i class="bi bi-activity me-2"></i> WelfareLink
+    </a>
+    
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link text-white opacity-75" 
+             (click)="goToDashboard($event)" 
+             [class.active-nav]="router.url === '/welfare-officer/dashboard'"
+             style="cursor: pointer;">
+            <i class="bi bi-file-text me-1"></i> Applications
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white opacity-75" [routerLink]="['/benefit']" routerLinkActive="active-nav text-white opacity-100">
+            <i class="bi bi-gift me-1"></i> Benefit
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white opacity-75" [routerLink]="['/disbursement']" routerLinkActive="active-nav text-white opacity-100">
+            <i class="bi bi-cash-stack me-1"></i> Disbursement
+          </a>
+        </li>
+      </ul>
+      
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" id="welfareUserDropdown" data-bs-toggle="dropdown">
+            <i class="bi bi-person-circle me-2 fs-5"></i> {{ userName() }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+            <li><span class="dropdown-item-text"><strong>Role:</strong> {{ userRole() }}</span></li>
+            <li><hr class="dropdown-divider"></li>
+            
+            <li>
+              <a class="dropdown-item py-2" routerLink="/welfare-officer/profile">
+                <i class="bi bi-person-gear me-2"></i> Edit Profile
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item py-2" routerLink="/welfare-officer/profile">
+                <i class="bi bi-lock-fill me-2"></i> Change Password
+              </a>
+            </li>
+            
+            <li><hr class="dropdown-divider"></li>
+            
+            <li>
+              <a class="dropdown-item py-2 text-danger fw-bold" (click)="logout()" style="cursor:pointer;">
+                <i class="bi bi-box-arrow-right me-2"></i> Logout
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      </div>
+  </div>
+</nav>
+  <div class="sub-nav d-flex px-5 align-items-center shadow-sm">
+    <div class="sub-nav-item" [routerLink]="['/welfare-officer/dashboard']" routerLinkActive="active-sub"style="cursor: pointer;">
+      <i class="bi bi-speedometer2 me-2"></i>Dashboard
+    </div>
+    
+    
+    <div class="sub-nav-item" [routerLink]="['/eligibility-list']" routerLinkActive="active-sub" style="cursor: pointer;">
+      <i class="bi bi-shield-check me-2"></i>Eligibility Checks
+    </div>
+    <div class="sub-nav-item" [routerLink]="['/analytics']" routerLinkActive="active-sub" style="cursor: pointer;">
+      <i class="bi bi-bar-chart me-2"></i>Analytics
+    </div>
+  </div>

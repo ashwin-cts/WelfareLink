@@ -1,0 +1,131 @@
+/* --- Global Theme & Colors --- */
+.text-navy { color: #1a2a4d !important; }
+.bg-light-primary { background-color: #e7f1ff; }
+
+.btn-navy { 
+    background-color: #2c4a8a; 
+    color: white; 
+}
+
+.btn-navy:hover {
+    background-color: #1a2a4d;
+    color: white;
+}
+
+.btn-cyan { 
+    background-color: #00cfd5; 
+    border: none; 
+}
+
+.btn-cyan:hover {
+    background-color: #00b8bd;
+}
+
+/* --- Information Cards --- */
+.info-box {
+    background-color: #f8f9fa;
+    height: 100%;
+    transition: transform 0.2s;
+}
+
+/* --- Table Design --- */
+.custom-table thead th {
+    background-color: #2c4a8a;
+    color: white;
+    font-weight: 500;
+    padding: 12px 15px;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.table-row-hover:hover {
+    background-color: #f8fbff;
+}
+
+/* --- Status Badges (Dynamic) --- */
+.status-badge {
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Contextual Status Colors */
+.status-approved, .status-fully-disbursed { background-color: #d1f2eb; color: #16a085; }
+.status-pending { background-color: #fff3cd; color: #856404; }
+.status-rejected { background-color: #f8d7da; color: #842029; }
+.status-under-review { background-color: #e1f5fe; color: #0288d1; }
+
+/* --- Modal Styling (Matching your Popup Image) --- */
+.modal-content {
+    background-color: #ffffff;
+    border: none;
+}
+
+.modal-header .btn-close {
+    font-size: 0.8rem;
+}
+
+.btn-primary-custom {
+    background-color: #5c7cfa; /* The specific blue from your popup image */
+    color: white;
+    border: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.btn-primary-custom:hover {
+    background-color: #4263eb;
+}
+
+.btn-primary-custom:disabled {
+    background-color: #adb5bd;
+    cursor: not-allowed;
+}
+
+.form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    color: #495057;
+}
+
+.form-select:focus {
+    border-color: #5c7cfa;
+    box-shadow: 0 0 0 0.25rem rgba(92, 124, 250, 0.15);
+}
+
+/* --- Timeline CSS --- */
+.timeline-item {
+    position: relative;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -7px;
+    top: 4px; /* Adjusted to align with text */
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.timeline-item:last-child {
+    border-left: none !important;
+}
+
+.smaller { 
+    font-size: 0.75rem; 
+}
+
+/* --- Hero Icon --- */
+.hero-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+}
