@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 
 // 1. Core Imports
 import { Login } from './features/auth/login/components/login';
-import { authGuard } from './core/guards/auth-guard';
 
 // 2. Account & Profile Imports
 import { EditProfileComponent } from './features/account/components/edit-profile.component/edit-profile.component';
