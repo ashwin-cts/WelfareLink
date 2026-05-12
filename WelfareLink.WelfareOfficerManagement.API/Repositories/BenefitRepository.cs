@@ -18,14 +18,22 @@ namespace WelfareLink.WelfareOfficerManagement.API.Repositories
         {
             // Return AsNoTracking to avoid tracking conflicts when callers also
             // pass detached/new Benefit instances to update methods.
-            return await _context.Benefits
-                .AsNoTracking()
+
+            // Diagnostic: Check database state
+            
+            // Get benefits with all related data
+            var result = await _context.Benefits
                 .Include(b => b.Disbursements)
                 .Include(b => b.WelfareApplication)
                     .ThenInclude(a => a.Program)
                 .Include(b => b.WelfareApplication)
                     .ThenInclude(a => a.Citizen)
+                .AsNoTracking()
                 .ToListAsync();
+
+          
+
+            return result;
         }
 
         public async Task<Benefit?> GetByIdAsync(int id)

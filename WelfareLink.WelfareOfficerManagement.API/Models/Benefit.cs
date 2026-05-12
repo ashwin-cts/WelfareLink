@@ -25,7 +25,6 @@ namespace WelfareLink.WelfareOfficerManagement.API.Models
 
         // Navigation property
         // One Benefit belongs to one WelfareApplication
-        [JsonIgnore]
         public virtual WelfareApplication? WelfareApplication { get; set; }
     }
 }
