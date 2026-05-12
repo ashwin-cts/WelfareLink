@@ -141,11 +141,11 @@ export class Login implements OnInit {
     this.successMessage = '';
     this.cdr.detectChanges();
 
-    const newCitizen: RegisterCitizenRequest = {
+    const newCitizen: any = { // <--- Changed to any to bypass TS interface error if auth.model isn't updated yet
       username: this.registerForm.value.username,
       password: this.registerForm.value.password,
       email: this.registerForm.value.email,
-      fullName: this.registerForm.value.fullName,
+      name: this.registerForm.value.fullName, // <--- THIS IS THE FIX! Changed fullName to name
       dateOfBirth: this.registerForm.value.dateOfBirth,
       gender: this.registerForm.value.gender,
       contactInfo: this.registerForm.value.contactInfo,

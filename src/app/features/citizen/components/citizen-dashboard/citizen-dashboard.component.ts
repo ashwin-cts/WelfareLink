@@ -25,7 +25,7 @@ export class CitizenDashboardComponent implements OnInit {
       // 1. Get the User ID from the Token
       this.currentUserId = Number(payload.UserId || payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']);
       
-      console.log("🚀 Token UserId:", this.currentUserId);
+      console.log("Token UserId:", this.currentUserId);//for debug
       
       // 2. Fetch the profile FIRST to discover the CitizenId
       this.loadProfile();
@@ -33,21 +33,21 @@ export class CitizenDashboardComponent implements OnInit {
   }
 
   loadProfile() {
-    console.log(`📡 Fetching Profile for UserId: ${this.currentUserId}...`);
+    console.log(`Fetching Profile for UserId: ${this.currentUserId}...`);
     
     this.citizenService.getProfile(this.currentUserId).subscribe({
       next: (data: CitizenProfile) => {
         this.profile = data;
-        console.log("✅ PROFILE DATA RECEIVED:", data);
+        console.log("PROFILE DATA RECEIVED:", data);
 
         // 3. NOW that we have the real CitizenId, fetch the dashboard stats!
         if (data.citizenId) {
             this.loadDashboard(data.citizenId);
         } else {
-            console.error("❌ Profile loaded, but no CitizenId was found in the data!");
+            console.error("Profile loaded, but no CitizenId was found in the data!");
         }
       },
-      error: (err) => console.error("❌ PROFILE 404 ERROR:", err)
+      error: (err) => console.error("PROFILE 404 ERROR:", err)
     });
   }
 
@@ -58,9 +58,9 @@ export class CitizenDashboardComponent implements OnInit {
     this.citizenService.getDashboardStats(actualCitizenId).subscribe({
       next: (data: CitizenDashboardStats) => {
         this.stats = data;
-        console.log("✅ DASHBOARD DATA RECEIVED:", data);
+        console.log(" DASHBOARD DATA RECEIVED:", data);
       },
-      error: (err) => console.error("❌ DASHBOARD 404 ERROR:", err)
+      error: (err) => console.error(" DASHBOARD 404 ERROR:", err)
     });
   }
 }
