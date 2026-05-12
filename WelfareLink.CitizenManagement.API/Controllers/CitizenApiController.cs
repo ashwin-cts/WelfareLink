@@ -59,6 +59,7 @@ namespace WelfareLink.CitizenManagement.API.Controllers
             {
                 CitizenId = citizen.CitizenId,
                 UserId = citizen.UserId,
+                Username = citizen.User?.Username, //
                 Name = citizen.Name,
                 Email = citizen.User?.Email, // <-- Extracts the Email safely!
                 DateOfBirth = citizen.DateOfBirth,

@@ -42,7 +42,7 @@ public class CitizenRepository : ICitizenRepository
     // Make sure you update your ICitizenRepository interface to accept UpdateCitizenDto!
     public async Task UpdateAsync(UpdateCitizenDto dto)
     {
-        // 1. We MUST .Include() the User table so we have access to existing.User.Email
+        // 1. We MUST .Include() the User table so we have access to existing.User
         var existing = await _context.Citizens
             .Include(c => c.User)
             .FirstOrDefaultAsync(c => c.CitizenId == dto.CitizenId);
@@ -55,10 +55,11 @@ public class CitizenRepository : ICitizenRepository
         existing.ContactInfo = dto.ContactInfo;
         existing.Address = dto.Address;
 
-        // 3. Safely map the User field (The Email!)
+        // 3. Safely map the User fields (Email AND FullName!)
         if (existing.User != null)
         {
             existing.User.Email = dto.Email;
+            existing.User.FullName = dto.Name; // <--- ADD THIS EXACT LINE
         }
 
         // 4. Save everything to both tables at once!
