@@ -2,11 +2,7 @@ import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_CONFIG, ApiConfig } from '../../../core/config/api.config';
-
-// 1. Import the robust application model from the shared auditor models
 import { WelfareApplication } from '../../Gov-auditor/models/auditor.model';
-
-// 2. Import the rest of the strict types from citizen models
 import { 
   CreateCitizenRequest, 
   CitizenDocument, 
@@ -57,6 +53,20 @@ export class CitizenService {
     return this.http.post<ApiResponse>(`${this.apiConfig.citizenApi}/CitizenDocumentApi/upload`, formData);
   }
 
+  // ADDED: Re-upload method to match C# PUT endpoint
+  reuploadDocument(docId: number, formData: FormData): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(`${this.apiConfig.citizenApi}/CitizenDocumentApi/${docId}/reupload`, formData);
+  }
+
+  // ADDED: Helper method to safely generate the file view URL
+  getDocumentFileUrl(docId: number): string {
+    return `${this.apiConfig.citizenApi}/CitizenDocumentApi/${docId}/file`;
+  }
+  getDocumentFile(docId: number): Observable<Blob> {
+    return this.http.get(`${this.apiConfig.citizenApi}/CitizenDocumentApi/${docId}/file`, { 
+      responseType: 'blob' 
+    });
+  }
   deleteDocument(docId: number): Observable<ApiResponse> {
     return this.http.delete<ApiResponse>(`${this.apiConfig.citizenApi}/CitizenDocumentApi/${docId}`);
   }

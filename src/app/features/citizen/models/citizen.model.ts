@@ -24,10 +24,12 @@ export interface WelfareProgram {
   programID: number;             
   title: string;
   description?: string;
-  duration: string;
+  startDate: string;         // Added to match API response
+  endDate: string;           // Added to match API response 
+  duration?: string;       
   budget: number;
-  eligibleGender?: string;
-  requiredDocuments: string;    
+  eligibleGender?: string;   // Lowercase 'e'
+  requiredDocuments: string; // Lowercase 'r'
   status: string;
 }
 

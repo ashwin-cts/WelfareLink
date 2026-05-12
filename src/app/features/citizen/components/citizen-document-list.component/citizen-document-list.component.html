@@ -44,7 +44,7 @@
                     <tbody>
                         <tr *ngFor="let doc of filteredDocuments">
                             <td><span class="badge bg-secondary">#{{ doc.documentID }}</span></td>
-                            <td><strong>{{ doc.docType }}</strong></td>
+                            <td><strong>{{ doc.documentName || doc.docType }}</strong></td>
                             <td><span class="badge bg-info text-dark">{{ doc.docType }}</span></td>
                             <td>{{ doc.uploadedDate | date:'mediumDate' }}</td>
                             <td>
@@ -58,7 +58,9 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-info" title="View"><i class="bi bi-eye"></i></button>
+                                    <button class="btn btn-sm btn-outline-info" title="View" (click)="viewDocument(doc.documentID)">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
                                     
                                     <a *ngIf="doc.verificationStatus === 'Rejected'" 
                                        [routerLink]="['/citizen/documents/upload']" [queryParams]="{ reuploadId: doc.documentID, type: doc.docType }"

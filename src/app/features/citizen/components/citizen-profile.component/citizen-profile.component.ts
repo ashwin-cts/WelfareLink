@@ -33,6 +33,7 @@ export class CitizenProfileComponent implements OnInit {
 
   initForm() {
     this.profileForm = this.fb.group({
+      username: [{value: '', disabled: true}], // Added Username (always disabled)
       name: [{value: '', disabled: true}, Validators.required],
       email: [{value: '', disabled: true}, [Validators.required, Validators.email]],
       contactInfo: [{value: '', disabled: true}, Validators.required],
@@ -49,9 +50,10 @@ export class CitizenProfileComponent implements OnInit {
     
     if (this.isEditing) {
       this.profileForm.get('name')?.enable();
-      this.profileForm.get('email')?.enable(); // Now editable because backend supports it!
+      this.profileForm.get('email')?.enable(); 
       this.profileForm.get('contactInfo')?.enable();
       this.profileForm.get('address')?.enable();
+      // Notice: username is intentionally left out so it stays disabled!
     } else {
       this.profileForm.get('name')?.disable();
       this.profileForm.get('email')?.disable();
@@ -82,8 +84,8 @@ export class CitizenProfileComponent implements OnInit {
         
         this.profileForm.enable();
         
-        // Magically populates because your C# backend joins the User table now!
         this.profileForm.patchValue({
+          username: data.username || 'No User Name found', // Populating the username
           name: data.name || '',
           email: data.email || '', 
           contactInfo: data.contactInfo || '',
@@ -93,6 +95,7 @@ export class CitizenProfileComponent implements OnInit {
         });
         
         // Permanently lock fields that shouldn't be changed
+        this.profileForm.get('username')?.disable(); // Lock username
         this.profileForm.get('dateOfBirth')?.disable();
         this.profileForm.get('gender')?.disable();
         
@@ -104,6 +107,7 @@ export class CitizenProfileComponent implements OnInit {
         }
         
         this.isLoading = false;
+       
       },
       error: (err) => {
         this.errorMessage = "Failed to load profile.";
@@ -123,7 +127,6 @@ export class CitizenProfileComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
     
-    // getRawValue() ensures we get the values even if they are disabled!
     const formValue = this.profileForm.getRawValue();
     const payload: UpdateCitizenProfileRequest = {
       citizenId: this.actualCitizenId, 

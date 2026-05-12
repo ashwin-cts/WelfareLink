@@ -17,7 +17,9 @@ export class CitizenApplyFormComponent implements OnInit {
   documents: CitizenDocument[] = [];
   selectedDocIds = new Set<number>();
   
-  currentUserId!: number;
+  tokenUserId!: number;
+  actualCitizenId!: number; // Track true ID
+
   isLoading = true;
   isSubmitting = false;
   errorMessage = '';
@@ -31,21 +33,41 @@ export class CitizenApplyFormComponent implements OnInit {
   ngOnInit(): void {
     this.programId = Number(this.route.snapshot.paramMap.get('id'));
     const token = localStorage.getItem('token');
+    
     if (token) {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      this.currentUserId = Number(payload.UserId || payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']);
-      this.loadData();
+      this.tokenUserId = Number(payload.UserId || payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']);
+      
+      // 1. Fetch Profile first to get the true CitizenId!
+      this.citizenService.getProfile(this.tokenUserId).subscribe({
+        next: (profile) => {
+          this.actualCitizenId = profile.citizenId ?? 0;
+          this.loadData(); // 2. Now load documents and programs
+        },
+        error: () => {
+          this.errorMessage = "Failed to load profile. Cannot apply.";
+          this.isLoading = false;
+        }
+      });
     }
   }
 
   loadData() {
     this.citizenService.getPrograms().subscribe(progs => {
-      this.program = progs.find(p => p.programID === this.programId) || null;
+      const p = progs.find(p => p.programID === this.programId) || null;
+      if (p) {
+         const start = new Date(p.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+         const end = new Date(p.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+         
+         p.duration = `${start} - ${end}`;
+         p.requiredDocuments = p.requiredDocuments || (p as any).RequiredDocuments || 'None';
+      }
+      this.program = p;
     });
 
-    this.citizenService.getDocuments(this.currentUserId).subscribe({
+    // We now use actualCitizenId here to find your uploaded docs!
+    this.citizenService.getDocuments(this.actualCitizenId).subscribe({
       next: (docs) => {
-        // We only want to let them submit Approved or Pending docs!
         this.documents = docs.filter(d => d.verificationStatus !== 'Rejected');
         this.isLoading = false;
       },
@@ -56,7 +78,6 @@ export class CitizenApplyFormComponent implements OnInit {
     });
   }
 
-  // --- Checkbox Logic ---
   toggleDoc(docId: number) {
     if (this.selectedDocIds.has(docId)) {
       this.selectedDocIds.delete(docId);
@@ -65,7 +86,6 @@ export class CitizenApplyFormComponent implements OnInit {
     }
   }
 
-  // --- Validation Logic ---
   get requiredDocTypes(): string[] {
     if (!this.program || !this.program.requiredDocuments || this.program.requiredDocuments === 'None') return [];
     return this.program.requiredDocuments.split(',').map(s => s.trim());
@@ -81,28 +101,26 @@ export class CitizenApplyFormComponent implements OnInit {
   }
 
   get isFormValid(): boolean {
-    // If no docs required, or if all required docs are met, and they selected at least something if requirements exist
     if (this.requiredDocTypes.length === 0) return true;
     return this.missingRequirements.length === 0;
   }
 
   onSubmit() {
-    if (!this.isFormValid || !this.program) return;
+    if (!this.isFormValid || !this.program || !this.actualCitizenId) return;
     this.isSubmitting = true;
 
     const payload: ApplyProgramRequest = {
-      citizenID: this.currentUserId,
+      citizenID: this.actualCitizenId, // Ensure true ID is sent to backend
       programID: this.program.programID,
       selectedDocumentIds: Array.from(this.selectedDocIds)
     };
 
     this.citizenService.applyForProgram(payload).subscribe({
       next: () => {
-        // Route them to their applications list upon success
         this.router.navigate(['/citizen/my-applications']);
       },
       error: (err) => {
-        this.errorMessage = err.error?.message || 'Failed to submit application.';
+        this.errorMessage = err.error?.message || err.error?.Error || 'Failed to submit application.';
         this.isSubmitting = false;
       }
     });

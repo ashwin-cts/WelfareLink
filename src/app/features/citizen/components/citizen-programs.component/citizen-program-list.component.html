@@ -17,7 +17,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>Program Title</th>
-                            <th>Duration</th>
+                            <th>duration</th>
                             <th>Budget</th>
                             <th>Eligible Gender</th>
                             <th>Required Docs</th>
@@ -88,7 +88,7 @@
                     <div class="col-md-6"><p><strong>Program ID:</strong> #{{ selectedProgram.programID }}</p></div>
                     <div class="col-md-6"><p><strong>Status:</strong> <span class="badge bg-success">{{ selectedProgram.status }}</span></p></div>
                     <div class="col-md-6"><p><strong>Budget:</strong> ₹ {{ selectedProgram.budget | number:'1.2-2' }}</p></div>
-                    <div class="col-md-6"><p><strong>Duration:</strong> {{ selectedProgram.duration }}</p></div>
+                    <div class="col-md-6"><p><strong>duration:</strong> {{ selectedProgram.duration }}</p></div>
                     <div class="col-md-12 mt-2">
                         <strong>Description:</strong>
                         <p class="text-muted bg-light p-3 rounded mt-1">{{ selectedProgram.description }}</p>

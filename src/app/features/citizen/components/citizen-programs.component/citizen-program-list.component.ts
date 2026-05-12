@@ -17,10 +17,12 @@ export class CitizenProgramListComponent implements OnInit {
   programs: WelfareProgram[] = [];
   appliedProgramIds = new Set<number>();
   citizenGender: string = '';
-  currentUserId!: number;
+  
+  tokenUserId!: number;
+  actualCitizenId!: number;
   
   isLoading = true;
-  selectedProgram: WelfareProgram | null = null; // For the details modal
+  selectedProgram: WelfareProgram | null = null; 
 
   constructor(private citizenService: CitizenService) {}
 
@@ -28,24 +30,42 @@ export class CitizenProgramListComponent implements OnInit {
     const token = localStorage.getItem('token');
     if (token) {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      this.currentUserId = Number(payload.UserId || payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']);
-      this.loadInitialData();
+      this.tokenUserId = Number(payload.UserId || payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']);
+      
+      // 1. Fetch Profile First
+      this.citizenService.getProfile(this.tokenUserId).subscribe({
+        next: (profile) => {
+          this.actualCitizenId = profile.citizenId ?? 0;
+          this.citizenGender = profile.gender || (profile as any).Gender || '';
+          this.loadInitialData(); // 2. Now load the rest
+        },
+        error: () => {
+          this.isLoading = false;
+          console.error("Failed to load profile");
+        }
+      });
     }
   }
 
   loadInitialData() {
-    this.isLoading = true;
-    
-    // Fetch Programs, Applications (to find applied IDs), and Profile (for gender) all at once!
     forkJoin({
       programs: this.citizenService.getPrograms(),
-      applications: this.citizenService.getApplications(this.currentUserId),
-      profile: this.citizenService.getProfile(this.currentUserId)
+      applications: this.citizenService.getApplications(this.actualCitizenId)
     }).subscribe({
       next: (res) => {
-        this.programs = res.programs;
-        this.citizenGender = res.profile.gender || '';
-        // Extract the program IDs from the user's applications
+        this.programs = res.programs.map(p => {
+          // Calculate a readable duration string from startDate and endDate
+          const start = new Date(p.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+          const end = new Date(p.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+          
+          return {
+            ...p,
+            duration: `${start} - ${end}`, // Formats as "20 Apr 2026 - 20 Oct 2026"
+            eligibleGender: p.eligibleGender || (p as any).EligibleGender || 'Anyone',
+            requiredDocuments: p.requiredDocuments || (p as any).RequiredDocuments || 'None'
+          };
+        });
+        
         res.applications.forEach(app => this.appliedProgramIds.add(app.programID));
         this.isLoading = false;
       },
