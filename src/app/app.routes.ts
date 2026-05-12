@@ -45,7 +45,11 @@ import { BenefitListComponent } from './features/welfare-officer-benefit/compone
 import { BenefitDetailsComponent } from './features/welfare-officer-benefit/components/benefit-details.component/benefit-details.component';
 import { BenefitFormComponent } from './features/welfare-officer-benefit/components/benefit-form.component/benefit-form.component';
 import { BenefitAnalyticsComponent } from './features/welfare-officer-benefit/components/benefit-analytics.component/benefit-analytics.component'
-// 
+// disbursement
+import { DisbursementListComponent } from './features/welfare-officer-disbursement/components/disbursement-list.component/disbursement-list.component';
+import { DisbursementFormComponent } from './features/welfare-officer-disbursement/components/disbursement-form.component/disbursement-form.component';
+import { DisbursementHistoryComponent } from './features/welfare-officer-disbursement/components/disbursement-history.component/disbursement-history.component';
+import { DisbursementDetailComponent } from './features/welfare-officer-disbursement/components/disbursement-details.component/disbursement-details.component';
 export const routes: Routes = [
   // Authentication
   { path: 'login', component: Login },
@@ -79,6 +83,12 @@ export const routes: Routes = [
   { path: 'welfare-officer/benefit-edit/:id', component: BenefitFormComponent, canActivate: [authGuard] },
   { path: 'welfare-officer/benefit-analytics', component: BenefitAnalyticsComponent, canActivate: [authGuard] },
   { path: 'welfare-officer/welfare-application-analytics', component: WelfareApplicationAnalyticsComponent, canActivate: [authGuard] },
+  {path:'welfare-officer/disbursement-list', component: DisbursementListComponent, canActivate: [authGuard]},
+  {path:'welfare-officer/disbursement-create', component: DisbursementFormComponent, canActivate: [authGuard]},
+  {path:'welfare-officer/disbursement-edit/:id', component: DisbursementFormComponent, canActivate: [authGuard]},
+  {path:'welfare-officer/disbursement-details/:id', component: DisbursementDetailComponent, canActivate: [authGuard]},
+  {path:'welfare-officer/disbursement-history', component: DisbursementHistoryComponent, canActivate: [authGuard]},
+  
   // Citizen Section
   { path: 'citizen-dashboard', component: CitizenDashboard, canActivate: [authGuard] },
 

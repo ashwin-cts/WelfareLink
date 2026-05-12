@@ -26,7 +26,7 @@ export class WelfareApplicationNavbarComponent implements OnInit {
     const savedRole = localStorage.getItem('userRole');
 
     if (savedName) this.userName.set(savedName);
-    else this.userName.set('Officer John Doe'); 
+    else this.userName.set('Welfare Officer'); 
 
     if (savedRole) this.userRole.set(savedRole);
   }

@@ -1,0 +1,142 @@
+<app-disbursement-navbar></app-disbursement-navbar>
+<div class="container mt-4 pb-5" style="max-width: 900px;">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0 text-navy fw-bold">
+                <i class="bi" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-plus-circle-fill'"></i>
+                {{ isEditMode ? 'Edit Disbursement' : 'Record New Disbursement' }}
+            </h2>
+            <p class="text-muted mt-1 mb-0">
+                {{ isEditMode ? 'Update details for disbursement #' + currentDisbursementId : 'Allocate funds to an approved benefit.' }}
+            </p>
+        </div>
+        <a routerLink="/welfare-officer/disbursement-list" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger shadow-sm">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
+    </div>
+
+    <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" *ngIf="!isLoading">
+        <div class="card-body p-4 p-md-5">
+            <form [formGroup]="disbursementForm" (ngSubmit)="onSubmit()">
+                
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-secondary"><i class="bi bi-gift me-1"></i> Benefit ID</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-light text-muted">#</span>
+                            <input type="number" class="form-control" formControlName="benefitID" placeholder="Enter Benefit ID" (blur)="onBenefitIdChange()">
+                            <button *ngIf="!isEditMode" class="btn btn-outline-primary fw-bold" type="button" (click)="onBenefitIdChange()">Search</button>
+                        </div>
+                        <span *ngIf="disbursementForm.get('benefitID')?.touched && disbursementForm.get('benefitID')?.invalid" class="text-danger small mt-1">Benefit ID is required.</span>
+                    </div>
+                </div>
+
+                <div class="bg-light rounded-4 p-3 p-md-4 mb-4 border" *ngIf="benefitDetails">
+                    <h6 class="fw-bold text-primary mb-3"><i class="bi bi-info-circle me-2"></i> Benefit & Program Summary</h6>
+                    
+                    <div class="row g-3 small">
+                        <div class="col-md-3">
+                            <span class="text-muted d-block">Type</span>
+                            <span class="fw-bold">{{ benefitDetails.benefitType || 'N/A' }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="text-muted d-block">Total Amount</span>
+                            <span class="fw-bold text-dark">{{ benefitDetails.benefitAmount ? '₹' + (benefitDetails.benefitAmount | number) : 'N/A' }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="text-muted d-block">Program</span>
+                            <span class="fw-bold">{{ benefitDetails.programTitle || 'N/A' }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="text-muted d-block">Citizen Name</span>
+                            <span class="fw-bold">{{ benefitDetails.citizenName || 'N/A' }}</span>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <div class="row g-3 small">
+                        <div class="col-md-4">
+                            <span class="text-muted d-block">Programme Resource</span>
+                            <span class="fw-bold">{{ benefitDetails.totalResource > 0 ? '₹' + (benefitDetails.totalResource | number) : 'N/A' }}</span>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="text-muted d-block">Total Disbursed</span>
+                            <span class="fw-bold text-warning">{{ benefitDetails.totalResource > 0 ? '₹' + (benefitDetails.totalDisbursedForProgram | number) : 'N/A' }}</span>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="text-muted d-block">Available Resource</span>
+                            <span *ngIf="benefitDetails.totalResource <= 0" class="fw-bold text-muted">N/A</span>
+                            <span *ngIf="benefitDetails.totalResource > 0 && !benefitDetails.isResourceExhausted" class="fw-bold text-success">₹{{ benefitDetails.availableResource | number }}</span>
+                            <span *ngIf="benefitDetails.totalResource > 0 && benefitDetails.isResourceExhausted" class="fw-bold text-danger">₹0 (Exhausted)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger shadow-sm border-danger mb-4" *ngIf="benefitDetails?.isResourceExhausted">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Resource Insufficient:</strong> The programme resource allocation has been fully exhausted. Disbursement is not allowed.
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-secondary"><i class="bi bi-currency-rupee me-1"></i> Amount</label>
+                        <input type="number" class="form-control" formControlName="amount" placeholder="0.00">
+                        <span *ngIf="disbursementForm.get('amount')?.touched && disbursementForm.get('amount')?.invalid" class="text-danger small mt-1">Valid amount required.</span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-secondary"><i class="bi bi-person-circle me-1"></i> Citizen ID</label>
+                        <input type="number" class="form-control bg-light" formControlName="citizenID" readonly>
+                        <small class="text-muted">Auto-filled.</small>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-secondary"><i class="bi bi-person-badge me-1"></i> Officer ID</label>
+                        <input type="number" class="form-control bg-light" formControlName="officerID" readonly>
+                        <small class="text-muted">Auto-populated.</small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary"><i class="bi bi-calendar-event me-1"></i> Date</label>
+                        <input type="date" class="form-control" formControlName="date">
+                        <span *ngIf="disbursementForm.get('date')?.touched && disbursementForm.get('date')?.invalid" class="text-danger small mt-1">Date required.</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary"><i class="bi bi-flag me-1"></i> Status</label>
+                        <select class="form-select" formControlName="status">
+                            <option value="">-- Select Status --</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Disbursement Pending">Disbursement Pending</option>
+                            <option value="Failed">Failed</option>
+                        </select>
+                        <span *ngIf="disbursementForm.get('status')?.touched && disbursementForm.get('status')?.invalid" class="text-danger small mt-1">Status required.</span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-5 pt-3 border-top">
+                    <a routerLink="/disbursements" class="btn btn-light border px-4 fw-bold text-muted shadow-sm">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" [disabled]="isSaving || isLoading || benefitDetails?.isResourceExhausted">
+                        <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+                        <i *ngIf="!isSaving" class="bi bi-check-circle me-1"></i>
+                        {{ isEditMode ? 'Update Disbursement' : 'Record Disbursement' }}
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

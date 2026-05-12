@@ -2,15 +2,15 @@ import { Component, OnInit, inject, signal, HostListener, ElementRef } from '@an
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
-
 @Component({
-  selector: 'app-benefit-navbar',
+  selector: 'app-disbursement-navbar',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  templateUrl: './benefit-navbar.component.html',
-  styleUrl: './benefit-navbar.component.css',
+  templateUrl: './disbursement-navbar.component.html',
+  styleUrl: './disbursement-navbar.component.css',
 })
-export class BenefitNavbarComponent implements OnInit {
+export class DisbursementNavbarComponent implements OnInit {
+
   public router = inject(Router);
 
   userName = signal<string>('Loading...');
