@@ -1,7 +1,8 @@
+using Microsoft.EntityFrameworkCore;    
+using WelfareLink.CitizenManagement.API.Data;
 using WelfareLink.CitizenManagement.API.Interfaces;
 using WelfareLink.CitizenManagement.API.Models;
-using WelfareLink.CitizenManagement.API.Data;
-using Microsoft.EntityFrameworkCore;    
+using WelfareLink.CitizenManagement.API.DTOs;
 
 namespace WelfareLink.CitizenManagement.API.Repositories;
 
@@ -18,6 +19,7 @@ public class CitizenRepository : ICitizenRepository
     {
         return await _context.Citizens
             .AsNoTracking()
+            .Include(c => c.User) // <--- THIS IS REQUIRED TO GET THE EMAIL
             .Include(c => c.CitizenDocuments)
             .FirstOrDefaultAsync(c => c.CitizenId == id);
     }
@@ -26,6 +28,7 @@ public class CitizenRepository : ICitizenRepository
     {
         return await _context.Citizens
             .AsNoTracking()
+            .Include(c => c.User) // <--- THIS IS REQUIRED TO GET THE EMAIL
             .Include(c => c.CitizenDocuments)
             .FirstOrDefaultAsync(c => c.UserId == userId);
     }
@@ -36,12 +39,29 @@ public class CitizenRepository : ICitizenRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(Citizen citizen)
+    // Make sure you update your ICitizenRepository interface to accept UpdateCitizenDto!
+    public async Task UpdateAsync(UpdateCitizenDto dto)
     {
-        var existing = await _context.Citizens.FindAsync(citizen.CitizenId);
+        // 1. We MUST .Include() the User table so we have access to existing.User.Email
+        var existing = await _context.Citizens
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.CitizenId == dto.CitizenId);
+
         if (existing == null)
-            throw new InvalidOperationException($"Citizen with ID {citizen.CitizenId} not found.");
-        _context.Entry(existing).CurrentValues.SetValues(citizen);
+            throw new InvalidOperationException($"Citizen with ID {dto.CitizenId} not found.");
+
+        // 2. Safely map the Citizen fields
+        existing.Name = dto.Name;
+        existing.ContactInfo = dto.ContactInfo;
+        existing.Address = dto.Address;
+
+        // 3. Safely map the User field (The Email!)
+        if (existing.User != null)
+        {
+            existing.User.Email = dto.Email;
+        }
+
+        // 4. Save everything to both tables at once!
         await _context.SaveChangesAsync();
     }
 }

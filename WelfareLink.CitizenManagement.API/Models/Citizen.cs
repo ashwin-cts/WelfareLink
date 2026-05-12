@@ -39,5 +39,7 @@ namespace WelfareLink.CitizenManagement.API.Models
 
         [JsonIgnore]
         public virtual ICollection<CitizenDocument>? CitizenDocuments { get; set; }
+        [ForeignKey("UserId")]
+        public virtual User? User { get; set; }
     }
 }

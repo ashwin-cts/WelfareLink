@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.CitizenManagement.API.Data;
+using WelfareLink.CitizenManagement.API.DTOs;
 using WelfareLink.CitizenManagement.API.Interfaces;
 using WelfareLink.CitizenManagement.API.Models;
 
@@ -45,12 +46,28 @@ namespace WelfareLink.CitizenManagement.API.Controllers
         }
 
         // GET: api/citizenapi/by-user/{userId}
+        // GET: api/citizenapi/by-user/{userId}
         [HttpGet("by-user/{userId}")]
         public async Task<IActionResult> GetByUserId(int userId)
         {
+            // 1. Fetch from the Service!
             var citizen = await _citizenService.GetCitizenByUserIdAsync(userId);
             if (citizen == null) return NotFound();
-            return Ok(citizen);
+
+            // 2. Map it to include the Email
+            return Ok(new
+            {
+                CitizenId = citizen.CitizenId,
+                UserId = citizen.UserId,
+                Name = citizen.Name,
+                Email = citizen.User?.Email, // <-- Extracts the Email safely!
+                DateOfBirth = citizen.DateOfBirth,
+                Address = citizen.Address,
+                ContactInfo = citizen.ContactInfo,
+                Gender = citizen.Gender,
+                Status = citizen.Status,
+                CreatedAt = citizen.CreatedAt
+            });
         }
         // PUT: api/citizenapi/{id}/password
         [HttpPut("{id}/password")]
@@ -59,16 +76,32 @@ namespace WelfareLink.CitizenManagement.API.Controllers
     
         // GET: api/citizenapi/{citizenId}/dashboard
         [HttpGet("{citizenId}/dashboard")]
+        // GET: api/citizenapi/{citizenId}/dashboard
+        [HttpGet("{citizenId}/dashboard")]
         public async Task<IActionResult> GetDashboard(int citizenId)
         {
+            // 1. Fetch from the Service!
             var citizen = await _citizenService.GetCitizenByIdAsync(citizenId);
             if (citizen == null) return NotFound();
 
             var documents = await _documentService.GetDocumentsByCitizenIdAsync(citizenId);
 
+            // 2. Map it to include the Email inside the dashboard
             return Ok(new
             {
-                CitizenProfile = citizen,
+                CitizenProfile = new
+                {
+                    CitizenId = citizen.CitizenId,
+                    UserId = citizen.UserId,
+                    Name = citizen.Name,
+                    Email = citizen.User?.Email, // <-- Extracts the Email safely!
+                    DateOfBirth = citizen.DateOfBirth,
+                    Address = citizen.Address,
+                    ContactInfo = citizen.ContactInfo,
+                    Gender = citizen.Gender,
+                    Status = citizen.Status,
+                    CreatedAt = citizen.CreatedAt
+                },
                 Documents = documents,
                 PendingDocuments = documents.Count(d => d.VerificationStatus == "Pending"),
                 ApprovedDocuments = documents.Count(d => d.VerificationStatus == "Approved"),
@@ -96,7 +129,7 @@ namespace WelfareLink.CitizenManagement.API.Controllers
             var existingUser = _context.Users.FirstOrDefault(u => u.Username == request.Username);
             if (existingUser != null)
                 return BadRequest(new { Error = "Username already exists." });
-
+            //DTO transfer to user table when citizen reg
             var user = new User
             {
                 Username = request.Username,
@@ -134,20 +167,16 @@ namespace WelfareLink.CitizenManagement.API.Controllers
 
         // PUT: api/citizenapi/{id}
         [HttpPut("{id}")]
-        // OVERRIDE: Only the Citizen themselves (or an Admin) should be able to update their profile info.
         [Authorize(Roles = "Admin,Citizen")]
-        public async Task<IActionResult> UpdateProfile(int id, [FromBody] Citizen citizen)
+        public async Task<IActionResult> UpdateProfile(int id, [FromBody] UpdateCitizenDto request) // <--- CHANGED TO DTO
         {
-            if (id != citizen.CitizenId) return BadRequest(new { Error = "ID mismatch." });
+            if (id != request.CitizenId) return BadRequest(new { Error = "ID mismatch." });
 
             try
             {
-                await _citizenService.UpdateCitizenProfileAsync(citizen);
+                // Pass the DTO down to the service
+                await _citizenService.UpdateCitizenProfileAsync(request);
                 return Ok(new { Message = "Profile updated successfully." });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return NotFound(new { Error = ex.Message });
             }
             catch (Exception ex)
             {
