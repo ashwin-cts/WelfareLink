@@ -4,7 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 // Make sure your service imports are correct for your folder structure
-import { WelfareOfficerService } from '../../services/welfare-officer services';
+import { WelfareOfficerService } from '../../services/welfare-officer.services';
 import { WelfareApplicationNavbarComponent } from '../welfare-application-navbar.component/welfare-application-navbar.component';
 
 @Component({
@@ -23,12 +23,12 @@ export class EligibilityFormComponent implements OnInit {
   eligibilityForm!: FormGroup;
   isEditMode = false;
   currentCheckId: number | null = null;
-  
+
   // Data containers for the UI
   applicationData: any = null;
   citizenData: any = null;
   documents: any[] = [];
-  
+
   isLoading = false;
   isSaving = false;
   errorMessage = '';
@@ -39,19 +39,19 @@ export class EligibilityFormComponent implements OnInit {
     // Check for Edit Mode (Path param like /eligibility-edit/5)
     this.route.paramMap.subscribe(params => {
       const idParam = params.get('id');
-      
+
       if (idParam) {
         this.isEditMode = true;
         this.currentCheckId = Number(idParam);
         this.loadEligibilityCheck(this.currentCheckId);
       } else {
         this.isEditMode = false;
-        
+
         // Use subscribe to safely catch the queryParam
         this.route.queryParams.subscribe(qParams => {
           if (qParams['applicationId']) {
             const appId = Number(qParams['applicationId']);
-            
+
             // Patch the form and trigger the API call!
             this.eligibilityForm.patchValue({ applicationId: appId });
             this.loadAllRelatedData(appId);
@@ -80,18 +80,18 @@ export class EligibilityFormComponent implements OnInit {
       this.loadAllRelatedData(appId);
     }
   }
-loadAllRelatedData(appId: number) {
+  loadAllRelatedData(appId: number) {
     this.isLoading = true;
-    
+
     this.welfareService.getApplicationInfoForCheck(appId).subscribe({
       next: (data: any) => {
         this.applicationData = data.application || data;
         this.citizenData = data.citizen || null;
-        
+
         // 1. Safely extract documents whether they are at the root or nested inside applicationDocuments
-        const rawDocs = data.documents || 
-                        (data.application?.applicationDocuments?.map((ad: any) => ad.citizenDocument || ad)) || 
-                        [];
+        const rawDocs = data.documents ||
+          (data.application?.applicationDocuments?.map((ad: any) => ad.citizenDocument || ad)) ||
+          [];
 
         // 2. Normalize all the C# properties so the HTML template can easily read them!
         this.documents = rawDocs.map((doc: any) => ({
@@ -116,7 +116,7 @@ loadAllRelatedData(appId: number) {
   // Ported from Create.cshtml logic 
   updateDocStatus(docId: number, status: string) {
     if (!confirm(`Mark document #${docId} as ${status}?`)) return;
-    
+
     this.welfareService.updateDocumentStatus(docId, status).subscribe({
       next: () => {
         // Success! Update the UI instantly
@@ -149,7 +149,7 @@ loadAllRelatedData(appId: number) {
     this.welfareService.getEligibilityCheckById(id).subscribe({
       next: (data: any) => {
         const check = data.eligibilityCheck || data;
-        
+
         this.eligibilityForm.patchValue({
           applicationId: check.applicationId || check.applicationID,
           officerID: check.officerID,
@@ -172,7 +172,22 @@ loadAllRelatedData(appId: number) {
       }
     });
   }
-
+  // --- ADD THIS METHOD TO YOUR TS FILE ---
+  onViewDocument(documentId: number) {
+    // Make sure your welfareService has this method returning responseType: 'blob'
+    this.welfareService.downloadSecureFile(documentId).subscribe({
+      next: (blob: Blob) => {
+        // Create a local secure URL for the raw file data
+        const fileUrl = window.URL.createObjectURL(blob);
+        // Open it in a new tab safely
+        window.open(fileUrl, '_blank');
+      },
+      error: (err) => {
+        console.error("Failed to download file", err);
+        alert("Failed to load document. It may be missing or you may not have permission.");
+      }
+    });
+  }
   onSubmit() {
     if (this.eligibilityForm.invalid) {
       this.eligibilityForm.markAllAsTouched();
@@ -181,7 +196,7 @@ loadAllRelatedData(appId: number) {
 
     this.isSaving = true;
     this.errorMessage = '';
-    
+
     // Format the date strictly as "YYYY-MM-DD"
     const today = new Date().toISOString().split('T')[0];
 
@@ -199,7 +214,7 @@ loadAllRelatedData(appId: number) {
       result: this.eligibilityForm.value.result,
       resultCode: this.eligibilityForm.value.resultCode,
       notes: this.eligibilityForm.value.notes,
-      date: today 
+      date: today
     };
 
     if (this.isEditMode && this.currentCheckId) {

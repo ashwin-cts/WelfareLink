@@ -9,9 +9,12 @@ export interface ApiConfig {
   citizenApi: string;
   programApi: string;
   resourceApi: string;
-  citizenDocumentApi:string;
+  citizenDocumentApi: string;
   eligibilityApi: string;
   welfareApplicationApi: string;
+  benefitApi: string;
+  benefitAnalyticsApi: string;
+  welfareAnalyticsApi: string;
 }
 
 // 2. Create the Token that Angular will use to inject this config
@@ -24,11 +27,13 @@ export const defaultApiConfig: ApiConfig = {
   auditApi: 'https://localhost:7255/api/AuditLogApi',
   authApi: 'https://localhost:7242/api',
   citizenApi: 'https://localhost:7114/api',
-  citizenDocumentApi:'https://localhost:7114/api/CitizenDocumentApi',
+  citizenDocumentApi: 'https://localhost:7114/api/CitizenDocumentApi',
   programApi: 'https://localhost:7029/api/WelfareProgramApi',
   resourceApi: 'https://localhost:7029/api/ResourceApi',
-  eligibilityApi:'https://localhost:7143/api/EligibilityCheckApi',
+  eligibilityApi: 'https://localhost:7143/api/EligibilityCheckApi',
   welfareApplicationApi: 'https://localhost:7143/api/WelfareApplicationApi',
-  
+  benefitApi: 'https://localhost:7143/api/BenefitApi',
+  benefitAnalyticsApi: 'https://localhost:7143/api/BenefitAnalyticsApi',
+  welfareAnalyticsApi: 'https://localhost:7143/api/WelfareApplicationAnalyticsApi'
 
 };

@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { WelfareOfficerService } from '../../services/welfare-officer services';
+import { WelfareOfficerService } from '../../services/welfare-officer.services';
 import { WelfareApplicationNavbarComponent } from '../welfare-application-navbar.component/welfare-application-navbar.component';
-import { EligibilityCheck } from '../../models/welfare-officer models';
+import { EligibilityCheck } from '../../models/welfare-officer.models';
 
 // 1. IMPORT YOUR CUSTOM MODAL
 import { DeleteConfirmComponent } from '../delete-confirm/delete-confirm.component';
@@ -18,9 +18,9 @@ import { DeleteConfirmComponent } from '../delete-confirm/delete-confirm.compone
   styleUrls: ['./eligibility-list.component.css']
 })
 export class EligibilityListComponent implements OnInit {
-  checks: EligibilityCheck[] = []; 
-  filteredChecks: EligibilityCheck[] = []; 
-  selectedResult: string = 'All Results'; 
+  checks: EligibilityCheck[] = [];
+  filteredChecks: EligibilityCheck[] = [];
+  selectedResult: string = 'All Results';
 
   // 3. MODAL STATE VARIABLES
   showDeleteModal = false;
@@ -29,7 +29,7 @@ export class EligibilityListComponent implements OnInit {
   constructor(
     private welfareService: WelfareOfficerService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadChecks();
@@ -39,7 +39,7 @@ export class EligibilityListComponent implements OnInit {
     this.welfareService.getAllEligibilityChecks().subscribe({
       next: (data: EligibilityCheck[]) => {
         this.checks = data;
-        this.filteredChecks = [...this.checks]; 
+        this.filteredChecks = [...this.checks];
       },
       error: (err) => console.error('Error fetching checks:', err)
     });
@@ -49,7 +49,7 @@ export class EligibilityListComponent implements OnInit {
     if (this.selectedResult === 'All Results') {
       this.filteredChecks = [...this.checks];
     } else {
-      this.filteredChecks = this.checks.filter(check => 
+      this.filteredChecks = this.checks.filter(check =>
         check.result?.toLowerCase() === this.selectedResult.toLowerCase()
       );
     }
@@ -70,7 +70,7 @@ export class EligibilityListComponent implements OnInit {
   openDeleteConfirm(check: EligibilityCheck): void {
     // We map the checkID to 'applicationID' so your existing modal reads it correctly without throwing an error
     this.selectedCheckForDelete = {
-      applicationID: check.checkID, 
+      applicationID: check.checkID,
       citizen: { firstName: 'Eligibility', lastName: 'Assessment' } // Placeholder name for the modal UI
     };
     this.showDeleteModal = true;
@@ -86,8 +86,8 @@ export class EligibilityListComponent implements OnInit {
       next: () => {
         // Remove from both arrays to update UI instantly
         this.checks = this.checks.filter(c => c.checkID !== id);
-        this.applyFilter(); 
-        
+        this.applyFilter();
+
         this.closeModal(); // Hide the modal
       },
       error: (err) => {

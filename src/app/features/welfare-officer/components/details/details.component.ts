@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms'; 
-import { WelfareOfficerService } from '../../services/welfare-officer services';
-import { WelfareApplication, EligibilityCheck } from '../../models/welfare-officer models';
-import{WelfareApplicationNavbarComponent} from '../welfare-application-navbar.component/welfare-application-navbar.component';
+import { FormsModule } from '@angular/forms';
+import { WelfareOfficerService } from '../../services/welfare-officer.services';
+import { WelfareApplication, EligibilityCheck } from '../../models/welfare-officer.models';
+import { WelfareApplicationNavbarComponent } from '../welfare-application-navbar.component/welfare-application-navbar.component';
 @Component({
   selector: 'app-details',
   standalone: true,
@@ -16,14 +16,14 @@ export class DetailsComponent implements OnInit {
   application: WelfareApplication | null = null;
   eligibilityHistory: EligibilityCheck[] = [];
   loading: boolean = true;
-  
+
   // Property bound to [(ngModel)] in the Update Status Modal
-  newStatus: string = ''; 
+  newStatus: string = '';
 
   constructor(
     private route: ActivatedRoute,
     private welfareService: WelfareOfficerService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -40,14 +40,14 @@ export class DetailsComponent implements OnInit {
     this.welfareService.getApplicationById(id).subscribe({
       next: (data: WelfareApplication) => {
         this.application = data;
-        
+
         // Populate history from nested data OR separate API call
         if (data.eligibilityChecks) {
           this.eligibilityHistory = data.eligibilityChecks;
         } else {
           this.fetchHistoryFromApi(id);
         }
-        
+
         this.loading = false;
       },
       error: (err) => {

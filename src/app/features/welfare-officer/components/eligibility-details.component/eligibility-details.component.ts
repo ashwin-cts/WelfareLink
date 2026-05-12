@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 // 1. IMPORT Router
-import { ActivatedRoute, Router, RouterModule } from '@angular/router'; 
-import { WelfareOfficerService } from '../../services/welfare-officer services';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { WelfareOfficerService } from '../../services/welfare-officer.services';
 import { WelfareApplicationNavbarComponent } from '../welfare-application-navbar.component/welfare-application-navbar.component';
-import { DeleteConfirmComponent } from '../delete-confirm/delete-confirm.component';  
+import { DeleteConfirmComponent } from '../delete-confirm/delete-confirm.component';
 
 @Component({
   selector: 'app-eligibility-details',
@@ -25,7 +25,7 @@ export class EligibilityDetailsComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router, // 3. INJECT ROUTER
     private welfareService: WelfareOfficerService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -52,8 +52,8 @@ export class EligibilityDetailsComponent implements OnInit {
 
     // Map the data so the existing modal reads it correctly
     this.selectedCheckForDelete = {
-      applicationID: this.check.checkID, 
-      citizen: { firstName: 'Eligibility', lastName: 'Assessment' } 
+      applicationID: this.check.checkID,
+      citizen: { firstName: 'Eligibility', lastName: 'Assessment' }
     };
     this.showDeleteModal = true;
   }
@@ -67,7 +67,7 @@ export class EligibilityDetailsComponent implements OnInit {
     this.welfareService.deleteEligibilityCheck(id).subscribe({
       next: () => {
         this.closeModal();
-        
+
         // 5. Navigate back to the list because this record is gone!
         this.router.navigate(['/eligibility-list']);
       },

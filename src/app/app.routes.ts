@@ -21,7 +21,9 @@ import { ManageResourcesComponent } from './features/program-manager/components/
 import { ResourceFormComponent } from './features/program-manager/components/resource-form.component/resource-form.component';
 import { UtilisationReportComponent } from './features/program-manager/components/utilisation-report.component/utilisation-report.component';
 import { WelfareOfficerProfileComponent } from './features/welfare-officer/components/welfare-officer-profile.component/welfare-officer-profile.component';
-import{EligibilityFormComponent} from './features/welfare-officer/components/eligibility-form.component/eligibility-form.component';
+import { EligibilityFormComponent } from './features/welfare-officer/components/eligibility-form.component/eligibility-form.component';
+import { WelfareApplicationAnalyticsComponent } from './features/welfare-officer/components/welfare-application-analytics.component/welfare-application-analytics.component';
+
 // Admin & Auth
 import { AdminProfileComponent } from './features/admin-dashboard/components/admin-profile-component/admin-profile-component';
 import { authGuard } from './core/guards/auth-guard';
@@ -38,6 +40,12 @@ import { EligibilityDetailsComponent } from './features/welfare-officer/componen
 // Citizen Dashboard
 import { CitizenDashboard } from './features/citizen/components/dashboard/citizen-dashboard/citizen-dashboard';
 
+//Benefit
+import { BenefitListComponent } from './features/welfare-officer-benefit/components/benefit-list.component/benefit-list.component';
+import { BenefitDetailsComponent } from './features/welfare-officer-benefit/components/benefit-details.component/benefit-details.component';
+import { BenefitFormComponent } from './features/welfare-officer-benefit/components/benefit-form.component/benefit-form.component';
+import { BenefitAnalyticsComponent } from './features/welfare-officer-benefit/components/benefit-analytics.component/benefit-analytics.component'
+// 
 export const routes: Routes = [
   // Authentication
   { path: 'login', component: Login },
@@ -48,24 +56,29 @@ export const routes: Routes = [
 
   // Welfare Officer Section
   { path: 'welfare-officer/dashboard', component: DashboardComponent, canActivate: [authGuard] },
- 
+
   { path: 'details/:id', component: DetailsComponent, canActivate: [authGuard] },
 
   // Eligibility Section
   { path: 'eligibility-list', component: EligibilityListComponent, canActivate: [authGuard] },
   { path: 'eligibility-details/:id', component: EligibilityDetailsComponent, canActivate: [authGuard] },
- // For creating a new check (POST)
-{ path: 'eligibility-create', component: EligibilityFormComponent },
+  // For creating a new check (POST)
+  { path: 'eligibility-create', component: EligibilityFormComponent },
 
-// For editing an existing check (PUT)
-{ path: 'eligibility-edit/:id', component: EligibilityFormComponent },
+  // For editing an existing check (PUT)
+  { path: 'eligibility-edit/:id', component: EligibilityFormComponent },
 
-// For editing an existing check:
-{ path: 'eligibility-edit/:id', component: EligibilityFormComponent },
+  // For editing an existing check:
+  { path: 'eligibility-edit/:id', component: EligibilityFormComponent },
   // Program Manager Section
   { path: 'program-manager/dashboard', component: PmDashboardComponent, canActivate: [authGuard] },
   { path: 'program-manager/details/:id', component: ProgramDetailsComponent, canActivate: [authGuard] },
-
+  { path: 'welfare-officer/benefit-list', component: BenefitListComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/benefit-details/:id', component: BenefitDetailsComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/benefit-create', component: BenefitFormComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/benefit-edit/:id', component: BenefitFormComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/benefit-analytics', component: BenefitAnalyticsComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/welfare-application-analytics', component: WelfareApplicationAnalyticsComponent, canActivate: [authGuard] },
   // Citizen Section
   { path: 'citizen-dashboard', component: CitizenDashboard, canActivate: [authGuard] },
 
@@ -73,21 +86,21 @@ export const routes: Routes = [
   { path: 'account/edit-profile', component: EditProfileComponent, canActivate: [authGuard] },
   { path: 'account/change-password', component: ChangePasswordComponent, canActivate: [authGuard] },
 
-  { 
-  path: 'welfare-officer/profile', 
-  component: WelfareOfficerProfileComponent 
-},
+  {
+    path: 'welfare-officer/profile',
+    component: WelfareOfficerProfileComponent
+  },
   // Catch-all redirect
 
   {
     path: 'admin-dashboard',
     component: AdminDashboard,
-    canActivate: [authGuard] 
+    canActivate: [authGuard]
   },
-  { 
-    path: 'admin/profile', 
-    component: AdminProfileComponent, 
-    canActivate: [authGuard] 
+  {
+    path: 'admin/profile',
+    component: AdminProfileComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'program-manager/dashboard',
@@ -105,12 +118,12 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'resource-manager/allocate', 
+    path: 'resource-manager/allocate',
     component: ResourceFormComponent,
     canActivate: [authGuard]
   },
   {
-    path: 'resource-manager/edit/:id', 
+    path: 'resource-manager/edit/:id',
     component: ResourceFormComponent,
     canActivate: [authGuard]
   },

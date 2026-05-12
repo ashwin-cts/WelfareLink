@@ -1,0 +1,145 @@
+<app-benefit-navbar></app-benefit-navbar>
+<div class="container py-4">
+    <div class="page-header">
+        <h1><i class="bi" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-plus-circle-fill'"></i>
+            {{ isEditMode ? 'Edit Benefit #' + benefitId : 'Allocate New Benefit' }}
+        </h1>
+        <a routerLink="{{ isEditMode ? '/welfare-officer/benefit-details/' + benefitId: '/welfare-officer/benefit-list' }}"
+            class="btn-modern btn-secondary-modern">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="content-card">
+        <div *ngIf="isLoading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <div class="row justify-content-center" *ngIf="!isLoading">
+            <div class="col-lg-8">
+
+                <div *ngIf="selectedAppDetails" class="alert alert-info border-0 shadow-sm mb-4 p-3">
+                    <h6 class="mb-3 fw-bold"><i class="bi bi-info-circle-fill me-1"></i> Application, Citizen & Program
+                        Details</h6>
+                    <div class="row g-2 small">
+                        <div class="col-sm-6 col-md-3"><span class="text-muted">Application ID</span><br /><strong>#{{
+                                selectedAppDetails.applicationID }}</strong></div>
+                        <div class="col-sm-6 col-md-3"><span class="text-muted">Submitted Date</span><br /><strong>{{
+                                selectedAppDetails.submittedDate | date }}</strong></div>
+                        <div class="col-sm-6 col-md-3"><span class="text-muted">App Status</span><br /><strong>{{
+                                selectedAppDetails.status }}</strong></div>
+                    </div>
+                    <hr class="my-2" />
+                    <div class="row g-2 small" *ngIf="resourceInfo">
+                        <div class="col-sm-4 col-md-4">
+                            <span class="text-muted">Total Resources</span><br />
+                            <strong class="text-secondary" *ngIf="resourceInfo.hasResource">{{
+                                resourceInfo.totalResource |
+                                currency:'INR' }}</strong>
+                            <strong class="text-muted" *ngIf="!resourceInfo.hasResource">No constraint</strong>
+                        </div>
+                        <div class="col-sm-4 col-md-4">
+                            <span class="text-muted">Used in Benefits</span><br />
+                            <strong class="text-warning" *ngIf="resourceInfo.hasResource">{{
+                                resourceInfo.alreadyAllocated |
+                                currency:'INR' }}</strong>
+                            <span *ngIf="!resourceInfo.hasResource">-</span>
+                        </div>
+                        <div class="col-sm-4 col-md-4">
+                            <span class="text-muted">Remaining Available</span><br />
+                            <strong [ngClass]="resourceInfo.remainingResource <= 0 ? 'text-danger' : 'text-success'"
+                                *ngIf="resourceInfo.hasResource">
+                                {{ resourceInfo.remainingResource | currency:'INR' }}
+                            </strong>
+                            <span *ngIf="!resourceInfo.hasResource">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form [formGroup]="benefitForm" (ngSubmit)="onSubmit()" class="needs-validation">
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+                            <div class="form-floating-modern">
+                                <label class="form-label-modern"><i class="bi bi-file-earmark-text"></i> Welfare
+                                    Application</label>
+                                <select formControlName="applicationID" class="form-select"
+                                    [ngClass]="{'is-invalid': benefitForm.get('applicationID')?.invalid && benefitForm.get('applicationID')?.touched}">
+                                    <option value="">-- Select Application --</option>
+                                    <option *ngFor="let app of applicationsList" [value]="app.applicationID">
+                                        App #{{ app.applicationID }} - {{ app.citizenName || 'Citizen' }}
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback">Please select an application.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating-modern">
+                                <label class="form-label-modern"><i class="bi bi-tag"></i> Benefit Type</label>
+                                <select formControlName="type" class="form-select"
+                                    [ngClass]="{'is-invalid': benefitForm.get('type')?.invalid && benefitForm.get('type')?.touched}">
+                                    <option value="">Select Type</option>
+                                    <option value="Cash">💰 Cash Benefit</option>
+                                    <option value="Food">🍚 Food Benefit</option>
+                                    <option value="Medical">🏥 Medical Benefit</option>
+                                    <option value="Education">📚 Education Benefit</option>
+                                    <option value="Housing">🏠 Housing Benefit</option>
+                                </select>
+                                <div class="invalid-feedback">Benefit type is required.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating-modern">
+                                <label class="form-label-modern"><i class="bi bi-currency-rupee"></i> Amount</label>
+                                <input formControlName="amount" type="number" class="form-control"
+                                    placeholder="Enter Amount"
+                                    [ngClass]="{'is-invalid': benefitForm.get('amount')?.invalid && benefitForm.get('amount')?.touched}" />
+                                <div class="invalid-feedback">Valid amount is required.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating-modern">
+                                <label class="form-label-modern"><i class="bi bi-calendar-event"></i> Allocation
+                                    Date</label>
+                                <input formControlName="date" type="date" class="form-control"
+                                    [ngClass]="{'is-invalid': benefitForm.get('date')?.invalid && benefitForm.get('date')?.touched}" />
+                                <div class="invalid-feedback">Date is required.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="form-floating-modern">
+                                <label class="form-label-modern"><i class="bi bi-flag"></i> Status</label>
+                                <select formControlName="status" class="form-select"
+                                    [ngClass]="{'is-invalid': benefitForm.get('status')?.invalid && benefitForm.get('status')?.touched}">
+                                    <option value="Allocated">✅ Allocated</option>
+                                    <option value="Partially Disbursed">⏳ Partially Disbursed</option>
+                                    <option value="Fully Disbursed">💸 Fully Disbursed</option>
+                                    <option value="Failed">❌ Failed</option>
+                                </select>
+                                <small class="text-muted">Status will update automatically based on
+                                    disbursements</small>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex gap-3 justify-content-end">
+                        <a [routerLink]="isEditMode ? ['/welfare-officer/benefit-details', benefitId] : ['/welfare-officer/benefit-list']"
+                            class="btn-modern btn-secondary-modern">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn-modern btn-success-modern" [disabled]="benefitForm.invalid">
+                            <i class="bi bi-check-circle"></i> {{ isEditMode ? 'Save Changes' : 'Allocate Benefit' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

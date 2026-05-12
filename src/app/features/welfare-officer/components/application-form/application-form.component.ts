@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms'; 
-import { WelfareOfficerService } from '../../services/welfare-officer services';
-import { WelfareApplication } from '../../models/welfare-officer models';
+import { FormsModule } from '@angular/forms';
+import { WelfareOfficerService } from '../../services/welfare-officer.services';
+import { WelfareApplication } from '../../models/welfare-officer.models';
 
 @Component({
   selector: 'app-application-form',
@@ -19,7 +19,7 @@ export class ApplicationFormComponent implements OnInit {
   selectedStatus: string = 'All Status';
   loading: boolean = true;
 
-  constructor(private welfareService: WelfareOfficerService) {}
+  constructor(private welfareService: WelfareOfficerService) { }
 
   ngOnInit(): void {
     this.loadApplications();
@@ -51,13 +51,13 @@ export class ApplicationFormComponent implements OnInit {
     console.log('Filtering for:', this.selectedStatus); // Debug to see what's selected
 
     if (this.selectedStatus === 'All Status') {
-        this.filteredList = [...this.applications];
+      this.filteredList = [...this.applications];
     } else {
-        // Ensure comparison matches the exact string from your API
-        // We use .trim() to handle any accidental whitespace from the database
-        this.filteredList = this.applications.filter(app => 
-            app.status?.trim() === this.selectedStatus.trim()
-        );
+      // Ensure comparison matches the exact string from your API
+      // We use .trim() to handle any accidental whitespace from the database
+      this.filteredList = this.applications.filter(app =>
+        app.status?.trim() === this.selectedStatus.trim()
+      );
     }
   }
 }
