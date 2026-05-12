@@ -46,9 +46,10 @@ export class CitizenProfileComponent implements OnInit {
     this.isEditing = !this.isEditing;
     this.errorMessage = '';
     this.successMessage = '';
+    
     if (this.isEditing) {
       this.profileForm.get('name')?.enable();
-      this.profileForm.get('email')?.enable();
+      this.profileForm.get('email')?.enable(); // Now editable because backend supports it!
       this.profileForm.get('contactInfo')?.enable();
       this.profileForm.get('address')?.enable();
     } else {
@@ -73,27 +74,28 @@ export class CitizenProfileComponent implements OnInit {
     this.successMessage = '';
     
     this.citizenService.getProfile(this.currentUserId!).subscribe({
-      // STRONGLY TYPED INTERFACE INSTEAD OF 'any'
       next: (data: CitizenProfile) => { 
         console.log('Loaded citizen profile data:', data);
         
-        // Properly capture ID
         this.actualCitizenId = data.citizenId ?? null;
-
         const dob = data.dateOfBirth ? new Date(data.dateOfBirth).toISOString().split('T')[0] : '';
         
         this.profileForm.enable();
+        
+        // Magically populates because your C# backend joins the User table now!
         this.profileForm.patchValue({
           name: data.name || '',
-          email: data.email || '', // Will be blank if API doesn't send it, which is safe
+          email: data.email || '', 
           contactInfo: data.contactInfo || '',
           address: data.address || '',
           dateOfBirth: dob,
           gender: data.gender || ''
         });
         
+        // Permanently lock fields that shouldn't be changed
         this.profileForm.get('dateOfBirth')?.disable();
         this.profileForm.get('gender')?.disable();
+        
         if(!this.isEditing) {
             this.profileForm.get('name')?.disable();
             this.profileForm.get('email')?.disable();
@@ -121,11 +123,12 @@ export class CitizenProfileComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
     
+    // getRawValue() ensures we get the values even if they are disabled!
     const formValue = this.profileForm.getRawValue();
     const payload: UpdateCitizenProfileRequest = {
-      citizenId: this.actualCitizenId, // Ensure it's included
+      citizenId: this.actualCitizenId, 
       name: formValue.name || '',
-      email: formValue.email || '',
+      email: formValue.email || '', 
       contactInfo: formValue.contactInfo || '',
       address: formValue.address || '',
     };
