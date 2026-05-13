@@ -1,5 +1,5 @@
 <app-disbursement-navbar></app-disbursement-navbar>
-<div class="container-fluid mt-4 mb-5">
+<div class="container-fluid mt-4 mb-5" style="max-width: 1000px;">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-0 text-navy fw-bold"><i class="bi bi-cash-stack me-2"></i> Disbursement Records</h2>
@@ -42,14 +42,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of disbursements" [class.table-warning]="item.status === 'Pending' || item.status === 'Disbursement Pending'">
+                    <tr *ngFor="let item of disbursements"
+                        [class.table-warning]="item.status === 'Pending' || item.status === 'Disbursement Pending'">
                         <td class="ps-4 fw-bold text-dark">
                             #{{ item.disbursementID }}
-                            <i *ngIf="item.status === 'Pending' || item.status === 'Disbursement Pending'" class="bi bi-bell-fill text-warning ms-1" title="Action Required"></i>
+                            <i *ngIf="item.status === 'Pending' || item.status === 'Disbursement Pending'"
+                                class="bi bi-bell-fill text-warning ms-1" title="Action Required"></i>
                         </td>
                         <td>
                             <div *ngIf="item.benefit">
-                                <span class="badge bg-info text-dark mb-1"><i class="bi bi-gift me-1"></i> {{ item.benefit.type }}</span>
+                                <span class="badge bg-info text-dark mb-1"><i class="bi bi-gift me-1"></i> {{
+                                    item.benefit.type }}</span>
                                 <div class="small text-muted">ID: {{ item.benefitID }}</div>
                             </div>
                             <span *ngIf="!item.benefit" class="text-muted">ID: {{ item.benefitID }}</span>
@@ -57,7 +60,7 @@
                         <td class="fw-bold">₹{{ item.amount | number:'1.2-2' }}</td>
                         <td>
                             <div *ngIf="item.citizenID">
-                                <i class="bi bi-person-circle text-primary me-1"></i> 
+                                <i class="bi bi-person-circle text-primary me-1"></i>
                                 {{ item.benefit?.welfareApplication?.citizen?.name || 'Citizen #' + item.citizenID }}
                             </div>
                             <span *ngIf="!item.citizenID" class="text-muted">Not assigned</span>
@@ -70,12 +73,13 @@
                         </td>
                         <td class="text-end pe-4">
                             <div class="btn-group shadow-sm">
-                                <a [routerLink]="['/welfare-officer/disbursement-details/', item.disbursementID]" class="btn btn-sm btn-outline-primary" title="View Details">
+                                <a [routerLink]="['/welfare-officer/disbursement-details/', item.disbursementID]"
+                                    class="btn btn-sm btn-outline-primary" title="View Details">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a *ngIf="item.status !== 'Completed' && item.status !== 'Fully Disbursed'" 
-                                   [routerLink]="['/welfare-officer/disbursement-edit/', item.disbursementID]" 
-                                   class="btn btn-sm btn-outline-warning" title="Edit">
+                                <a *ngIf="item.status !== 'Completed' && item.status !== 'Fully Disbursed'"
+                                    [routerLink]="['/welfare-officer/disbursement-edit/', item.disbursementID]"
+                                    class="btn btn-sm btn-outline-warning" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                             </div>

@@ -6,8 +6,7 @@
             <i class="bi me-2" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-plus-circle-fill'"></i>
             {{ isEditMode ? 'Edit Benefit #' + benefitId : 'Allocate New Benefit' }}
         </h3>
-        <a routerLink="{{ isEditMode ? '/welfare-officer/benefit-details/' + benefitId: '/welfare-officer/benefit-list' }}"
-            class="btn btn-light text-dark fw-bold rounded-pill px-4 shadow-sm">
+        <a (click)="goBack()" class="btn btn-light text-dark fw-bold rounded-pill px-4 shadow-sm">
             <i class="bi bi-arrow-left me-1"></i> Back to List
         </a>
     </div>

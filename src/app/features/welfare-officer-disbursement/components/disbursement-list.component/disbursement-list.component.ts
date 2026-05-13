@@ -29,13 +29,14 @@ export class DisbursementListComponent implements OnInit {
       next: (data) => {
         // Sort by date descending (newest first)
         this.disbursements = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        
+
         // Calculate pending items for the alert banner
-        this.pendingCount = this.disbursements.filter(d => 
+        this.pendingCount = this.disbursements.filter(d =>
           d.status === 'Disbursement Pending' || d.status === 'Pending'
         ).length;
-        
+
         this.isLoading = false;
+        console.log(data);
       },
       error: (err) => {
         this.errorMessage = 'Failed to load disbursements. Please try again later.';
@@ -48,13 +49,13 @@ export class DisbursementListComponent implements OnInit {
   // A helper method to determine CSS classes for the status badges
   getStatusClass(status: string | null): string {
     if (!status) return 'bg-secondary';
-    
+
     const lowerStatus = status.toLowerCase();
     if (lowerStatus.includes('completed') || lowerStatus.includes('fully disbursed')) return 'bg-success';
     if (lowerStatus.includes('pending')) return 'bg-warning text-dark';
     if (lowerStatus.includes('failed')) return 'bg-danger';
     if (lowerStatus.includes('partial')) return 'bg-info text-dark';
-    
+
     return 'bg-secondary';
   }
 }

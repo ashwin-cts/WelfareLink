@@ -1,29 +1,30 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common'; // <-- Imported Location
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DisbursementService } from '../../services/disbursement.service';
 import { BenefitDetails, Disbursement } from '../../models/disbursement.model';
-import{ DisbursementNavbarComponent } from '../disbursement-navbar.component/disbursement-navbar.component';
+import { DisbursementNavbarComponent } from '../disbursement-navbar.component/disbursement-navbar.component';
+
 @Component({
   selector: 'app-disbursement-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule, DisbursementNavbarComponent],
-  templateUrl: './disbursement-form.component.html',
-  styleUrls: ['./disbursement-form.component.css']
+  templateUrl: './disbursement-form.component.html'
 })
 export class DisbursementFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private disbursementService = inject(DisbursementService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location); // <-- Injecting Location for the dynamic back button
 
   disbursementForm!: FormGroup;
   isEditMode = false;
   currentDisbursementId: number | null = null;
-  
+
   // Data for the UI
-  benefitDetails: BenefitDetails | null = null;
+  benefitDetails: any | null = null;
   isLoading = false;
   isSaving = false;
   errorMessage = '';
@@ -37,7 +38,7 @@ export class DisbursementFormComponent implements OnInit {
         this.isEditMode = true;
         this.currentDisbursementId = Number(idParam);
         this.loadDisbursementData(this.currentDisbursementId);
-        
+
         // Disable benefit selection in edit mode
         this.disbursementForm.get('benefitID')?.disable();
       } else {
@@ -58,7 +59,6 @@ export class DisbursementFormComponent implements OnInit {
     });
   }
 
-  // Simulates fetching officer ID from token
   prefillOfficerId(): void {
     const token = localStorage.getItem('token') || localStorage.getItem('jwt');
     if (token) {
@@ -72,7 +72,6 @@ export class DisbursementFormComponent implements OnInit {
     }
   }
 
-  // Called when the user types/changes the Benefit ID field
   onBenefitIdChange(): void {
     const benefitId = this.disbursementForm.get('benefitID')?.value;
     if (benefitId) {
@@ -86,13 +85,14 @@ export class DisbursementFormComponent implements OnInit {
   fetchBenefitDetails(benefitId: number): void {
     this.isLoading = true;
     this.errorMessage = '';
-    
+
     this.disbursementService.getBenefitDetails(benefitId).subscribe({
-      next: (details) => {
-        this.benefitDetails = details;
-        // Auto-fill the citizen ID based on the benefit!
-        if (details.citizenId) {
-          this.disbursementForm.patchValue({ citizenID: details.citizenId });
+      next: (details: any) => {
+        // Safe mapping in case the API wraps this one too!
+        this.benefitDetails = details.benefitDetails || details;
+
+        if (this.benefitDetails && this.benefitDetails.citizenId) {
+          this.disbursementForm.patchValue({ citizenID: this.benefitDetails.citizenId });
         }
         this.isLoading = false;
       },
@@ -107,10 +107,12 @@ export class DisbursementFormComponent implements OnInit {
   loadDisbursementData(id: number): void {
     this.isLoading = true;
     this.disbursementService.getDisbursementById(id).subscribe({
-      next: (data) => {
-        // Format date for the HTML5 date input (YYYY-MM-DD)
+      next: (response: any) => {
+        // THE FIX: Unpack the wrapper object so the form actually gets the data!
+        const data = response.disbursement || response;
+
         const formattedDate = data.date ? data.date.split('T')[0] : '';
-        
+
         this.disbursementForm.patchValue({
           benefitID: data.benefitID,
           amount: data.amount,
@@ -120,11 +122,10 @@ export class DisbursementFormComponent implements OnInit {
           status: data.status
         });
 
-        // Fetch the associated benefit details for the UI summary panel
         if (data.benefitID) {
           this.fetchBenefitDetails(data.benefitID);
         } else {
-            this.isLoading = false;
+          this.isLoading = false;
         }
       },
       error: () => {
@@ -140,7 +141,6 @@ export class DisbursementFormComponent implements OnInit {
       return;
     }
 
-    // Prevent submission if resources are exhausted
     if (this.benefitDetails?.isResourceExhausted) {
       this.errorMessage = 'Cannot disburse. Programme resources are fully exhausted.';
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -150,11 +150,8 @@ export class DisbursementFormComponent implements OnInit {
     this.isSaving = true;
     this.errorMessage = '';
 
-    // If a control was disabled (like benefitID in Edit mode), it won't be in .value. 
-    // We use .getRawValue() to get everything.
     const formData = this.disbursementForm.getRawValue();
 
-    // Ensure the payload matches Swagger exactly
     const payload: Partial<Disbursement> = {
       benefitID: Number(formData.benefitID),
       citizenID: Number(formData.citizenID),
@@ -166,17 +163,22 @@ export class DisbursementFormComponent implements OnInit {
 
     if (this.isEditMode && this.currentDisbursementId) {
       payload.disbursementID = this.currentDisbursementId;
-      
+
       this.disbursementService.updateDisbursement(this.currentDisbursementId, payload).subscribe({
-        next: () => this.router.navigate(['/disbursements']),
+        next: () => this.router.navigate(['/welfare-officer/disbursement-list']), // FIXED ROUTE
         error: (err) => this.handleError(err)
       });
     } else {
       this.disbursementService.createDisbursement(payload).subscribe({
-        next: () => this.router.navigate(['/disbursements']),
+        next: () => this.router.navigate(['/welfare-officer/disbursement-list']), // FIXED ROUTE
         error: (err) => this.handleError(err)
       });
     }
+  }
+
+  // Uses the browser history to go exactly to the page they just came from!
+  goBack(): void {
+    this.location.back();
   }
 
   handleError(err: any): void {

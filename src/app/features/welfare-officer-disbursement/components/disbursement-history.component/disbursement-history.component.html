@@ -1,10 +1,11 @@
-<div class="container-fluid mt-4 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<app-disbursement-navbar></app-disbursement-navbar>
+<div class="container-fluid mt-4 mb-5" style="max-width: 1000px;">
+    <div class=" d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-0 text-navy fw-bold"><i class="bi bi-clock-history me-2"></i> Disbursement History</h2>
             <p class="text-muted mt-1 mb-0">Search, filter, and review past disbursement records.</p>
         </div>
-        <a routerLink="/disbursements" class="btn btn-outline-secondary shadow-sm">
+        <a routerLink="/welfare-officer/disbursement-list" class="btn btn-outline-secondary shadow-sm">
             <i class="bi bi-arrow-left me-1"></i> Back to Main List
         </a>
     </div>
@@ -24,7 +25,8 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label text-muted small fw-bold">Benefit Type</label>
-                        <input type="text" formControlName="benefitType" class="form-control" placeholder="e.g. Pension">
+                        <input type="text" formControlName="benefitType" class="form-control"
+                            placeholder="e.g. Pension">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label text-muted small fw-bold">Officer ID</label>
@@ -35,13 +37,15 @@
                         <select formControlName="status" class="form-select">
                             <option value="">All Statuses</option>
                             <option value="Completed">Completed</option>
-                            <option value="Pending">Pending</option>
+                            <option value="Disbursement Pending">Pending</option>
                             <option value="Failed">Failed</option>
                         </select>
                     </div>
                     <div class="col-md-2 d-flex align-items-end gap-2">
-                        <button type="submit" class="btn btn-primary flex-grow-1 shadow-sm fw-bold"><i class="bi bi-search me-1"></i> Filter</button>
-                        <button type="button" class="btn btn-light border shadow-sm" (click)="resetFilters()"><i class="bi bi-x-circle text-muted"></i></button>
+                        <button type="submit" class="btn btn-primary flex-grow-1 shadow-sm fw-bold"><i
+                                class="bi bi-search me-1"></i> Filter</button>
+                        <button type="button" class="btn btn-light border shadow-sm" (click)="resetFilters()"><i
+                                class="bi bi-x-circle text-muted"></i></button>
                     </div>
                 </div>
             </form>
@@ -101,13 +105,14 @@
                         <td>{{ item.date | date:'MMM dd, yyyy' }}</td>
                         <td class="fw-bold">₹{{ item.amount | number:'1.2-2' }}</td>
                         <td>
-                            <span class="badge" 
-                                  [ngClass]="{'bg-success': item.status === 'Completed', 'bg-warning text-dark': item.status === 'Pending', 'bg-danger': item.status === 'Failed', 'bg-secondary': !['Completed','Pending','Failed'].includes(item.status || '')}">
+                            <span class="badge"
+                                [ngClass]="{'bg-success': item.status === 'Completed', 'bg-warning text-dark': item.status === 'Pending', 'bg-danger': item.status === 'Failed', 'bg-secondary': !['Completed','Pending','Failed'].includes(item.status || '')}">
                                 {{ item.status }}
                             </span>
                         </td>
                         <td class="text-end pe-4">
-                            <a [routerLink]="['/disbursements', item.disbursementID]" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+                            <a [routerLink]="['/welfare-officer/disbursement-details/', item.disbursementID]"
+                                class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
                         </td>
                     </tr>
                     <tr *ngIf="historyData.length === 0">

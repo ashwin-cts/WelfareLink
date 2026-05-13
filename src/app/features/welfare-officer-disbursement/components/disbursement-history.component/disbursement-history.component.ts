@@ -4,11 +4,11 @@ import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { DisbursementService } from '../../services/disbursement.service';
 import { Disbursement } from '../../models/disbursement.model';
-
+import { DisbursementNavbarComponent } from '../disbursement-navbar.component/disbursement-navbar.component';
 @Component({
   selector: 'app-disbursement-history',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, DisbursementNavbarComponent],
   templateUrl: './disbursement-history.component.html',
   styleUrls: ['./disbursement-history.component.css']
 })

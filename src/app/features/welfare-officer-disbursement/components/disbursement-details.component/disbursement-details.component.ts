@@ -2,24 +2,23 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DisbursementService } from '../../services/disbursement.service';
-import { Disbursement, BenefitDetails } from '../../models/disbursement.model';
 import { DisbursementNavbarComponent } from '../disbursement-navbar.component/disbursement-navbar.component';
+import { Location } from '@angular/common';
 @Component({
   selector: 'app-disbursement-detail',
   standalone: true,
   imports: [CommonModule, RouterModule, DisbursementNavbarComponent],
-  templateUrl: './disbursement-details.component.html',
-  styleUrls: ['./disbursement-details.component.css']
+  templateUrl: './disbursement-details.component.html'
 })
 export class DisbursementDetailComponent implements OnInit {
   private disbursementService = inject(DisbursementService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
+  disbursement: any | null = null;
+  benefitSummary: any | null = null;
+  siblingDisbursements: any[] = [];
 
-  disbursement: Disbursement | null = null;
-  benefitSummary: BenefitDetails | null = null;
-  siblingDisbursements: Disbursement[] = [];
-  
   isLoading = true;
   errorMessage = '';
 
@@ -35,15 +34,22 @@ export class DisbursementDetailComponent implements OnInit {
   loadDetails(id: number): void {
     this.isLoading = true;
     this.disbursementService.getDisbursementById(id).subscribe({
-      next: (data) => {
-        this.disbursement = data;
-        
-        // Fetch extra context if this is tied to a benefit
-        if (data.benefitID) {
-          this.loadBenefitContext(data.benefitID);
-        } else {
-          this.isLoading = false;
-        }
+      next: (data: any) => {
+        // 1. Extract the main disbursement
+        this.disbursement = data.disbursement;
+
+        // 2. Extract the siblings directly from the wrapper
+        this.siblingDisbursements = data.siblingDisbursements || [];
+
+        // 3. Extract the budget directly from the wrapper
+        this.benefitSummary = {
+          totalResource: data.benefitTotalAmount || 0,
+          totalDisbursedForProgram: data.totalDisbursed || 0,
+          availableResource: data.pendingBalance || 0,
+          isResourceExhausted: (data.pendingBalance || 0) <= 0
+        };
+
+        this.isLoading = false;
       },
       error: () => {
         this.errorMessage = 'Failed to load disbursement details.';
@@ -52,33 +58,13 @@ export class DisbursementDetailComponent implements OnInit {
     });
   }
 
-  loadBenefitContext(benefitId: number): void {
-    // 1. Load the overall budget/resource summary
-    this.disbursementService.getBenefitDetails(benefitId).subscribe({
-      next: (summary) => this.benefitSummary = summary
-    });
-
-    // 2. Load other disbursements linked to this exact same benefit
-    this.disbursementService.getSiblingDisbursements(benefitId).subscribe({
-      next: (siblings) => {
-        // Filter out the current one so we only show the *other* ones
-        this.siblingDisbursements = siblings.filter(s => s.disbursementID !== this.disbursement?.disbursementID);
-        this.isLoading = false;
-      },
-      error: () => this.isLoading = false // Non-critical failure
-    });
-  }
-
   deleteDisbursement(): void {
     if (!this.disbursement) return;
-    
-    // Modernization: Replaces the entire Delete.cshtml page with a clean dialog
-    const confirmed = window.confirm(`WARNING: Are you sure you want to permanently delete Disbursement #${this.disbursement.disbursementID}?\n\nThis action cannot be undone.`);
-    
+    const confirmed = window.confirm(`WARNING: Are you sure you want to permanently delete Disbursement #${this.disbursement.disbursementID}?`);
     if (confirmed) {
       this.disbursementService.deleteDisbursement(this.disbursement.disbursementID).subscribe({
-        next: () => this.router.navigate(['/disbursements']),
-        error: () => alert('Failed to delete the record. It may be locked or already deleted.')
+        next: () => this.router.navigate(['/welfare-officer/disbursement-list']),
+        error: () => alert('Failed to delete the record.')
       });
     }
   }
@@ -90,5 +76,8 @@ export class DisbursementDetailComponent implements OnInit {
     if (lower.includes('pending')) return 'bg-warning text-dark';
     if (lower.includes('failed')) return 'bg-danger';
     return 'bg-secondary';
+  }
+  goBack(): void {
+    this.location.back();
   }
 }

@@ -6,7 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { BenefitService } from '../../services/benefit.service';
 import { Benefit, ProgramResourceInfo, WelfareApplication } from '../../models/benefit.model';
 import { BenefitNavbarComponent } from '../benefit-navbar.component/benefit-navbar.component';
-
+import { Location } from '@angular/common';
 @Component({
   selector: 'app-benefit-form',
   standalone: true,
@@ -19,7 +19,7 @@ export class BenefitFormComponent implements OnInit {
   private benefitService = inject(BenefitService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-
+  private location = inject(Location);
   benefitForm!: FormGroup;
   isEditMode: boolean = false;
   benefitId: number = 0;
@@ -63,7 +63,9 @@ export class BenefitFormComponent implements OnInit {
       status: ['Allocated', Validators.required]
     });
   }
-
+  goBack(): void {
+    this.location.back();
+  }
   private loadDropdownData(): void {
     // We expect the API to return an array of WelfareApplication objects
     this.benefitService.getDropdownData().subscribe({
