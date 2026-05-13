@@ -35,10 +35,31 @@ export class BenefitDetailsComponent implements OnInit {
 
   loadBenefitDetails(id: number): void {
     this.isLoading = true;
+
+    // 1. Fetch the Benefit
     this.benefitService.getBenefitById(id).subscribe({
-      next: (data) => {
-        this.benefit = data;
-        this.isLoading = false;
+      next: (benefitData) => {
+        this.benefit = benefitData;
+
+        // 2. Check if we have an Application ID
+        if (this.benefit.applicationID) {
+
+          // 3. Fetch the missing Application details
+          this.benefitService.getApplicationById(this.benefit.applicationID).subscribe({
+            next: (appData) => {
+              // Attach the fetched data to the benefit object so the HTML can see it!
+              this.benefit!.welfareApplication = appData;
+              this.isLoading = false;
+            },
+            error: (appErr) => {
+              console.error('Error fetching application details', appErr);
+              this.isLoading = false;
+            }
+          });
+
+        } else {
+          this.isLoading = false; // No application linked, stop loading
+        }
       },
       error: (err) => {
         console.error('Error fetching benefit details', err);

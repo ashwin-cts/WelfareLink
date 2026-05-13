@@ -8,7 +8,8 @@
             <div class="navbar-collapse collapse">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" routerLink="/program-manager/dashboard" routerLinkActive="active">
+                        <a class="nav-link" (click)="goToDashboard($event)"
+                            [class.active]="router.url === '/program-manager/dashboard'" style="cursor: pointer;">
                             <i class="bi bi-diagram-3"></i> Program
                         </a>
                     </li>
@@ -19,23 +20,31 @@
                     </li>
 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" style="cursor: pointer;" (click)="toggleDropdown()">
                             <i class="bi bi-person-circle"></i> {{ userName() }}
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                            <li><span class="dropdown-item-text"><strong>Role:</strong> {{ userRole() }}</span></li>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" [class.show]="isDropdownOpen">
+                            <li>
+                                <span class="dropdown-item-text"><strong>Role:</strong> {{ userRole() }}</span>
+                            </li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" routerLink="/account/edit-profile"><i
-                                        class="bi bi-person-gear"></i> Edit Profile</a></li>
-                            <li><a class="dropdown-item" routerLink="/account/change-password"><i
-                                        class="bi bi-lock-fill"></i> Change Password</a></li>
+                            <li>
+                                <a class="dropdown-item" routerLink="/program-manager/profile"
+                                    (click)="closeDropdown()">
+                                    <i class="bi bi-person-gear"></i> Account Settings
+                                </a>
+                            </li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item text-danger" (click)="logout()" style="cursor:pointer;"><i
-                                        class="bi bi-box-arrow-right"></i> Logout</a></li>
+                            <li>
+                                <a class="dropdown-item text-danger" (click)="logout()" style="cursor:pointer;">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 </ul>

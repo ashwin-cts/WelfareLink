@@ -19,7 +19,7 @@ export class DashboardComponent implements OnInit {
 
   currentView: string = 'All'; // Tracks if we are in 'All' or 'Pending' view
   stats: DashboardStats = { total: 0, pending: 0, approved: 0, rejected: 0 };
-
+  isLoading: boolean = true; // Set to true initiallyisLoading: boolean = true; // Set to true initially
   showDeleteModal = false;
   // 2. Replaced any with WelfareApplication | null (since it starts as null)
   selectedAppForDelete: WelfareApplication | null = null;
@@ -31,15 +31,20 @@ export class DashboardComponent implements OnInit {
   }
 
   loadData(): void {
+    this.isLoading = true;
     this.welfareService.getApplications().subscribe({
       // 3. Explicitly typed the incoming data as WelfareApplication[]
       next: (data: WelfareApplication[]) => {
+        this.isLoading = false;
         this.applications = Array.isArray(data) ? data : [];
         this.calculateStats();
         this.setView('All'); // Default view
         console.log(data);
       },
-      error: (err) => console.error('Connection Error:', err)
+      error: (err) => {
+        this.isLoading = false;
+        console.error('Connection Error:', err);
+      }
     });
   }
 

@@ -3,13 +3,14 @@
         <div class="spinner-border text-primary" role="status"></div>
         <div class="mt-2 text-muted fw-bold">Loading Application Details...</div>
     </div>
-    
+
     <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
 
     <ng-container *ngIf="!isLoading && application">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Application Details <span class="text-muted fs-4">#APP-{{ application.applicationID }}</span></h2>
-            <a routerLink="/citizen-dashboard" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i>Back to Dashboard</a>
+            <a routerLink="/citizen/my-applications" class="btn btn-outline-secondary"><i
+                    class="bi bi-arrow-left me-2"></i>Back to Applications</a>
         </div>
 
         <div class="row mb-4">
@@ -21,10 +22,11 @@
                     <div class="card-body">
                         <p class="mb-1"><strong>Citizen ID:</strong> {{ application.citizen?.citizenId }}</p>
                         <p class="mb-1"><strong>Name:</strong> {{ application.citizen?.name }}</p>
-                        <p class="mb-1"><strong>Status:</strong> 
+                        <p class="mb-1"><strong>Status:</strong>
                             <span class="badge bg-primary ms-2">{{ application.status }}</span>
                         </p>
-                        <p class="mb-0"><strong>Submitted On:</strong> {{ application.submittedDate | date:'mediumDate' }}</p>
+                        <p class="mb-0"><strong>Submitted On:</strong> {{ application.submittedDate | date:'mediumDate'
+                            }}</p>
                     </div>
                 </div>
             </div>
@@ -37,9 +39,11 @@
                     <div class="card-body">
                         <p class="mb-1"><strong>Program ID:</strong> PRG-{{ application.program?.programID }}</p>
                         <p class="mb-1"><strong>Name:</strong> {{ application.program?.title }}</p>
-                        <p class="mb-1"><strong>Program Budget:</strong> ₹ {{ application.program?.budget | number:'1.2-2' }}</p>
+                        <p class="mb-1"><strong>Program Budget:</strong> ₹ {{ application.program?.budget |
+                            number:'1.2-2' }}</p>
                         <p class="mb-0 text-success fw-bold">
-                            <i class="bi bi-info-circle me-1"></i> Max Allowable Benefit: ₹ {{ application.program?.maxBenefitPerCitizen | number:'1.2-2' }}
+                            <i class="bi bi-info-circle me-1"></i> Max Allowable Benefit: ₹ {{
+                            application.program?.maxBenefitPerCitizen | number:'1.2-2' }}
                         </p>
                     </div>
                 </div>
@@ -75,10 +79,9 @@
                         <small>{{ getDisbursementPercentage() | number:'1.0-0' }}% Completed</small>
                     </div>
                     <div class="progress" style="height: 10px;">
-                        <div class="progress-bar bg-success" role="progressbar" 
-                             [style.width.%]="getDisbursementPercentage()" 
-                             [attr.aria-valuenow]="getDisbursementPercentage()" 
-                             aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar bg-success" role="progressbar"
+                            [style.width.%]="getDisbursementPercentage()"
+                            [attr.aria-valuenow]="getDisbursementPercentage()" aria-valuemin="0" aria-valuemax="100">
                         </div>
                     </div>
                 </div>
@@ -112,7 +115,8 @@
                                         <td><span class="badge bg-secondary">{{ benefit.status }}</span></td>
                                     </tr>
                                     <tr *ngIf="!application.benefits || application.benefits.length === 0">
-                                        <td colspan="5" class="text-center py-3 text-muted">No benefits allocated yet.</td>
+                                        <td colspan="5" class="text-center py-3 text-muted">No benefits allocated yet.
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -147,13 +151,14 @@
                                         <td>
                                             <span class="badge" [ngClass]="{
                                                 'bg-success': disb.status === 'Completed' || disb.status === 'Disbursed',
-                                                'bg-warning text-dark': disb.status === 'Pending',
+                                                'bg-warning text-dark': disb.status === 'Disbursement Pending',
                                                 'bg-danger': disb.status === 'Failed'
                                             }">{{ disb.status }}</span>
                                         </td>
                                     </tr>
                                     <tr *ngIf="allDisbursements.length === 0">
-                                        <td colspan="5" class="text-center py-3 text-muted">No disbursements made yet.</td>
+                                        <td colspan="5" class="text-center py-3 text-muted">No disbursements made yet.
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>

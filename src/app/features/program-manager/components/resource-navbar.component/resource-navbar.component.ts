@@ -10,10 +10,32 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./resource-navbar.component.css']
 })
 export class ResourceNavbarComponent implements OnInit {
-  private router = inject(Router);
+  public router = inject(Router);
 
   userName = signal<string>('Loading...');
   userRole = signal<string>('Guest');
+
+  // --- NEW: Dropdown State ---
+  isDropdownOpen = false;
+
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  closeDropdown() {
+    this.isDropdownOpen = false;
+  }
+  // ---------------------------
+  goToDashboard(event: Event) {
+    event.preventDefault();
+    if (this.router.url === '/program-manager/dashboard') {
+      this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+        this.router.navigate(['/program-manager/dashboard']);
+      });
+    } else {
+      this.router.navigate(['/program-manager/dashboard']);
+    }
+  }
 
   ngOnInit(): void {
     const savedName = localStorage.getItem('userName');

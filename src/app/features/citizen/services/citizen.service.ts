@@ -3,10 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_CONFIG, ApiConfig } from '../../../core/config/api.config';
 import { WelfareApplication } from '../../Gov-auditor/models/auditor.model';
-import { 
-  CreateCitizenRequest, 
-  CitizenDocument, 
-  WelfareProgram, 
+import {
+  CreateCitizenRequest,
+  CitizenDocument,
+  WelfareProgram,
   CitizenDashboardStats,
   CitizenProfile,
   UpdateCitizenProfileRequest,
@@ -20,7 +20,7 @@ import {
 export class CitizenService {
   constructor(
     private http: HttpClient,
-    @Inject(API_CONFIG) private apiConfig: ApiConfig 
+    @Inject(API_CONFIG) private apiConfig: ApiConfig
   ) { }
 
   // --- REGISTRATION & PROFILE ---
@@ -39,7 +39,7 @@ export class CitizenService {
   getDashboardStats(citizenId: number): Observable<CitizenDashboardStats> {
     return this.http.get<CitizenDashboardStats>(`${this.apiConfig.citizenApi}/CitizenApi/${citizenId}/dashboard`);
   }
-  
+
   changePassword(citizenId: number, passwordData: any): Observable<ApiResponse> {
     return this.http.put<ApiResponse>(`${this.apiConfig.citizenApi}/CitizenApi/${citizenId}/password`, passwordData);
   }
@@ -63,8 +63,8 @@ export class CitizenService {
     return `${this.apiConfig.citizenApi}/CitizenDocumentApi/${docId}/file`;
   }
   getDocumentFile(docId: number): Observable<Blob> {
-    return this.http.get(`${this.apiConfig.citizenApi}/CitizenDocumentApi/${docId}/file`, { 
-      responseType: 'blob' 
+    return this.http.get(`${this.apiConfig.citizenApi}/CitizenDocumentApi/${docId}/file`, {
+      responseType: 'blob'
     });
   }
   deleteDocument(docId: number): Observable<ApiResponse> {
@@ -83,7 +83,7 @@ export class CitizenService {
   applyForProgram(applicationData: ApplyProgramRequest): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.apiConfig.citizenApi}/CitizenApi/apply`, applicationData);
   }
-  
+
   getApplicationDetails(applicationId: number): Observable<WelfareApplication> {
     return this.http.get<WelfareApplication>(`${this.apiConfig.citizenApi}/CitizenApi/application/${applicationId}`);
   }

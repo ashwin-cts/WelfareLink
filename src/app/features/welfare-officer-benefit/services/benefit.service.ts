@@ -27,7 +27,10 @@ export class BenefitService {
   getBenefitById(id: number): Observable<Benefit> {
     return this.http.get<Benefit>(`${this.apiUrl}/${id}`);
   }
-
+  getApplicationById(appId: number): Observable<any> {
+    // You can replace the hardcoded URL with your apiConfig variable later!
+    return this.http.get<any>(`https://localhost:7143/api/WelfareApplicationApi/${appId}`);
+  }
   // POST: /api/BenefitApi?officerId={id}
   createBenefit(benefit: Benefit, officerId: number = 0): Observable<Benefit> {
     // Handling the query parameter for the officer ID

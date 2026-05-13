@@ -1,19 +1,15 @@
 <header>
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <!-- 1. Updated Logo Link -->
             <a class="navbar-brand" (click)="goToDashboard($event)" style="cursor: pointer;">
                 <i class="bi bi-heart-pulse-fill"></i> WelfareLink
             </a>
 
             <div class="navbar-collapse collapse">
                 <ul class="navbar-nav ms-auto">
-                    <!-- 2. Updated Dashboard Link -->
                     <li class="nav-item">
-                        <a class="nav-link" 
-                           (click)="goToDashboard($event)" 
-                           [class.active]="router.url === '/program-manager/dashboard'" 
-                           style="cursor: pointer;">
+                        <a class="nav-link" (click)="goToDashboard($event)"
+                            [class.active]="router.url === '/program-manager/dashboard'" style="cursor: pointer;">
                             <i class="bi bi-diagram-3"></i> Program
                         </a>
                     </li>
@@ -25,33 +21,32 @@
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" style="cursor: pointer;" (click)="toggleDropdown()">
-                        <i class="bi bi-person-circle"></i> {{ userName() }}
+                            <i class="bi bi-person-circle"></i> {{ userName() }}
                         </a>
-    
+
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0" [class.show]="isDropdownOpen">
-                            <li><span class="dropdown-item-text"><strong>Role:</strong> {{ userRole() }}</span></li>
                             <li>
-                        <hr class="dropdown-divider">
+                                <span class="dropdown-item-text"><strong>Role:</strong> {{ userRole() }}</span>
                             </li>
-        
-                        <li>
-                            <a class="dropdown-item" routerLink="/program-manager/profile" (click)="closeDropdown()">
-                            <i class="bi bi-person-gear"></i> Account Settings
-                        </a>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item" routerLink="/program-manager/profile"
+                                    (click)="closeDropdown()">
+                                    <i class="bi bi-person-gear"></i> Account Settings
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" (click)="logout()" style="cursor:pointer;">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
                     </li>
-                    
-        
-        
-        <li>
-            <hr class="dropdown-divider">
-        </li>
-        <li>
-            <a class="dropdown-item text-danger" (click)="logout()" style="cursor:pointer;">
-                <i class="bi bi-box-arrow-right"></i> Logout
-            </a>
-        </li>
-    </ul>
-</li>
                 </ul>
             </div>
         </div>
@@ -60,17 +55,31 @@
     <nav class="sub-navbar">
         <div class="container">
             <ul class="sub-nav-list">
-                <!-- Ensure sub-nav dashboard link also uses the click event if needed, but routerLink is fine here if it's just for highlighting -->
-                <li><a routerLink="/program-manager/dashboard" routerLinkActive="active"><i
-                            class="bi bi-speedometer2"></i> Dashboard</a></li>
-                <li><a routerLink="/program-manager/list" routerLinkActive="active"><i class="bi bi-list-ul"></i> All
-                        Programs</a></li>
-                <li><a routerLink="/program-manager/create" routerLinkActive="active"><i class="bi bi-plus-circle"></i>
-                        Add Program</a></li>
-                <li><a routerLink="/program-manager/budget" routerLinkActive="active"><i
-                            class="bi bi-currency-dollar"></i> Budget</a></li>
-                <li><a routerLink="/program-manager/performance" routerLinkActive="active"><i
-                            class="bi bi-bar-chart-line"></i> Performance</a></li>
+                <li>
+                    <a routerLink="/program-manager/dashboard" routerLinkActive="active">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="/program-manager/list" routerLinkActive="active">
+                        <i class="bi bi-list-ul"></i> All Programs
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="/program-manager/create" routerLinkActive="active">
+                        <i class="bi bi-plus-circle"></i> Add Program
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="/program-manager/budget" routerLinkActive="active">
+                        <i class="bi bi-currency-dollar"></i> Budget
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="/program-manager/performance" routerLinkActive="active">
+                        <i class="bi bi-bar-chart-line"></i> Performance
+                    </a>
+                </li>
             </ul>
         </div>
     </nav>

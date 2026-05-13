@@ -35,13 +35,16 @@
                             <td><strong>#{{ app.applicationID }}</strong></td>
                             <td>
                                 <strong>{{ app.program?.title || 'Program #' + app.programID }}</strong>
-                                <span *ngIf="app.program?.status === 'Suspended'" class="badge bg-warning text-dark ms-2"><i class="bi bi-pause-circle-fill"></i> Suspended</span>
-                                <span *ngIf="app.program?.status === 'Expired'" class="badge bg-danger ms-2"><i class="bi bi-x-circle-fill"></i> Expired</span>
+                                <span *ngIf="app.program?.status === 'Suspended'"
+                                    class="badge bg-warning text-dark ms-2"><i class="bi bi-pause-circle-fill"></i>
+                                    Suspended</span>
+                                <span *ngIf="app.program?.status === 'Expired'" class="badge bg-danger ms-2"><i
+                                        class="bi bi-x-circle-fill"></i> Expired</span>
                             </td>
                             <td>{{ app.submittedDate | date:'dd MMM yyyy' }}</td>
                             <td>
                                 <span class="badge" [ngClass]="{
-                                    'bg-success': app.status === 'Approved',
+                                    'bg-success': app.status === 'Approved' || 'Fully Disbursed',
                                     'bg-warning text-dark': app.status === 'Pending',
                                     'bg-info text-dark': app.status === 'Under Review',
                                     'bg-danger': app.status === 'Rejected'
@@ -50,7 +53,8 @@
                                 </span>
                             </td>
                             <td>
-                                <a [routerLink]="['/citizen/application', app.applicationID]" class="btn btn-sm btn-outline-info" title="View Details">
+                                <a [routerLink]="['/citizen/application', app.applicationID]"
+                                    class="btn btn-sm btn-outline-info" title="View Details">
                                     <i class="bi bi-eye me-1"></i> View
                                 </a>
                             </td>
