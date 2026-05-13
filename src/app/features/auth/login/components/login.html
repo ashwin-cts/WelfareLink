@@ -121,10 +121,23 @@
 
           <div class="mb-2">
             <label class="form-label fw-semibold text-secondary small mb-1">Contact Number</label>
-            <input type="text" class="form-control form-control-sm custom-input" formControlName="contactInfo"
-              placeholder="Mobile number">
-          </div>
 
+            <input type="text" class="form-control form-control-sm custom-input" formControlName="contactInfo"
+              placeholder="Mobile number"
+              [class.is-invalid]="registerForm.get('contactInfo')?.invalid && registerForm.get('contactInfo')?.touched">
+
+            <div
+              *ngIf="registerForm.get('contactInfo')?.errors?.['pattern'] && registerForm.get('contactInfo')?.touched"
+              class="text-danger" style="font-size: 0.75rem; margin-top: 2px;">
+              Mobile number must be exactly 10 digits.
+            </div>
+
+            <div
+              *ngIf="registerForm.get('contactInfo')?.errors?.['required'] && registerForm.get('contactInfo')?.touched && !registerForm.get('contactInfo')?.errors?.['pattern']"
+              class="text-danger" style="font-size: 0.75rem; margin-top: 2px;">
+              Mobile number is required.
+            </div>
+          </div>
           <div class="mb-3">
             <label class="form-label fw-semibold text-secondary small mb-1">Full Address</label>
             <textarea class="form-control form-control-sm custom-input" formControlName="address" rows="1"

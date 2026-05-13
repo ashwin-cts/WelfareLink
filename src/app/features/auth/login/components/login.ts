@@ -55,7 +55,7 @@ export class Login implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6)]],
       dateOfBirth: ['', Validators.required],
       gender: ['', Validators.required],
-      contactInfo: ['', Validators.required],
+      contactInfo: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       address: ['', Validators.required]
     });
   }
