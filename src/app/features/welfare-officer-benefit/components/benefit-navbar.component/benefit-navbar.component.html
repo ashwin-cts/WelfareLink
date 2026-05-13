@@ -9,21 +9,26 @@
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link text-white opacity-75" (click)="goToDashboard($event)"
-                        [class.active-nav]="router.url === '/welfare-officer/dashboard'" style="cursor: pointer;">
+                    <a class="nav-link text-white" [routerLink]="['/welfare-officer/dashboard']"
+                        [ngClass]="(router.url.includes('dashboard') || router.url.includes('application')) ? 'active-nav opacity-100' : 'opacity-75'"
+                        style="cursor: pointer;">
                         <i class="bi bi-file-text me-1"></i> Applications
                     </a>
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link text-white opacity-75" [routerLink]="['/welfare-officer/benefit-list']"
-                        routerLinkActive="active-nav text-white opacity-100">
+                    <a class="nav-link text-white" [routerLink]="['/welfare-officer/benefit-list']"
+                        [ngClass]="router.url.includes('benefit') ? 'active-nav opacity-100' : 'opacity-75'"
+                        style="cursor: pointer;">
                         <i class="bi bi-gift me-1"></i> Benefit
                     </a>
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link text-white opacity-75" [routerLink]="['/welfare-officer/disbursement-list']"
-                        routerLinkActive="active-nav text-white opacity-100">
-                        <i class="bi bi-cash-stack me-1"></i> Disbursement
+                    <a class="nav-link text-white" [routerLink]="['/welfare-officer/disbursement-list']"
+                        [ngClass]="router.url.includes('disbursement') ? 'active-nav opacity-100' : 'opacity-75'"
+                        style="cursor: pointer;">
+                        <i class="bi bi-wallet2 me-1"></i> Disbursement
                     </a>
                 </li>
             </ul>
