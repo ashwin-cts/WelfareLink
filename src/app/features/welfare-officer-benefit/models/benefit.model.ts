@@ -36,7 +36,50 @@ export interface Benefit {
         };
     };
 }
+export interface WelfareApplication {
+    applicationID: number;
+    submittedDate: string;
+    status: string;
 
+    // Flat Citizen Info
+    citizenID: number;
+    citizenName: string;
+
+    // Flat Program Info
+    programID: number;
+    programTitle: string;
+    programStatus: string;
+    programDesc: string;
+    programMaxBenefit: number;
+    programBudget: number;
+}
+
+export interface Benefit {
+    benefitID: number;
+    applicationID: number;
+    type: string;
+    amount: number;
+    date: string;
+    status: string;
+}
+
+export interface ProgramResourceInfo {
+    hasResource: boolean;
+    totalResource: number;
+    alreadyAllocated: number;
+    remainingResource: number;
+}
+export interface Citizen {
+    name: string;
+}
+
+export interface Program {
+    programID: number;
+    title: string;
+    status: string;
+    budget: number;
+    description: string;
+}
 // Model for the "GetProgramResourceInfo" endpoint used in Create/Edit
 export interface ProgramResourceInfo {
     hasResource: boolean;
