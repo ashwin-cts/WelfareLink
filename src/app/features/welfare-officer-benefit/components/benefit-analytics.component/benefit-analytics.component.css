@@ -1,0 +1,206 @@
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+}
+
+.stat-icon.blue {
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    color: #0369a1;
+}
+
+.stat-icon.green {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #15803d;
+}
+
+.stat-icon.yellow {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #a16207;
+}
+
+.stat-icon.red {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #b91c1c;
+}
+
+.stat-icon.purple {
+    background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+    color: #7c3aed;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.stat-label {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.progress-custom {
+    height: 10px;
+    border-radius: 5px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.progress-bar-custom {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    font-weight: 600;
+    color: #1e3c72;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.type-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.type-label {
+    width: 100px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.type-progress {
+    flex: 1;
+    margin: 0 15px;
+}
+
+.type-value {
+    width: 120px;
+    text-align: right;
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.9rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.2s ease;
+}
+
+.activity-item:hover {
+    background: #f8fafc;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+.trend-chart {
+    display: flex;
+    align-items: flex-end;
+    height: 150px;
+    gap: 8px;
+    padding: 1rem 0;
+}
+
+.trend-bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.trend-bars {
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+    height: 120px;
+}
+
+.trend-bar {
+    width: 20px;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.3s ease;
+}
+
+.trend-bar.allocated {
+    background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+}
+
+.trend-bar.disbursed {
+    background: linear-gradient(180deg, #10b981, #059669);
+}
+
+.trend-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-align: center;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.status-completed {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.status-failed {
+    background: #fee2e2;
+    color: #b91c1c;
+}

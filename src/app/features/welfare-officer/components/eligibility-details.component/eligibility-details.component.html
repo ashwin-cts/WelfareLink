@@ -1,0 +1,178 @@
+<app-welfare-application-navbar></app-welfare-application-navbar>
+<div class="container py-4 bg-light min-vh-100" *ngIf="!loading && check">
+  <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center">
+        <div class="header-icon bg-light-info me-3 d-flex align-items-center justify-content-center rounded-3" style="width: 50px; height: 50px;">
+          <i class="bi bi-clipboard-check text-info fs-2"></i>
+        </div>
+        <h2 class="fw-bold mb-0 text-navy">Eligibility Check Details</h2>
+      </div>
+      <span class="text-muted fw-bold">Check ID: #{{check.checkID}}</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="mb-4 text-navy fw-bold">
+          <i class="bi bi-bar-chart me-2"></i> Eligibility Assessment
+        </h5>
+        
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="info-box p-3 bg-light border-start border-info border-4 rounded-3">
+              <label class="small text-muted text-uppercase fw-bold">Check ID</label>
+              <div class="fw-bold mt-1 fs-5 text-dark">#{{check.checkID}}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="info-box p-3 bg-light border-start border-info border-4 rounded-3">
+              <label class="small text-muted text-uppercase fw-bold">Officer ID</label>
+              <div class="fw-bold mt-1 fs-5 text-dark">#{{check.officerID}}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="info-box p-3 bg-light border-start border-info border-4 rounded-3">
+              <label class="small text-muted text-uppercase fw-bold">Assessment Date</label>
+              <div class="fw-bold mt-1 fs-5 text-dark">{{check.date | date:'dd MMMM yyyy'}}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="info-box p-3 bg-light border-start border-info border-4 rounded-3">
+              <label class="small text-muted text-uppercase fw-bold">Eligibility Result</label>
+              <div class="mt-1">
+                <span class="badge px-3 py-2 rounded-pill shadow-sm" 
+                    [ngClass]="{
+                      'bg-success-soft text-success': check.result === 'Eligible' || check.result === 'Approved',
+                      'bg-danger-soft text-danger': check.result === 'Ineligible' || check.result === 'Rejected',
+                      'bg-warning-soft text-warning': check.result === 'Pending'
+                    }">
+                  <i class="bi" [ngClass]="{
+                      'bi-check-circle-fill': check.result === 'Eligible' || check.result === 'Approved',
+                      'bi-x-circle-fill': check.result === 'Ineligible' || check.result === 'Rejected',
+                      'bi-clock-fill': check.result === 'Pending'
+                  }"></i> 
+                  {{check.result}}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="info-box p-3 bg-light border-start border-info border-4 rounded-3">
+              <label class="small text-muted text-uppercase fw-bold">Result Code</label>
+              <div class="mt-1">
+                <span class="badge bg-secondary text-white px-3">{{check.resultCode}}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <div class="info-box p-3 bg-light border-start border-info border-4 rounded-3">
+              <label class="small text-muted text-uppercase fw-bold">Assessment Notes</label>
+              <div class="mt-2 p-3 bg-white border rounded shadow-sm">{{check.notes || 'No notes provided'}}</div>
+            </div>
+          </div>
+        </div>
+
+        <ng-container *ngIf="check.result === 'Eligible' || check.result === 'Approved'">
+          <div class="mt-4 p-3 bg-success-soft text-success border-0 rounded-3 d-flex align-items-center shadow-sm">
+            <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+            <div>
+              <strong>Application Approved!</strong> The welfare application has been approved and a benefit has been created automatically.
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="check.result === 'Ineligible' || check.result === 'Rejected'">
+          <div class="mt-4 p-3 bg-danger-soft text-danger border-0 rounded-3 d-flex align-items-center shadow-sm">
+            <i class="bi bi-x-circle-fill me-3 fs-4"></i>
+            <div>
+              <strong>Application Rejected!</strong> The welfare application has been rejected. Benefits and disbursements are not allowed for this application.
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="check.result === 'Pending'">
+          <div class="mt-4 p-3 bg-warning-soft text-dark border-0 rounded-3 d-flex align-items-center shadow-sm">
+            <i class="bi bi-clock-fill me-3 fs-4 text-warning"></i>
+            <div>
+              <strong>Assessment Pending!</strong> This application is currently under review by an officer.
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h6 class="text-muted fw-bold mb-3">Actions</h6>
+        <div class="d-grid gap-2">
+          <button class="btn btn-warning text-white fw-bold py-2" [routerLink]="['/eligibility-edit', check.checkID]">
+            <i class="bi bi-pencil-square me-2"></i> Edit Check
+          </button>
+          <button class="btn btn-danger fw-bold py-2" (click)="openDeleteConfirm()">
+              <i class="bi bi-trash me-2"></i> Delete Check
+          </button>
+         
+          <button class="btn btn-navy-outline fw-bold py-2" routerLink="/eligibility-list">
+            <i class="bi bi-arrow-left me-2"></i> Back to List
+          </button>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h6 class="text-muted fw-bold mb-4">Timeline</h6>
+        <div class="timeline ps-3" style="border-left: 2px solid #e9ecef; position: relative;">
+          <div class="timeline-item mb-4 position-relative">
+            <i class="bi bi-file-earmark-text text-primary bg-white position-absolute" style="left: -22px; top: 0;"></i>
+            <div class="ms-4">
+              <div class="fw-bold text-dark">Application Submitted</div>
+            </div>
+          </div>
+          <div class="timeline-item mb-4 position-relative">
+            <i class="bi bi-clipboard-check text-info bg-white position-absolute" style="left: -22px; top: 0;"></i>
+            <div class="ms-4">
+              <div class="fw-bold text-dark">Eligibility Check</div>
+              <div class="small text-muted">{{check.date | date:'dd MMM yyyy'}}</div>
+            </div>
+          </div>
+          
+          <div class="timeline-item position-relative">
+            
+            <ng-container *ngIf="check.result === 'Eligible' || check.result === 'Approved'">
+              <i class="bi bi-check-circle text-success bg-white position-absolute" style="left: -22px; top: 0;"></i>
+              <div class="ms-4">
+                <div class="fw-bold text-success">Decision: Approved</div>
+                <div class="small text-muted">{{check.date | date:'dd MMM yyyy'}}</div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="check.result === 'Ineligible' || check.result === 'Rejected'">
+              <i class="bi bi-x-circle text-danger bg-white position-absolute" style="left: -22px; top: 0;"></i>
+              <div class="ms-4">
+                <div class="fw-bold text-danger">Decision: Rejected</div>
+                <div class="small text-muted">{{check.date | date:'dd MMM yyyy'}}</div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="check.result === 'Pending'">
+              <i class="bi bi-clock text-warning bg-white position-absolute" style="left: -22px; top: 0;"></i>
+              <div class="ms-4">
+                <div class="fw-bold text-warning">Decision: Pending</div>
+                <div class="small text-muted">Awaiting Final Action</div>
+              </div>
+            </ng-container>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<app-delete-confirm 
+  *ngIf="showDeleteModal" 
+  [applicationData]="selectedCheckForDelete"
+  (confirmed)="handleDelete($event)"
+  (canceled)="closeModal()">
+</app-delete-confirm>

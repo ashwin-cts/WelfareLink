@@ -1,0 +1,29 @@
+/* Custom Button Colors */
+.btn-primary-custom { background-color: #5d5fef; border: none; color: white; }
+.btn-cyan-custom { background-color: #00cfd5; border: none; color: white; }
+.btn-info-custom { background-color: #00cfd5; border: none; } /* Teal/Cyan */
+.btn-warning-custom { background-color: #ffb800; border: none; } /* Amber/Yellow */
+.btn-danger-custom { background-color: #f44336; border: none; } /* Red */
+
+/* Soft Badge Colors */
+.bg-success-soft { background-color: #e6f4ea; }
+.bg-secondary-soft { background-color: #f1f3f4; }
+.text-navy { color: #1a2a4d; }
+
+/* Table Styling */
+.table thead th {
+  background-color: #212529;
+  color: white;
+  padding: 15px;
+  font-weight: 500;
+  border: none;
+}
+
+.table tbody td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card {
+  border-radius: 10px;
+}

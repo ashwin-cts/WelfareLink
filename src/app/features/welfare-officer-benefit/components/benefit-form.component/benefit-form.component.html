@@ -1,0 +1,208 @@
+<app-benefit-navbar></app-benefit-navbar>
+<div class="container py-4">
+    <div class="page-header d-flex justify-content-between align-items-center mb-4 text-white p-3 rounded shadow-sm"
+        style="background: linear-gradient(135deg, #0d47a1, #1976d2);">
+        <h3 class="fw-bold mb-0">
+            <i class="bi me-2" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-plus-circle-fill'"></i>
+            {{ isEditMode ? 'Edit Benefit #' + benefitId : 'Allocate New Benefit' }}
+        </h3>
+        <a (click)="goBack()" class="btn btn-light text-dark fw-bold rounded-pill px-4 shadow-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card border-0 shadow-sm p-4">
+
+                <div *ngIf="isLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+                    <p class="mt-3 text-muted">Processing request...</p>
+                </div>
+
+                <div *ngIf="!isLoading">
+
+                    <div *ngIf="selectedAppDetails" class="alert border shadow-sm mb-4 p-4 rounded-3"
+                        style="background-color: #f8fbff; border-color: #cce0ff !important;">
+
+                        <h6 class="mb-3 fw-bold text-dark border-bottom pb-2" style="border-color: #cce0ff !important;">
+                            <i class="bi bi-person-badge text-primary me-2"></i> Application & Citizen Details
+                        </h6>
+                        <div class="row g-3 small text-dark mb-3">
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted opacity-75 d-block mb-1">Application ID</span>
+                                <strong class="fs-6">#{{ selectedAppDetails.applicationID }}</strong>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted opacity-75 d-block mb-1">Submitted Date</span>
+                                <strong class="fs-6">{{ selectedAppDetails.submittedDate | date:'dd MMM yyyy'
+                                    }}</strong>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted opacity-75 d-block mb-1">App Status</span>
+                                <span class="badge bg-primary">{{ selectedAppDetails.status }}</span>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted opacity-75 d-block mb-1">Citizen</span>
+                                <strong class="fs-6">#{{ selectedAppDetails.citizenID }} - {{
+                                    selectedAppDetails.citizenName }}</strong>
+                            </div>
+                        </div>
+
+                        <h6 class="mb-3 fw-bold text-dark border-bottom pb-2 mt-4"
+                            style="border-color: #cce0ff !important;">
+                            <i class="bi bi-box text-success me-2"></i> Program Details
+                        </h6>
+
+                        <div class="row g-3 small text-dark mb-3" *ngIf="selectedAppDetails.programID">
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted opacity-75 d-block mb-1">Program ID</span>
+                                <strong class="fs-6">#{{ selectedAppDetails.programID }}</strong>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted opacity-75 d-block mb-1">Program Title</span>
+                                <strong class="fs-6">{{ selectedAppDetails.programTitle }}</strong>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted opacity-75 d-block mb-1">Program Status</span>
+                                <span class="badge"
+                                    [ngClass]="selectedAppDetails.programStatus === 'Suspended' ? 'bg-danger' : 'bg-success'">
+                                    {{ selectedAppDetails.programStatus }}
+                                </span>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted opacity-75 d-block mb-1">Max Benefit</span>
+                                <strong class="fs-6">{{ (selectedAppDetails.programMaxBenefit || 0) | currency:'INR'
+                                    }}</strong>
+                            </div>
+                            <div class="col-sm-12">
+                                <span class="text-muted opacity-75 d-block mb-1">Description</span>
+                                <strong class="fs-6">{{ selectedAppDetails.programDesc }}</strong>
+                            </div>
+                        </div>
+
+                        <div *ngIf="resourceInfo">
+                            <h6 class="mb-3 fw-bold text-dark border-bottom pb-2 mt-4"
+                                style="border-color: #cce0ff !important;">
+                                <i class="bi bi-pie-chart text-warning me-2"></i> Resource Allocation
+                            </h6>
+                            <div class="row g-3 small">
+                                <div class="col-sm-4">
+                                    <span class="text-muted opacity-75 d-block mb-1">Total Program Budget</span>
+                                    <strong class="text-dark fs-6" *ngIf="resourceInfo.hasResource">{{
+                                        resourceInfo.totalResource | currency:'INR' }}</strong>
+                                    <strong class="text-muted" *ngIf="!resourceInfo.hasResource">No constraint</strong>
+                                </div>
+                                <div class="col-sm-4">
+                                    <span class="text-muted opacity-75 d-block mb-1">Used in Benefits</span>
+                                    <strong class="text-warning fs-6" *ngIf="resourceInfo.hasResource">{{
+                                        resourceInfo.alreadyAllocated | currency:'INR' }}</strong>
+                                    <span class="text-muted" *ngIf="!resourceInfo.hasResource">-</span>
+                                </div>
+                                <div class="col-sm-4">
+                                    <span class="text-muted opacity-75 d-block mb-1">Remaining Available</span>
+                                    <strong class="fs-6"
+                                        [ngClass]="resourceInfo.remainingResource <= 0 ? 'text-danger' : 'text-success'"
+                                        *ngIf="resourceInfo.hasResource">
+                                        {{ resourceInfo.remainingResource | currency:'INR' }}
+                                    </strong>
+                                    <span class="text-muted" *ngIf="!resourceInfo.hasResource">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm mb-4"
+                        role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                        <strong>Failed to Save:</strong> {{ errorMessage }}
+                        <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+                    </div>
+
+                    <form [formGroup]="benefitForm" (ngSubmit)="onSubmit()" class="needs-validation">
+                        <div class="row g-4">
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-file-earmark-text me-1"></i> Welfare Application
+                                </label>
+                                <select formControlName="applicationID" class="form-select"
+                                    [ngClass]="{'is-invalid': benefitForm.get('applicationID')?.invalid && benefitForm.get('applicationID')?.touched}">
+                                    <option value="" disabled>-- Select Application --</option>
+                                    <option *ngFor="let app of applicationsList" [value]="app.applicationID">
+                                        App #{{ app.applicationID }} - {{ app.citizenName }} - {{ app.programTitle }}
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback">Please select an application.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-tag me-1"></i> Benefit Type
+                                </label>
+                                <select formControlName="type" class="form-select"
+                                    [ngClass]="{'is-invalid': benefitForm.get('type')?.invalid && benefitForm.get('type')?.touched}">
+                                    <option value="" disabled>Select Type</option>
+                                    <option value="Cash">💰 Cash Benefit</option>
+                                    <option value="Food">🍚 Food Benefit</option>
+                                    <option value="Medical">🏥 Medical Benefit</option>
+                                    <option value="Education">📚 Education Benefit</option>
+                                    <option value="Housing">🏠 Housing Benefit</option>
+                                </select>
+                                <div class="invalid-feedback">Benefit type is required.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-currency-rupee me-1"></i> Amount
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">₹</span>
+                                    <input formControlName="amount" type="number" class="form-control"
+                                        placeholder="0.00"
+                                        [ngClass]="{'is-invalid': benefitForm.get('amount')?.invalid && benefitForm.get('amount')?.touched}" />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-calendar-event me-1"></i> Allocation Date
+                                </label>
+                                <input formControlName="date" type="date" class="form-control"
+                                    [ngClass]="{'is-invalid': benefitForm.get('date')?.invalid && benefitForm.get('date')?.touched}" />
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-flag me-1"></i> Benefit Status
+                                </label>
+                                <select formControlName="status" class="form-select"
+                                    [ngClass]="{'is-invalid': benefitForm.get('status')?.invalid && benefitForm.get('status')?.touched}">
+                                    <option value="Allocated">✅ Allocated</option>
+                                    <option value="Partially Disbursed">⏳ Partially Disbursed</option>
+                                    <option value="Fully Disbursed">💸 Fully Disbursed</option>
+                                    <option value="Failed">❌ Failed</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="d-flex gap-3 justify-content-end">
+                            <a [routerLink]="isEditMode ? ['/welfare-officer/benefit-details', benefitId] : ['/welfare-officer/benefit-list']"
+                                class="btn btn-light border px-4 py-2 fw-semibold">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success px-5 py-2 fw-bold shadow-sm"
+                                [disabled]="benefitForm.invalid">
+                                <i class="bi bi-check2-circle me-2"></i> {{ isEditMode ? 'Save Changes' : 'Allocate
+                                Benefit' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

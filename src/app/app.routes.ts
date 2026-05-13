@@ -2,9 +2,11 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
 
 // ==========================================
-// 1. AUTH & BASE COMPONENTS
+// 1. AUTH & ACCOUNT COMPONENTS
 // ==========================================
 import { Login } from './features/auth/login/components/login';
+import { EditProfileComponent } from './features/account/components/edit-profile.component/edit-profile.component';
+import { ChangePasswordComponent } from './features/account/components/change-password.component/change-password.component';
 
 // ==========================================
 // 2. ADMIN COMPONENTS
@@ -19,7 +21,7 @@ import { AuditorDashboardComponent } from './features/Gov-auditor/components/aud
 import { AuditorProfileComponent } from './features/Gov-auditor/components/auditor-profile.component/auditor-profile.component';
 
 // ==========================================
-// 4. PROGRAM MANAGER COMPONENTS
+// 4. PROGRAM MANAGER & RESOURCE COMPONENTS
 // ==========================================
 import { PmDashboardComponent } from './features/program-manager/components/pm-dashboard.component/pm-dashboard.component';
 import { PmProfileComponent } from './features/program-manager/components/pm-profile.component/pm-profile.component';
@@ -44,14 +46,40 @@ import { CitizenDocumentFormComponent } from './features/citizen/components/citi
 import { CitizenProgramListComponent } from './features/citizen/components/citizen-programs.component/citizen-program-list.component';
 import { CitizenApplyFormComponent } from './features/citizen/components/citizen-programs.component/citizen-apply-form.component/citizen-apply-form.component';
 import { CitizenApplicationsComponent } from './features/citizen/components/citizen-applications.component/citizen-applications.component';
-// Upcoming imports (we will build these next)
-// import { CitizenProgramsComponent } from './features/citizen/components/citizen-programs.component/citizen-programs.component';
-// import { CitizenApplicationsComponent } from './features/citizen/components/citizen-applications.component/citizen-applications.component';
-// import { CitizenDocumentsComponent } from './features/citizen/components/citizen-documents.component/citizen-documents.component';
+
+// ==========================================
+// 6. WELFARE OFFICER COMPONENTS
+// ==========================================
+import { DashboardComponent } from "./features/welfare-officer/components/dashboard/dashboard.component";
+import { DetailsComponent } from './features/welfare-officer/components/details/details.component';
+import { WelfareOfficerProfileComponent } from './features/welfare-officer/components/welfare-officer-profile.component/welfare-officer-profile.component';
+import { WelfareApplicationAnalyticsComponent } from './features/welfare-officer/components/welfare-application-analytics.component/welfare-application-analytics.component';
+
+// Eligibility
+import { EligibilityListComponent } from './features/welfare-officer/components/eligibility-list/eligibility-list.component';
+import { EligibilityDetailsComponent } from './features/welfare-officer/components/eligibility-details.component/eligibility-details.component';
+import { EligibilityFormComponent } from './features/welfare-officer/components/eligibility-form.component/eligibility-form.component';
+
+// Benefit
+import { BenefitListComponent } from './features/welfare-officer-benefit/components/benefit-list.component/benefit-list.component';
+import { BenefitDetailsComponent } from './features/welfare-officer-benefit/components/benefit-details.component/benefit-details.component';
+import { BenefitFormComponent } from './features/welfare-officer-benefit/components/benefit-form.component/benefit-form.component';
+import { BenefitAnalyticsComponent } from './features/welfare-officer-benefit/components/benefit-analytics.component/benefit-analytics.component';
+
+// Disbursement
+import { DisbursementListComponent } from './features/welfare-officer-disbursement/components/disbursement-list.component/disbursement-list.component';
+import { DisbursementFormComponent } from './features/welfare-officer-disbursement/components/disbursement-form.component/disbursement-form.component';
+import { DisbursementHistoryComponent } from './features/welfare-officer-disbursement/components/disbursement-history.component/disbursement-history.component';
+import { DisbursementDetailComponent } from './features/welfare-officer-disbursement/components/disbursement-details.component/disbursement-details.component';
+
 
 export const routes: Routes = [
-  // --- Public Routes ---
+  // --- Public / Auth Routes ---
   { path: 'login', component: Login },
+
+  // --- Account Management Routes ---
+  { path: 'account/edit-profile', component: EditProfileComponent, canActivate: [authGuard] },
+  { path: 'account/change-password', component: ChangePasswordComponent, canActivate: [authGuard] },
 
   // --- Admin Routes ---
   { path: 'admin-dashboard', component: AdminDashboard, canActivate: [authGuard] },
@@ -71,6 +99,7 @@ export const routes: Routes = [
   { path: 'program-manager/budget', component: BudgetStatsComponent, canActivate: [authGuard] },
   { path: 'program-manager/performance', component: PerformanceMetricsComponent, canActivate: [authGuard] },
   
+  // --- Resource Manager Routes ---
   { path: 'resource-manager', component: ResourceListComponent, canActivate: [authGuard] },
   { path: 'resource-manager/program/:id', component: ManageResourcesComponent, canActivate: [authGuard] },
   { path: 'resource-manager/allocate', component: ResourceFormComponent, canActivate: [authGuard] },
@@ -86,10 +115,32 @@ export const routes: Routes = [
   { path: 'citizen/programs', component: CitizenProgramListComponent, canActivate: [authGuard] },
   { path: 'citizen/programs/apply/:id', component: CitizenApplyFormComponent, canActivate: [authGuard] },
   { path: 'citizen/my-applications', component: CitizenApplicationsComponent, canActivate: [authGuard] },
-  // Upcoming Citizen Routes (uncomment as we build them)
-  // { path: 'citizen/programs', component: CitizenProgramsComponent, canActivate: [authGuard] },
-  // { path: 'citizen/my-applications', component: CitizenApplicationsComponent, canActivate: [authGuard] },
-  // { path: 'citizen/documents', component: CitizenDocumentsComponent, canActivate: [authGuard] },
+
+  // --- Welfare Officer Routes ---
+  { path: 'welfare-officer/dashboard', component: DashboardComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/profile', component: WelfareOfficerProfileComponent, canActivate: [authGuard] },
+  { path: 'details/:id', component: DetailsComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/welfare-application-analytics', component: WelfareApplicationAnalyticsComponent, canActivate: [authGuard] },
+
+  // --- Eligibility Routes ---
+  { path: 'eligibility-list', component: EligibilityListComponent, canActivate: [authGuard] },
+  { path: 'eligibility-details/:id', component: EligibilityDetailsComponent, canActivate: [authGuard] },
+  { path: 'eligibility-create', component: EligibilityFormComponent, canActivate: [authGuard] },
+  { path: 'eligibility-edit/:id', component: EligibilityFormComponent, canActivate: [authGuard] },
+
+  // --- Benefit Routes ---
+  { path: 'welfare-officer/benefit-list', component: BenefitListComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/benefit-details/:id', component: BenefitDetailsComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/benefit-create', component: BenefitFormComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/benefit-edit/:id', component: BenefitFormComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/benefit-analytics', component: BenefitAnalyticsComponent, canActivate: [authGuard] },
+
+  // --- Disbursement Routes ---
+  { path: 'welfare-officer/disbursement-list', component: DisbursementListComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/disbursement-create', component: DisbursementFormComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/disbursement-edit/:id', component: DisbursementFormComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/disbursement-details/:id', component: DisbursementDetailComponent, canActivate: [authGuard] },
+  { path: 'welfare-officer/disbursement-history', component: DisbursementHistoryComponent, canActivate: [authGuard] },
 
   // --- Fallback Routes ---
   { path: '', redirectTo: '/login', pathMatch: 'full' },

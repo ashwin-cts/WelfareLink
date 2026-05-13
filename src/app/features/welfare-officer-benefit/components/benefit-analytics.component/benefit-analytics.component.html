@@ -1,0 +1,182 @@
+<app-benefit-navbar></app-benefit-navbar>
+<div class="container py-4">
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Analytics Dashboard</h1>
+        <span class="badge bg-primary px-3 py-2">Manager View</span>
+    </div>
+
+    <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div *ngIf="!isLoading && dashboardData">
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon blue"><i class="bi bi-gift"></i></div>
+                        <div class="ms-3">
+                            <div class="stat-value">{{ dashboardData.totalAllocated }}</div>
+                            <div class="stat-label">Total Allocated</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon green"><i class="bi bi-check-circle"></i></div>
+                        <div class="ms-3">
+                            <div class="stat-value">{{ dashboardData.totalDisbursed }}</div>
+                            <div class="stat-label">Disbursed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon yellow"><i class="bi bi-hourglass-split"></i></div>
+                        <div class="ms-3">
+                            <div class="stat-value">{{ dashboardData.totalPending }}</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon red"><i class="bi bi-x-circle"></i></div>
+                        <div class="ms-3">
+                            <div class="stat-value">{{ dashboardData.totalFailed }}</div>
+                            <div class="stat-label">Failed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon purple"><i class="bi bi-currency-rupee"></i></div>
+                        <div class="ms-3">
+                            <div class="stat-value">₹{{ dashboardData.totalAmountAllocated | number }}</div>
+                            <div class="stat-label">Total Amount Allocated</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon green"><i class="bi bi-cash-stack"></i></div>
+                        <div class="ms-3">
+                            <div class="stat-value">₹{{ dashboardData.totalAmountDisbursed | number }}</div>
+                            <div class="stat-label">Total Amount Disbursed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <h6 class="text-muted mb-3">Disbursement Efficiency</h6>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="stat-value" style="font-size: 1.5rem;">{{ dashboardData.disbursementEfficiency
+                            }}%</span>
+                        <i class="bi bi-speedometer2 text-primary" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div class="progress-custom">
+                        <div class="progress-bar-custom" [style.width.%]="dashboardData.disbursementEfficiency"
+                            style="background: linear-gradient(90deg, #10b981, #059669);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="chart-card h-100">
+                    <h5 class="chart-title"><i class="bi bi-pie-chart"></i> Disbursement by Benefit Type</h5>
+
+                    <ng-container *ngIf="dashboardData.benefitTypeBreakdowns.length; else noData">
+                        <div class="type-bar mt-4" *ngFor="let type of dashboardData.benefitTypeBreakdowns">
+                            <div class="type-label">{{ type.type }}</div>
+                            <div class="type-progress">
+                                <div class="progress-custom">
+                                    <div class="progress-bar-custom" [style.width.%]="type.percentage"
+                                        [style.background]="getTypeColor(type.type)"></div>
+                                </div>
+                            </div>
+                            <div class="type-value">₹{{ type.disbursedAmount | number }} / ₹{{ type.totalAmount | number
+                                }}</div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="chart-card h-100">
+                    <h5 class="chart-title"><i class="bi bi-bar-chart"></i> Monthly Disbursement Trends (Last 6 Months)
+                    </h5>
+
+                    <div class="trend-chart mt-4">
+                        <div class="trend-bar-group" *ngFor="let trend of dashboardData.monthlyTrends">
+                            <div class="trend-bars">
+                                <div class="trend-bar allocated" [style.height.px]="getBarHeight(trend.allocatedAmount)"
+                                    [title]="'Allocated: ₹' + trend.allocatedAmount"></div>
+                                <div class="trend-bar disbursed" [style.height.px]="getBarHeight(trend.disbursedAmount)"
+                                    [title]="'Disbursed: ₹' + trend.disbursedAmount"></div>
+                            </div>
+                            <div class="trend-label">{{ trend.month | slice:0:3 }}</div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center gap-4 mt-3">
+                        <span class="small text-muted"><i class="bi bi-square-fill text-primary"></i> Allocated
+                            Amount</span>
+                        <span class="small text-muted"><i class="bi bi-square-fill text-success"></i> Disbursed
+                            Amount</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+            <div class="col-md-12">
+                <div class="chart-card">
+                    <h5 class="chart-title"><i class="bi bi-activity"></i> Recent Disbursements</h5>
+
+                    <ng-container *ngIf="dashboardData.recentDisbursements.length; else noData">
+                        <div class="activity-item" *ngFor="let item of dashboardData.recentDisbursements">
+                            <div class="activity-icon text-white" [ngClass]="getIconBackground(item.status)">
+                                <i class="bi bi-cash"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong>Disbursement #{{ item.disbursementID }}</strong>
+                                <span class="badge bg-info ms-2">{{ item.benefitType }}</span>
+                                <div class="text-muted small">
+                                    Citizen ID: {{ item.citizenID }} • {{ item.date | date:'MMM dd, yyyy' }}
+                                </div>
+                            </div>
+                            <div>
+                                <span class="status-badge" [ngClass]="getStatusClass(item.status)">{{ item.status
+                                    }}</span>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+
+        <ng-template #noData>
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                <p class="mt-2">No data available</p>
+            </div>
+        </ng-template>
+
+    </div>
+</div>

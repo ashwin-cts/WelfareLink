@@ -1,0 +1,31 @@
+<app-welfare-application-navbar></app-welfare-application-navbar>
+    
+    <div class="container mt-4 mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0 text-navy fw-bold"><i class="bi bi-person-badge"></i> Account Settings</h1>
+          <p class="text-muted">Manage your profile details and security credentials.</p>
+        </div>
+        <a routerLink="/welfare-officer/dashboard" class="btn btn-secondary shadow-sm">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm border-0 h-100 rounded-4 overflow-hidden">
+            <div class="card-body p-0">
+              <app-edit-profile></app-edit-profile>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm border-0 h-100 rounded-4 overflow-hidden">
+            <div class="card-body p-0">
+              <app-change-password></app-change-password>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
