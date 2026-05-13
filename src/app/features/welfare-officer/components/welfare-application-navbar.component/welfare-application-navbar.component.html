@@ -34,14 +34,14 @@
       </ul>
 
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item dropdown">
+        <li class="nav-item dropdown position-relative">
 
           <a class="nav-link dropdown-toggle text-white d-flex align-items-center" style="cursor: pointer;"
             (click)="toggleDropdown($event)">
             <i class="bi bi-person-circle me-2 fs-5"></i> {{ userName() }}
           </a>
 
-          <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" [class.show]="isDropdownOpen">
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0 position-absolute" [class.show]="isDropdownOpen" style="right: 0; left: auto;">
 
             <li><span class="dropdown-item-text"><strong>Role:</strong> {{ userRole() }}</span></li>
             <li>
@@ -50,12 +50,7 @@
 
             <li>
               <a class="dropdown-item py-2" routerLink="/welfare-officer/profile" (click)="isDropdownOpen = false">
-                <i class="bi bi-person-gear me-2"></i> Edit Profile
-              </a>
-            </li>
-            <li>
-              <a class="dropdown-item py-2" routerLink="/welfare-officer/profile" (click)="isDropdownOpen = false">
-                <i class="bi bi-lock-fill me-2"></i> Change Password
+                <i class="bi bi-person-gear me-2"></i> Account Settings
               </a>
             </li>
 

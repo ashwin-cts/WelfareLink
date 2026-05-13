@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 
@@ -10,23 +10,43 @@ import { RouterModule, Router } from '@angular/router';
   styleUrls: ['./auditor-navbar.component.css']
 })
 export class AuditorNavbarComponent implements OnInit {
+  public router = inject(Router);
   userName: string = 'Auditor';
 
-  constructor(private router: Router) {}
+  // --- Dropdown State ---
+  isDropdownOpen = false;
+
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  closeDropdown() {
+    this.isDropdownOpen = false;
+  }
+  // ----------------------
 
   ngOnInit(): void {
-    // Attempt to get the user's name from localStorage for a personalized greeting
     const storedName = localStorage.getItem('userName');
     if (storedName) {
       this.userName = storedName;
     }
   }
 
+  goToDashboard(event: Event) {
+    event.preventDefault(); 
+    
+    if (this.router.url === '/auditor-dashboard') {
+      // Force reload to refresh dashboard data if already there
+      this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+          this.router.navigate(['/auditor-dashboard']);
+      });
+    } else {
+      this.router.navigate(['/auditor-dashboard']);
+    }
+  }
+
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('jwt');
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('userName');
+    localStorage.clear();
     this.router.navigate(['/login']);
   }
 }

@@ -10,15 +10,25 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./program-manager-navbar.component.css']
 })
 export class ProgramManagerNavbarComponent implements OnInit {
-  // 1. Made router public so HTML can read the active URL
   public router = inject(Router);
 
   // Signals to hold API-driven user data
   userName = signal<string>('Loading...');
   userRole = signal<string>('Guest');
 
+  // --- NEW: Dropdown State ---
+  isDropdownOpen = false;
+
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  closeDropdown() {
+    this.isDropdownOpen = false;
+  }
+  // ---------------------------
+
   ngOnInit(): void {
-    // These values should be saved in localStorage after a successful API login
     const savedName = localStorage.getItem('userName');
     const savedRole = localStorage.getItem('userRole');
 
@@ -26,7 +36,6 @@ export class ProgramManagerNavbarComponent implements OnInit {
     if (savedRole) this.userRole.set(savedRole);
   }
 
-  // 2. Add the Force Reload trick
   goToDashboard(event: Event) {
     event.preventDefault();
     if (this.router.url === '/program-manager/dashboard') {
@@ -39,7 +48,6 @@ export class ProgramManagerNavbarComponent implements OnInit {
   }
 
   logout() {
-    // Clears session to prevent "Invalid Login" cache issues
     localStorage.clear();
     this.router.navigate(['/login']);
   }

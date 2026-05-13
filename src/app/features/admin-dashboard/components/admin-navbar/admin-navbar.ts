@@ -7,13 +7,25 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './admin-navbar.html',
-  styleUrls: ['./admin-navbar.css'] // Create an empty CSS file for this if you don't have one
+  styleUrls: ['./admin-navbar.css']
 })
 export class AdminNavbarComponent implements OnInit {
   public router = inject(Router);
 
   userName = signal<string>('Admin User');
   userRole = signal<string>('Admin');
+
+  // --- Dropdown State ---
+  isDropdownOpen = false;
+
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  closeDropdown() {
+    this.isDropdownOpen = false;
+  }
+  // ----------------------
 
   ngOnInit(): void {
     const savedName = localStorage.getItem('userName');
@@ -22,16 +34,15 @@ export class AdminNavbarComponent implements OnInit {
     if (savedName) this.userName.set(savedName);
     if (savedRole) this.userRole.set(savedRole);
   }
+
   goToDashboard(event: Event) {
-    event.preventDefault(); // Stops the page from jumping
+    event.preventDefault(); 
     
     if (this.router.url === '/admin-dashboard') {
-      // If already on the dashboard, force a quick reload to reset the tabs
       this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
           this.router.navigate(['/admin-dashboard']);
       });
     } else {
-      // If on the Profile page, just navigate normally
       this.router.navigate(['/admin-dashboard']);
     }
   }

@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
   <div class="container-fluid">
-    <a class="navbar-brand fw-bold" routerLink="/citizen-dashboard">
+    <a class="navbar-brand fw-bold" (click)="goToDashboard($event)" style="cursor: pointer;">
       <i class="bi bi-house-heart me-2"></i>WelfareLink
     </a>
     
@@ -10,7 +10,12 @@
     
     <div class="collapse navbar-collapse" id="citizenNavbar">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" routerLink="/citizen-dashboard" routerLinkActive="active">Dashboard</a></li>
+        <li class="nav-item">
+            <a class="nav-link" 
+               (click)="goToDashboard($event)" 
+               [class.active]="router.url === '/citizen-dashboard'" 
+               style="cursor: pointer;">Dashboard</a>
+        </li>
         <li class="nav-item"><a class="nav-link" routerLink="/citizen/programs" routerLinkActive="active">Programs</a></li>
         <li class="nav-item"><a class="nav-link" routerLink="/citizen/my-applications" routerLinkActive="active">My Applications</a></li>
         <li class="nav-item"><a class="nav-link" routerLink="/citizen/documents" routerLinkActive="active">My Documents</a></li>
@@ -18,14 +23,27 @@
       
       <div class="d-flex align-items-center">
         <div class="dropdown">
-          <button class="btn btn-light dropdown-toggle d-flex align-items-center text-primary fw-bold" type="button" data-bs-toggle="dropdown">
+          <button class="btn btn-light dropdown-toggle d-flex align-items-center text-primary fw-bold" 
+                  type="button" 
+                  (click)="toggleDropdown()">
             <i class="bi bi-person-circle me-2 fs-5"></i>
             <span>{{ userName }}</span>
           </button>
-          <ul class="dropdown-menu dropdown-menu-end shadow">
-            <li><a class="dropdown-item" routerLink="/citizen/profile"><i class="bi bi-person-lines-fill me-2"></i> Profile Settings</a></li>
+          
+          <ul class="dropdown-menu dropdown-menu-end shadow" [class.show]="isDropdownOpen">
+            <li>
+                <a class="dropdown-item" routerLink="/citizen/profile" (click)="closeDropdown()">
+                    <i class="bi bi-person-gear me-2"></i> Account Settings
+                </a>
+            </li>
+            
             <li><hr class="dropdown-divider"></li>
-            <li><button class="dropdown-item text-danger" (click)="logout()"><i class="bi bi-box-arrow-right me-2"></i> Logout</button></li>
+            
+            <li>
+                <button class="dropdown-item text-danger" (click)="logout()">
+                    <i class="bi bi-box-arrow-right me-2"></i> Logout
+                </button>
+            </li>
           </ul>
         </div>
       </div>
