@@ -71,7 +71,13 @@ import { DisbursementListComponent } from './features/welfare-officer-disburseme
 import { DisbursementFormComponent } from './features/welfare-officer-disbursement/components/disbursement-form.component/disbursement-form.component';
 import { DisbursementHistoryComponent } from './features/welfare-officer-disbursement/components/disbursement-history.component/disbursement-history.component';
 import { DisbursementDetailComponent } from './features/welfare-officer-disbursement/components/disbursement-details.component/disbursement-details.component';
-
+// 7 Compliance
+import { ComplianceOfficerProfileComponent } from './features/compliance-officer/components/compliance-officer-profile.component/compliance-officer-profile.component';
+import { ComplianceDashboardComponent } from './features/compliance-officer/components/compliance-officer-dashboard.component/compliance-officer-dashboard.component';
+import { ComplianceApplicationDetailsComponent } from './features/compliance-officer/components/compliance-officer-application-list.component/compliance-officer-application-list.component';
+import { FlagIssueComponent } from './features/compliance-officer/components/compliance-officer-flag.component/compliance-officer-flag.component';
+import { ComplianceRecordsComponent } from './features/compliance-officer/components/compliance-officer-records.component/compliance-officer-records.component';
+//import { ComplianceRecordsComponent } from './features/compliance-officer/components/compliance-officer-records.component/compliance-officer-records.component';
 
 export const routes: Routes = [
   // --- Public / Auth Routes ---
@@ -142,6 +148,21 @@ export const routes: Routes = [
   { path: 'welfare-officer/disbursement-details/:id', component: DisbursementDetailComponent, canActivate: [authGuard] },
   { path: 'welfare-officer/disbursement-history', component: DisbursementHistoryComponent, canActivate: [authGuard] },
 
+  // --- Compliance Routes ---
+{ 
+    path: 'compliance', 
+    component: ComplianceOfficerProfileComponent, 
+    canActivate: [authGuard],
+    children: [
+      { path: 'dashboard', component: ComplianceDashboardComponent },
+      { path: 'application/:id', component: ComplianceApplicationDetailsComponent },
+      { path: 'flag-issue/:id', component: FlagIssueComponent },
+      { path: 'records', component: ComplianceRecordsComponent },
+      { path: 'edit-profile', component: EditProfileComponent }, // Reusing your shared account component
+      { path: 'change-password', component: ChangePasswordComponent }, // Reusing your shared account component
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+    ]
+  },
   // --- Fallback Routes ---
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', redirectTo: '/login' }

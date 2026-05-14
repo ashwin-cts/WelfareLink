@@ -121,7 +121,8 @@ export class Login implements OnInit {
           'Citizen': '/citizen-dashboard',
           'ProgramManager': '/program-manager/dashboard',
           'WelfareOfficer': '/welfare-officer/dashboard',
-          'ComplianceOfficer': '/compliance-dashboard',
+          // THIS LINE HAS BEEN FIXED TO MATCH THE NEW ROUTING
+          'ComplianceOfficer': '/compliance/dashboard',
           'GovernmentAuditor': '/auditor-dashboard'
         };
 
@@ -180,7 +181,7 @@ export class Login implements OnInit {
     } else if (errData && errData.Error) {
       this.errorMessage = errData.Error;
     } else {
-      this.errorMessage = 'A network or server error occurred. Please try again.';
+      this.errorMessage = 'A network or server error occurred. Please try again later.';
     }
 
     this.cdr.detectChanges();

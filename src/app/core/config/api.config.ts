@@ -17,6 +17,7 @@ export interface ApiConfig {
   benefitAnalyticsApi: string;
   welfareAnalyticsApi: string;
   disbursementApi: string; 
+  complianceApi: string;
 }
 
 // 2. Create the Token that Angular will use to inject this config
@@ -39,4 +40,5 @@ export const defaultApiConfig: ApiConfig = {
   benefitAnalyticsApi: 'https://localhost:7143/api/BenefitAnalyticsApi',
   welfareAnalyticsApi: 'https://localhost:7143/api/WelfareApplicationAnalyticsApi',
   disbursementApi: 'https://localhost:7143/api/DisbursementApi',
+  complianceApi: 'https://localhost:7255/api',
 };
