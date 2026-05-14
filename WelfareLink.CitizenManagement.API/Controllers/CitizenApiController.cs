@@ -5,6 +5,7 @@ using WelfareLink.CitizenManagement.API.DTOs;
 using WelfareLink.CitizenManagement.API.Interfaces;
 using WelfareLink.CitizenManagement.API.Models;
 
+
 namespace WelfareLink.CitizenManagement.API.Controllers
 {
     [ApiController]
@@ -70,13 +71,8 @@ namespace WelfareLink.CitizenManagement.API.Controllers
                 CreatedAt = citizen.CreatedAt
             });
         }
-        // PUT: api/citizenapi/{id}/password
-        [HttpPut("{id}/password")]
-        [Authorize(Roles = "Admin,Citizen")]
-        
-    
-        // GET: api/citizenapi/{citizenId}/dashboard
-        [HttpGet("{citizenId}/dashboard")]
+      
+   
         // GET: api/citizenapi/{citizenId}/dashboard
         [HttpGet("{citizenId}/dashboard")]
         public async Task<IActionResult> GetDashboard(int citizenId)
@@ -118,6 +114,7 @@ namespace WelfareLink.CitizenManagement.API.Controllers
             if (application == null) return NotFound();
             return Ok(application);
         }
+
 
         // POST: api/citizenapi
         [HttpPost]
