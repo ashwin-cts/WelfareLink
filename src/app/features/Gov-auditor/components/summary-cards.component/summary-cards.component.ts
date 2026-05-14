@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuditorDashboardStats } from '../services/auditor.service';
+import { AuditorDashboardStats } from '../../models/auditor.model';
 
 @Component({
   selector: 'app-summary-cards',
