@@ -10,7 +10,7 @@ namespace WelfareLink.AuditorManagement.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     // Base Rule: Auditors, Compliance Officers, and Program Managers can view the financial/utilization dashboards
-    [Authorize(Roles = "GovernmentAuditor,ComplianceOfficer,ProgramManager")]
+    [Authorize(Roles = "GovernmentAuditor,ComplianceOfficer,ProgramManager,Admin")]
     public class GovernmentAuditorApiController : ControllerBase
     {
         private readonly IBenefitAnalyticsService _benefitAnalyticsService;
