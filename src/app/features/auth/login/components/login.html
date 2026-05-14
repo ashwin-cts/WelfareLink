@@ -100,6 +100,11 @@
                   <i class="bi" [ngClass]="showRegisterPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
                 </span>
               </div>
+              <div *ngIf="registerForm.get('password')?.errors?.['pattern'] && registerForm.get('password')?.touched"
+                class="text-danger" style="font-size: 0.75rem; margin-top: 2px;">
+                Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase
+                letter, one number, and one special character.
+              </div>
             </div>
           </div>
 

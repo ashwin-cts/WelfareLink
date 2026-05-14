@@ -52,7 +52,10 @@ export class Login implements OnInit {
       fullName: ['', Validators.required],
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [
+        Validators.required,
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s])\S{8,}$/)
+      ]],
       dateOfBirth: ['', Validators.required],
       gender: ['', Validators.required],
       contactInfo: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
