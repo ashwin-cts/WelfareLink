@@ -41,7 +41,7 @@
                         <i class="bi bi-person-circle me-2 fs-5"></i> {{ userName() }}
                     </a>
 
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" [class.show]="isDropdownOpen">
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 position-absolute" [class.show]="isDropdownOpen"style="right: 0;left: auto;">
 
                         <li><span class="dropdown-item-text"><strong>Role:</strong> {{ userRole() }}</span></li>
                         <li>

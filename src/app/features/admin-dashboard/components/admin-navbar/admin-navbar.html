@@ -22,7 +22,8 @@
                                 }}</span>
                         </a>
 
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" [class.show]="isDropdownOpen">
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 position-absolute" [class.show]="isDropdownOpen"style="right: 0; left: auto;">
+                            
                             <li><span class="dropdown-item-text"><strong>Role:</strong> {{ userRole() }}</span></li>
                             <li>
                                 <hr class="dropdown-divider">

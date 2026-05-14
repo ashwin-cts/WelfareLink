@@ -28,7 +28,7 @@ import { RouterModule, Router } from '@angular/router';
               <a class="nav-link dropdown-toggle" href="javascript:void(0)" (click)="toggleDropdown($event)">
                 <i class="bi bi-gear-fill me-1"></i>Account
               </a>
-              <ul class="dropdown-menu dropdown-menu-end shadow" [class.show]="isAccountDropdownOpen">
+              <ul class="dropdown-menu dropdown-menu-end shadow position-absolute" [class.show]="isAccountDropdownOpen"style="right: 0; left: auto;">
                 <li><a class="dropdown-item" routerLink="/compliance/edit-profile" (click)="isAccountDropdownOpen = false"><i class="bi bi-person me-2"></i>Edit Profile</a></li>
                 <li><a class="dropdown-item" routerLink="/compliance/change-password" (click)="isAccountDropdownOpen = false"><i class="bi bi-key me-2"></i>Change Password</a></li>
                 <li><hr class="dropdown-divider"></li>

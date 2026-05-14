@@ -30,7 +30,7 @@
             <span>{{ userName }}</span>
           </button>
           
-          <ul class="dropdown-menu dropdown-menu-end shadow" [class.show]="isDropdownOpen">
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0 position-absolute" [class.show]="isDropdownOpen"style="right: 0; left: auto;">
             <li>
                 <a class="dropdown-item" routerLink="/citizen/profile" (click)="closeDropdown()">
                     <i class="bi bi-person-gear me-2"></i> Account Settings

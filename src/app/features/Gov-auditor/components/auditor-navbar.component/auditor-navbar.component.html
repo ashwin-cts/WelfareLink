@@ -27,7 +27,7 @@
             <span>{{ userName }}</span>
           </button>
           
-          <ul class="dropdown-menu dropdown-menu-end shadow border-0" [class.show]="isDropdownOpen">
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0 position-absolute" [class.show]="isDropdownOpen"style="right: 0; left: auto;">
             <li>
               <a class="dropdown-item" routerLink="/auditor/profile" (click)="closeDropdown()">
                 <i class="bi bi-person-lines-fill me-2"></i> Account Settings
