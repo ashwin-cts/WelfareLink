@@ -1,34 +1,72 @@
-/* The deep dark background for the page */
+/* --- GOOGLE FONTS IMPORT --- */
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
+
+/* --- THE DEEP DARK WRAPPER --- */
 .corona-wrapper {
-    background-color: #111319;
-    min-height: 100vh;
+    background-color: #0b0e14 !important;
+    min-height: calc(100vh - 60px);
+    width: 100%;
     font-family: 'Rubik', sans-serif;
+    color: #f0f2f5 !important;
+    padding-bottom: 2rem;
 }
 
-/* --TO FORCE DARK THEME --- */
-
-/* Change Card Backgrounds */
-::ng-deep .corona-wrapper .card {
-    background-color: #191c24 !important;
-    border: 1px solid #2c2e33 !important;
-}
-
-/* Change Card Headers */
-::ng-deep .corona-wrapper .card-header {
-    background: #191c24 !important;
-    border-bottom: 1px solid #2c2e33 !important;
+.corona-wrapper h2 {
     color: #ffffff !important;
+    font-weight: 600;
+    font-size: 1.3rem !important;
+    margin-bottom: 0 !important;
 }
 
-/* Change Inputs to Dark Mode */
+/* --- FORCE DARK MODE ON CHILD COMPONENTS (OVERRIDES THE WHITE CARDS) --- */
+
+/* Target the cards inside the child components to strip the white background */
+::ng-deep .corona-wrapper .card,
+::ng-deep .corona-wrapper app-edit-profile .card,
+::ng-deep .corona-wrapper app-change-password .card {
+    background-color: #151921 !important;
+    border: 1px solid #2c303a !important;
+    border-radius: 0.4rem !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+    overflow: hidden;
+    /* Ensures child elements don't spill over rounded corners */
+}
+
+/* Override the bright blue and indigo headers */
+::ng-deep .corona-wrapper .card-header,
+::ng-deep .corona-wrapper app-edit-profile .card-header,
+::ng-deep .corona-wrapper app-change-password .card-header {
+    background-color: #1a1e28 !important;
+    border-bottom: 1px solid #2c303a !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    padding: 0.8rem 1rem !important;
+    text-transform: uppercase;
+    font-size: 0.85rem !important;
+}
+
+/* Force the card body to be dark (Removes the white block) */
+::ng-deep .corona-wrapper .card-body,
+::ng-deep .corona-wrapper app-edit-profile .card-body,
+::ng-deep .corona-wrapper app-change-password .card-body {
+    background-color: #151921 !important;
+    padding: 1.25rem !important;
+}
+
+/* --- FORM INPUTS --- */
 ::ng-deep .corona-wrapper .form-control {
-    background-color: #2a3038 !important;
-    border: 1px solid #2c2e33 !important;
+    background-color: #1f232b !important;
+    border: 1px solid #2c303a !important;
     color: #ffffff !important;
+    border-radius: 0.35rem !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.85rem !important;
 }
 
 ::ng-deep .corona-wrapper .form-control:focus {
+    background-color: #151921 !important;
     border-color: #0090e7 !important;
+    color: #ffffff !important;
     box-shadow: 0 0 0 0.2rem rgba(0, 144, 231, 0.25) !important;
 }
 
@@ -36,25 +74,33 @@
     color: #6c7293 !important;
 }
 
-/* Change Text and Labels */
+/* --- LABELS AND TEXT --- */
 ::ng-deep .corona-wrapper .form-label,
-::ng-deep .corona-wrapper h5 {
-    color: #ffffff !important;
+::ng-deep .corona-wrapper h5,
+::ng-deep .corona-wrapper label {
+    color: #f0f2f5 !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.3rem !important;
+    font-size: 0.85rem !important;
 }
 
-::ng-deep .corona-wrapper .text-secondary, 
-::ng-deep .corona-wrapper .text-muted {
-    color: #6c7293 !important;
-}
-
-/* Eye Icons inside Password Fields */
+/* Eye Icons for Passwords */
 ::ng-deep .corona-wrapper .input-group-text {
-    background-color: #2a3038 !important;
-    border: 1px solid #2c2e33 !important;
-    color: #6c7293 !important;
+    background-color: #1a1e28 !important;
+    border: 1px solid #2c303a !important;
+    color: #9da3ae !important;
+    padding: 0.5rem 0.75rem !important;
 }
 
-/* Corona Neon Buttons */
+/* --- BUTTONS --- */
+::ng-deep .corona-wrapper .btn {
+    border-radius: 0.35rem !important;
+    font-weight: 500 !important;
+    font-size: 0.85rem !important;
+    padding: 0.5rem 1rem !important;
+}
+
+/* Primary Button (Save Changes) */
 ::ng-deep .corona-wrapper .btn-primary {
     background-color: #0090e7 !important;
     border-color: #0090e7 !important;
@@ -62,15 +108,20 @@
 }
 
 ::ng-deep .corona-wrapper .btn-primary:hover {
-    box-shadow: 0 0 10px rgba(0, 144, 231, 0.4) !important;
+    background-color: #007bbd !important;
+    border-color: #007bbd !important;
 }
 
-::ng-deep .corona-wrapper .btn-dark {
-    background-color: #00d25b !important;
-    border-color: #00d25b !important;
+/* Secondary/Dark Button (Update Password) */
+::ng-deep .corona-wrapper .btn-dark,
+::ng-deep .corona-wrapper .btn-secondary {
+    background-color: #31446b !important;
+    border-color: #31446b !important;
     color: #ffffff !important;
 }
 
-::ng-deep .corona-wrapper .btn-dark:hover {
-    box-shadow: 0 0 10px rgba(0, 210, 91, 0.4) !important;
+::ng-deep .corona-wrapper .btn-dark:hover,
+::ng-deep .corona-wrapper .btn-secondary:hover {
+    background-color: #243454 !important;
+    border-color: #243454 !important;
 }
