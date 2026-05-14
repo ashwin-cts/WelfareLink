@@ -9,6 +9,9 @@ export interface ApiConfig {
   citizenApi: string;
   programApi: string;
   resourceApi: string;
+  auditorApi: string;
+  welfareOfficerApi: string;
+  complianceApi: string;
 }
 
 // 2. Create the Token that Angular will use to inject this config
@@ -23,6 +26,9 @@ export const defaultApiConfig: ApiConfig = {
   citizenApi: 'https://localhost:7114/api/',
   programApi: 'https://localhost:7029/api/WelfareProgramApi',
   resourceApi: 'https://localhost:7029/api/ResourceApi',
+  auditorApi: 'https://localhost:7129/api/AuditorManagement',
+  welfareOfficerApi: 'https://localhost:7143/api/WelfareOfficerManagement',
+  complianceApi: 'https://localhost:7255/api/ComplianceOfficerDashboardApi',
 
 
 };

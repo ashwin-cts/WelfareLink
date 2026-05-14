@@ -1,0 +1,157 @@
+<div class="application-details-page">
+  <div class="page-header">
+    <button class="btn btn-outline-secondary" (click)="backToDashboard()">
+      <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </button>
+    <div>
+      <p class="small-label">Compliance Officer</p>
+      <h1>Application #{{ applicationId }} Details</h1>
+      <p class="subtitle">Review the application, benefits, documents, and program resource allocation in one place.</p>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner-border text-secondary" role="status"></div>
+    <span>Loading application details...</span>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div *ngIf="!isLoading && application" class="details-grid">
+    <section class="card card--wide">
+      <header>
+        <h2>Application Snapshot</h2>
+      </header>
+      <div class="card-body">
+        <div class="detail-row">
+          <span>Application ID</span><strong>#{{ application.ApplicationID }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Status</span><strong>{{ application.Status }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Submitted</span><strong>{{ application.SubmittedDate | date:'mediumDate' }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Citizen</span>
+          <strong>{{ application.citizen?.Name || ('Citizen #' + application.CitizenID) }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Program</span>
+          <strong>{{ application.program?.Title || 'Program #' + application.ProgramID }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <header>
+        <h2>Benefits</h2>
+      </header>
+      <div class="card-body">
+        <div *ngIf="application.Benefits?.length; else noBenefits">
+          <article *ngFor="let benefit of application.Benefits" class="benefit-block">
+            <div class="benefit-header">
+              <div>
+                <h3>{{ benefit.Type }}</h3>
+                <p class="meta">Benefit #{{ benefit.BenefitID }} • {{ benefit.Status }}</p>
+              </div>
+              <strong>₹{{ benefit.Amount }}</strong>
+            </div>
+            <p class="text-muted">Allocated on {{ benefit.Date | date:'mediumDate' }}</p>
+            <div *ngIf="benefit.Disbursements?.length" class="disbursement-table">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let disbursement of benefit.Disbursements">
+                    <td>{{ disbursement.DisbursementID }}</td>
+                    <td>{{ disbursement.date | date:'mediumDate' }}</td>
+                    <td>₹{{ disbursement.amount }}</td>
+                    <td>{{ disbursement.status }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div *ngIf="!benefit.Disbursements?.length" class="empty-state">No disbursements recorded for this benefit.</div>
+          </article>
+        </div>
+        <ng-template #noBenefits>
+          <div class="empty-state">No benefits are associated with this application.</div>
+        </ng-template>
+      </div>
+    </section>
+
+    <section class="card">
+      <header>
+        <h2>Application Documents</h2>
+      </header>
+      <div class="card-body">
+        <div *ngIf="application.ApplicationDocuments?.length; else noDocuments">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Uploaded</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let document of application.ApplicationDocuments">
+                <td>{{ document.CitizenDocument?.DocType || 'Document' }}</td>
+                <td>{{ document.CitizenDocument?.DocumentName || 'Unknown' }}</td>
+                <td>{{ document.CitizenDocument?.UploadedDate | date:'mediumDate' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noDocuments>
+          <div class="empty-state">No documents uploaded for this application.</div>
+        </ng-template>
+      </div>
+    </section>
+
+    <section class="card card--wide" *ngIf="resources">
+      <header>
+        <h2>Program Resource Allocation</h2>
+      </header>
+      <div class="card-body">
+        <div class="detail-row">
+          <span>Program</span><strong>{{ resources.programTitle }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Budget</span><strong>₹{{ resources.programBudget }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Total Allocated</span><strong>₹{{ resources.totalAllocated }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Remaining</span><strong>₹{{ resources.remainingBudget }}</strong>
+        </div>
+        <div *ngIf="resources.resources.length" class="resource-table">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Resource ID</th>
+                <th>Name</th>
+                <th>Allocated</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let resource of resources.resources">
+                <td>{{ resource.resourceID }}</td>
+                <td>{{ resource.name }}</td>
+                <td>₹{{ resource.amountAllocated }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

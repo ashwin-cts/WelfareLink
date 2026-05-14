@@ -13,6 +13,8 @@ import { ResourceListComponent } from './features/program-manager/components/res
 import { ManageResourcesComponent } from './features/program-manager/components/manage-resources.component/manage-resources.component';
 import { ResourceFormComponent } from './features/program-manager/components/resource-form.component/resource-form.component';
 import { UtilisationReportComponent } from './features/program-manager/components/utilisation-report.component/utilisation-report.component';
+import { ComplianceOfficer } from './features/compliance-officer/components/compliance-officer/compliance-officer';
+import { ComplianceApplicationDetailsComponent } from './features/compliance-officer/components/application-details.component/compliance-application-details.component';
 
 // Admin & Auth
 import { AdminProfileComponent } from './features/admin-dashboard/components/admin-profile-component/admin-profile-component';
@@ -42,6 +44,16 @@ export const routes: Routes = [
   {
     path: 'program-manager/profile', // <--- This matches our updated HTML now!
     component: PmProfileComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'compliance-dashboard',
+    component: ComplianceOfficer,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'compliance-dashboard/application/:id',
+    component: ComplianceApplicationDetailsComponent,
     canActivate: [authGuard]
   },
   {

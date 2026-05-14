@@ -1,0 +1,482 @@
+/* Navbar Styles */
+.navbar {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
+}
+
+.navbar-brand {
+	font-size: 1.25rem;
+	color: white !important;
+	letter-spacing: 0.5px;
+}
+
+.navbar-nav .nav-link {
+	color: rgba(255, 255, 255, 0.8) !important;
+	margin: 0 8px;
+	padding: 0.5rem 0.75rem !important;
+	border-radius: 6px;
+	transition: all 0.3s ease;
+	font-weight: 500;
+	font-size: 0.95rem;
+}
+
+.navbar-nav .nav-link:hover {
+	color: white !important;
+	background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar-nav .nav-link.active {
+	color: white !important;
+	background-color: rgba(255, 255, 255, 0.25);
+	border-bottom: 2px solid white;
+}
+
+.navbar-nav .nav-link.text-danger {
+	color: #ff6b6b !important;
+}
+
+.navbar-nav .nav-link.text-danger:hover {
+	background-color: rgba(255, 107, 107, 0.15);
+}
+
+.navbar-nav .dropdown-menu {
+	background: white;
+	border: 1px solid #dee2e6;
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	margin-top: 0.5rem;
+}
+
+.navbar-nav .dropdown-item {
+	color: #333;
+	padding: 0.75rem 1rem;
+	border: none;
+	transition: all 0.2s ease;
+}
+
+.navbar-nav .dropdown-item:hover {
+	background-color: #f8f9fa;
+	color: #0d6efd;
+}
+
+.navbar-nav .dropdown-item.active {
+	background-color: #e7f1ff;
+	color: #0d6efd;
+	font-weight: 500;
+}
+
+/* Page Header Styles */
+.page-header {
+	border-bottom: 2px solid #e9ecef;
+	padding-bottom: 1.5rem;
+	margin-bottom: 2rem;
+}
+
+.page-header p {
+	display: flex;
+	align-items: center;
+	font-size: 0.9rem;
+}
+
+.compliance-dashboard {
+	width: 100%;
+	padding: 0;
+}
+
+.dashboard-header {
+	padding: 0 0 24px;
+}
+
+.dashboard-header > div:first-child {
+    max-width: 720px;
+}
+
+.dashboard-header h1 {
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+.action-dropdown {
+    position: relative;
+}
+
+ .account-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.action-dropdown .dropdown-menu {
+    min-width: 260px;
+}
+
+.account-dropdown .dropdown-menu {
+	min-width: 220px;
+	z-index: 1050;
+	margin-top: 0.4rem;
+	position: absolute;
+	background: #fff;
+	border: 1px solid #dee2e6;
+	border-radius: 14px;
+	box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+	overflow: hidden;
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+
+.dropdown-item.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.dashboard-content-card {
+    margin-bottom: 24px;
+}
+
+.dashboard-label {
+	margin: 0 0 8px;
+	display: inline-block;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	color: #0d6efd;
+	font-weight: 700;
+	font-size: 0.85rem;
+}
+
+.dashboard-header h1 {
+	margin: 0;
+	font-size: 2.2rem;
+}
+
+.dashboard-intro {
+	margin: 10px 0 0;
+	color: #555;
+	max-width: 640px;
+}
+
+.header-actions button {
+	min-width: 130px;
+}
+
+/* Tab Navigation */
+/* Dropdown navigation for compliance officer sections */
+.tab-navigation-dropdown {
+	position: relative;
+	display: inline-flex;
+	margin-bottom: 24px;
+}
+
+.dropdown-toggle {
+	background: #fff;
+	border: 1px solid #dee2e6;
+	color: #495057;
+	padding: 10px 16px;
+	border-radius: 10px;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.dropdown-toggle:hover {
+	border-color: #0d6efd;
+	color: #0d6efd;
+}
+
+.dropdown-menu {
+	position: absolute;
+	top: calc(100% + 8px);
+	left: 0;
+	width: 100%;
+	background: #fff;
+	border: 1px solid #dee2e6;
+	border-radius: 14px;
+	box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+	z-index: 10;
+	overflow: hidden;
+}
+
+.dropdown-item {
+	width: 100%;
+	padding: 13px 16px;
+	text-align: left;
+	border: none;
+	background: transparent;
+	color: #495057;
+	cursor: pointer;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dropdown-item:hover,
+.dropdown-item.active {
+	background: #0d6efd;
+	color: white;
+}
+
+.dropdown-item + .dropdown-item {
+	border-top: 1px solid #e9ecef;
+}
+
+.tab-navigation button {
+	background: transparent;
+	border: 1px solid #dee2e6;
+	color: #495057;
+	padding: 8px 16px;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.tab-navigation button.active,
+.tab-navigation button:hover {
+	background: #0d6efd;
+	color: white;
+	border-color: #0d6efd;
+}
+
+.tab-content {
+	background: #fff;
+	padding: 24px;
+	border-radius: 22px;
+	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.05);
+	margin-bottom: 24px;
+}
+
+.dashboard-summary {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.summary-card {
+	background: #fff;
+	border: 1px solid #e9ecef;
+	border-radius: 18px;
+	padding: 22px;
+	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04);
+}
+
+.summary-card span {
+	color: #6c757d;
+	font-size: 0.9rem;
+	display: block;
+	margin-bottom: 10px;
+}
+
+.summary-card strong {
+	display: block;
+	font-size: 2.1rem;
+	line-height: 1;
+	margin-bottom: 8px;
+}
+
+.summary-card small {
+	color: #6c757d;
+}
+
+.summary-card--green {
+	border-color: #d1e7dd;
+}
+
+.summary-card--warning {
+	border-color: #ffe5b4;
+}
+
+.summary-card--blue {
+	border-color: #cfe2ff;
+}
+
+.summary-card--purple {
+	border-color: #e5dbff;
+}
+
+.dashboard-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-bottom: 18px;
+}
+
+.applications-overview {
+	background: #fff;
+	border: 1px solid #dee2e6;
+	border-radius: 22px;
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
+	padding: 24px;
+	margin-bottom: 24px;
+}
+
+.applications-overview .section-header {
+	margin-bottom: 20px;
+}
+
+.applications-overview h3 {
+	margin: 0 0 6px;
+}
+
+.applications-overview p {
+	margin: 0;
+	color: #6c757d;
+}
+
+.applications-overview .status-chip {
+	font-size: 0.75rem;
+	padding: 6px 10px;
+}
+
+.applications-overview .table {
+	margin-bottom: 0;
+}
+
+.dashboard-filters button {
+	background: transparent;
+	border: 1px solid #dee2e6;
+	color: #495057;
+	padding: 10px 18px;
+	border-radius: 999px;
+	cursor: pointer;
+	min-width: 110px;
+}
+
+.dashboard-filters button.active,
+.dashboard-filters button:hover {
+	background: #0d6efd;
+	color: white;
+	border-color: #0d6efd;
+}
+
+.dashboard-content {
+	background: #fff;
+	padding: 24px;
+	border-radius: 22px;
+	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.05);
+}
+
+.loading-state {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	color: #495057;
+	padding: 28px;
+}
+
+.findings-grid {
+	display: grid;
+	gap: 16px;
+}
+
+.finding-card {
+	border: 1px solid #dee2e6;
+	border-radius: 18px;
+	padding: 20px;
+	transition: box-shadow 0.2s ease;
+}
+
+.finding-card:hover {
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.finding-head {
+	display: flex;
+	justify-content: space-between;
+	gap: 18px;
+	align-items: flex-start;
+	margin-bottom: 14px;
+}
+
+.finding-head h3 {
+	margin: 0 0 6px;
+}
+
+.finding-meta {
+	margin: 0;
+	color: #6c757d;
+	font-size: 0.95rem;
+}
+
+.status-chip {
+	border-radius: 999px;
+	padding: 8px 14px;
+	font-size: 0.82rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+}
+
+.status-chip.open {
+	background: #fff3cd;
+	color: #856404;
+}
+
+.status-chip.pending {
+	background: #fff3cd;
+	color: #856404;
+}
+
+.status-chip.flagged {
+	background: #f8d7da;
+	color: #842029;
+}
+
+.status-chip.resolved {
+	background: #d1e7dd;
+	color: #0f5132;
+}
+
+.finding-summary {
+	margin: 0 0 16px;
+	color: #495057;
+	line-height: 1.6;
+}
+
+.finding-footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.severity {
+	font-size: 0.92rem;
+	color: #343a40;
+	font-weight: 600;
+}
+
+/* Additional styles for tables and pagination */
+.table {
+	width: 100%;
+	margin-bottom: 1rem;
+	color: #212529;
+}
+
+.table th,
+.table td {
+	padding: 0.75rem;
+	vertical-align: top;
+	border-top: 1px solid #dee2e6;
+}
+
+.table thead th {
+	vertical-align: bottom;
+	border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody + tbody {
+	border-top: 2px solid #dee2e6;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+	background-color: rgba(0, 0, 0, 0.05);
+}
+
+.pagination {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 10px;
+	margin-top: 20px;
+}

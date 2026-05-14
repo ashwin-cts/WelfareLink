@@ -1,0 +1,638 @@
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+	<div class="container">
+		<a class="navbar-brand fw-bold" href="#">
+			<i class="bi bi-shield-check me-2"></i>WelfareLink Compliance
+		</a>
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarNav">
+			<ul class="navbar-nav ms-auto">
+				<!-- Dashboard -->
+				<li class="nav-item">
+					<button type="button" class="nav-link" [class.active]="activeTab === 'dashboard'" (click)="switchTab('dashboard')" style="background: none; border: none; cursor: pointer;">
+						<i class="bi bi-speedometer2 me-1"></i>Dashboard
+					</button>
+				</li>
+				<!-- Applications -->
+				<li class="nav-item">
+					<button type="button" class="nav-link" [class.active]="activeTab === 'applications'" (click)="switchTab('applications')" style="background: none; border: none; cursor: pointer;">
+						<i class="bi bi-file-text me-1"></i>Applications
+					</button>
+				</li>
+				<!-- Allocations -->
+				<li class="nav-item">
+					<button type="button" class="nav-link" [class.active]="activeTab === 'allocations'" (click)="switchTab('allocations')" style="background: none; border: none; cursor: pointer;">
+						<i class="bi bi-distribute-vertical me-1"></i>Allocations
+					</button>
+				</li>
+				<!-- Compliance Records -->
+				<li class="nav-item">
+					<button type="button" class="nav-link" [class.active]="activeTab === 'records'" (click)="switchTab('records')" style="background: none; border: none; cursor: pointer;">
+						<i class="bi bi-check-circle me-1"></i>Records
+					</button>
+				</li>
+				<!-- Account Settings Dropdown -->
+				<li class="nav-item dropdown">
+					<button type="button" class="nav-link dropdown-toggle" (click)="toggleAccountDropdown()" [attr.aria-expanded]="accountDropdownOpen" style="background: none; border: none; cursor: pointer;">
+						<i class="bi bi-gear-fill me-1"></i>Account
+					</button>
+					<ul class="dropdown-menu" [class.show]="accountDropdownOpen" *ngIf="accountDropdownOpen">
+						<li><button type="button" class="dropdown-item" (click)="selectTab('profile')"><i class="bi bi-person-fill me-2"></i>Edit Profile</button></li>
+						<li><button type="button" class="dropdown-item" (click)="selectTab('change-password')"><i class="bi bi-key-fill me-2"></i>Change Password</button></li>
+					</ul>
+				</li>
+				<!-- Logout -->
+				<li class="nav-item">
+					<button type="button" class="nav-link text-danger" (click)="logout()" style="background: none; border: none; cursor: pointer;">
+						<i class="bi bi-box-arrow-right me-1"></i>Logout
+					</button>
+				</li>
+			</ul>
+		</div>
+	</div>
+</nav>
+
+<!-- Page Header -->
+<div class="container py-4">
+	<div class="page-header">
+		<p class="text-muted mb-1">
+			<i class="bi bi-house-door me-2"></i>
+			<span *ngIf="activeTab === 'dashboard'">Dashboard</span>
+			<span *ngIf="activeTab === 'applications'">Applications & Benefits</span>
+			<span *ngIf="activeTab === 'allocations'">Benefit Allocations</span>
+			<span *ngIf="activeTab === 'records'">Compliance Records</span>
+			<span *ngIf="activeTab === 'profile'">Edit Profile</span>
+			<span *ngIf="activeTab === 'change-password'">Change Password</span>
+		</p>
+		<h1 class="h3 mb-2">
+			<span *ngIf="activeTab === 'dashboard'">Compliance Dashboard</span>
+			<span *ngIf="activeTab === 'applications'">Welfare Applications</span>
+			<span *ngIf="activeTab === 'allocations'">Benefit Allocations</span>
+			<span *ngIf="activeTab === 'records'">Compliance Records</span>
+			<span *ngIf="activeTab === 'profile'">Account Settings</span>
+			<span *ngIf="activeTab === 'change-password'">Security</span>
+		</h1>
+		<p class="text-muted mb-0">
+			<span *ngIf="activeTab === 'dashboard'">Track pending reviews, flagged findings, and the overall compliance posture for your team.</span>
+			<span *ngIf="activeTab === 'applications'">Review all welfare applications with benefit allocation and program details.</span>
+			<span *ngIf="activeTab === 'allocations'">Monitor benefit allocations and disbursement status.</span>
+			<span *ngIf="activeTab === 'records'">Manage compliance records and audit findings.</span>
+			<span *ngIf="activeTab === 'profile'">Update your profile information.</span>
+			<span *ngIf="activeTab === 'change-password'">Change your account password.</span>
+		</p>
+	</div>
+</div>
+
+<div class="compliance-dashboard container py-4">
+
+	<!-- Dashboard Tab -->
+	<div *ngIf="activeTab === 'dashboard'">
+		<section class="row g-4 mb-4">
+			<div class="col-md-3">
+				<div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+					<div class="card-body">
+						<h6 class="text-uppercase opacity-75 mb-3">Open Issues</h6>
+						<h2 class="mb-0">{{ summary.open }}</h2>
+						<p class="opacity-75 mb-0">Issues requiring review</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+					<div class="card-body">
+						<h6 class="text-uppercase opacity-75 mb-3">Resolved Issues</h6>
+						<h2 class="mb-0">{{ summary.resolved }}</h2>
+						<p class="opacity-75 mb-0">Issues completed by the team</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #0d6efd 0%, #3f6ad8 100%);">
+					<div class="card-body">
+						<h6 class="text-uppercase opacity-75 mb-3">Total Records</h6>
+						<h2 class="mb-0">{{ summary.total }}</h2>
+						<p class="opacity-75 mb-0">Compliance records monitored</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">
+					<div class="card-body">
+						<h6 class="text-uppercase opacity-75 mb-3">Issue Categories</h6>
+						<h2 class="mb-0">{{ summary.issuesByType?.length || 0 }}</h2>
+						<p class="opacity-75 mb-0">Different issue categories</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="card shadow-sm border-0 mb-4">
+			<div class="card-header bg-white py-3">
+				<h5 class="mb-0 text-primary">Recent Applications</h5>
+				<p class="text-muted small mb-0">Review recent welfare applications and open the full compliance detail page.</p>
+			</div>
+			<div class="card-body p-0">
+				<div class="table-responsive">
+					<table class="table table-hover align-middle mb-0">
+						<thead class="bg-light">
+							<tr>
+								<th>App #</th>
+								<th>Citizen</th>
+								<th>Program</th>
+								<th>Status</th>
+								<th>Flagged</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr *ngFor="let app of dashboardApplications | slice:0:6">
+								<td><strong>APP-{{ app.ApplicationID }}</strong></td>
+								<td>{{ app.CitizenName }}</td>
+								<td>{{ app.ProgramTitle }}</td>
+								<td>{{ app.ApplicationStatus }}</td>
+								<td>
+									<span class="badge rounded-pill" [ngClass]="app.IsFlagged ? 'bg-danger' : 'bg-success'">
+										{{ app.IsFlagged ? 'Flagged' : 'Clear' }}
+									</span>
+								</td>
+								<td>
+									<button class="btn btn-sm btn-outline-info" (click)="viewApplicationDetails(app.ApplicationID)">
+										<i class="bi bi-eye"></i> View
+									</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</section>
+
+		<section class="dashboard-filters">
+			<button [class.active]="activeFilter === 'open'" (click)="setFilter('open')">Open</button>
+			<button [class.active]="activeFilter === 'resolved'" (click)="setFilter('resolved')">Resolved</button>
+			<button [class.active]="activeFilter === 'recent'" (click)="setFilter('recent')">Recent</button>
+		</section>
+
+		<section class="dashboard-content">
+			<div *ngIf="message" class="alert alert-warning">{{ message }}</div>
+			<div *ngIf="isLoading" class="loading-state">
+				<div class="spinner-border text-secondary" role="status"></div>
+				<span>Loading compliance activity...</span>
+			</div>
+
+			<div *ngIf="!isLoading" class="findings-grid">
+				<article *ngFor="let finding of filteredFindings" class="finding-card">
+					<div class="finding-head">
+						<div>
+							<h3>{{ finding.violationType || finding.entityType }}</h3>
+							<p class="finding-meta">{{ finding.entityType }} #{{ finding.entityId }} • {{ finding.createdDate | date:'mediumDate' }}</p>
+						</div>
+						<span class="status-chip" [ngClass]="finding.status.toLowerCase()">{{ finding.status }}</span>
+					</div>
+					<p class="finding-summary">{{ finding.description }}</p>
+					<div class="finding-footer">
+						<span class="severity">Application: {{ finding.applicationID || 'N/A' }}</span>
+						<span class="severity">Citizen: {{ finding.citizenID || 'N/A' }}</span>
+					</div>
+				</article>
+			</div>
+		</section>
+	</div>
+
+	<!-- Applications Tab -->
+	<div *ngIf="activeTab === 'applications'">
+		<div class="card shadow-sm border-0 mb-4">
+			<div class="card-header bg-light py-3">
+				<h5 class="mb-0 text-primary">Welfare Applications</h5>
+				<p class="text-muted small mb-0">View all welfare applications with benefit allocation and program details.</p>
+			</div>
+			<div class="card-body p-0">
+				<div *ngIf="isApplicationsLoading" class="loading-state p-4">
+					<div class="spinner-border text-secondary" role="status"></div>
+					<span>Loading applications...</span>
+				</div>
+				<div *ngIf="!isApplicationsLoading && allApplications.length === 0" class="alert alert-info m-4">
+					No applications found.
+				</div>
+				<div *ngIf="!isApplicationsLoading && allApplications.length > 0" class="table-responsive">
+					<table class="table table-hover align-middle mb-0">
+						<thead class="bg-light">
+							<tr>
+								<th>Application ID</th>
+								<th>Citizen</th>
+								<th>Program</th>
+								<th>Status</th>
+								<th>Submitted Date</th>
+								<th>Eligibility</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr *ngFor="let app of allApplications">
+								<td><strong>APP-{{ app.ApplicationID }}</strong></td>
+								<td>{{ app.Citizen?.Name || 'N/A' }}</td>
+								<td>{{ app.Program?.Title || 'N/A' }}</td>
+								<td>
+									<span class="badge" [ngClass]="getStatusBadgeClass(app.Status)">
+										{{ app.Status }}
+									</span>
+								</td>
+								<td>{{ app.SubmittedDate | date:'mediumDate' }}</td>
+								<td>
+									<span class="badge rounded-pill" [ngClass]="app.EligibilityStatus === 'Approved' ? 'bg-success' : 'bg-warning'">
+										{{ app.EligibilityStatus }}
+									</span>
+								</td>
+								<td>
+									<button class="btn btn-sm btn-outline-info" (click)="viewApplicationDetails(app.ApplicationID)">
+										<i class="bi bi-eye"></i> View
+									</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Allocations Tab -->
+	<div *ngIf="activeTab === 'allocations'">
+		<div class="card shadow-sm border-0 mb-4">
+			<div class="card-header bg-light py-3">
+				<h5 class="mb-0 text-primary">Benefit Allocations</h5>
+				<p class="text-muted small mb-0">Monitor benefit allocations, disbursements, and program budget allocation.</p>
+			</div>
+			<div class="card-body p-0">
+				<div *ngIf="isAllocationsLoading" class="loading-state p-4">
+					<div class="spinner-border text-secondary" role="status"></div>
+					<span>Loading allocations...</span>
+				</div>
+				<div *ngIf="!isAllocationsLoading && allAllocations.length === 0" class="alert alert-info m-4">
+					No allocations found.
+				</div>
+				<div *ngIf="!isAllocationsLoading && allAllocations.length > 0" class="table-responsive">
+					<table class="table table-hover align-middle mb-0">
+						<thead class="bg-light">
+							<tr>
+								<th>Benefit ID</th>
+								<th>Citizen</th>
+								<th>Program</th>
+								<th>Amount</th>
+								<th>Status</th>
+								<th>Disbursements</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr *ngFor="let alloc of allAllocations">
+								<td><strong>{{ alloc.BenefitID }}</strong></td>
+								<td>{{ alloc.Citizen || 'N/A' }}</td>
+								<td>{{ alloc.Program || 'N/A' }}</td>
+								<td>
+									<span class="badge bg-success">
+										{{ alloc.Amount | currency }}
+									</span>
+								</td>
+								<td>
+									<span class="badge" [ngClass]="alloc.Status === 'Active' ? 'bg-primary' : 'bg-secondary'">
+										{{ alloc.Status }}
+									</span>
+								</td>
+								<td>
+									<span class="badge rounded-pill bg-info">
+										{{ alloc.DisbursementCount || 0 }} records
+									</span>
+								</td>
+								<td>
+									<button class="btn btn-sm btn-outline-info" (click)="viewAllocationDetails(alloc.BenefitID)">
+										<i class="bi bi-eye"></i> View
+									</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Profile Tab -->
+	<div *ngIf="activeTab === 'profile'" class="tab-content">
+		<app-edit-profile></app-edit-profile>
+	</div>
+
+	<!-- Change Password Tab -->
+	<div *ngIf="activeTab === 'change-password'" class="tab-content">
+		<app-change-password></app-change-password>
+	</div>
+
+	<!-- Users Tab -->
+	<div *ngIf="activeTab === 'users'" class="tab-content">
+		<h3>User Management</h3>
+		<div *ngIf="isUsersLoading" class="loading-state">
+			<div class="spinner-border text-secondary" role="status"></div>
+			<span>Loading users...</span>
+		</div>
+		<div *ngIf="!isUsersLoading" class="users-list">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Username</th>
+						<th>Full Name</th>
+						<th>Email</th>
+						<th>Role</th>
+						<th>Status</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let user of usersList">
+						<td>{{ user.username }}</td>
+						<td>{{ user.fullName }}</td>
+						<td>{{ user.email }}</td>
+						<td>{{ user.role }}</td>
+						<td>{{ user.isActive ? 'Active' : 'Blocked' }}</td>
+						<td>
+							<button class="btn btn-sm" [class.btn-success]="!user.isActive" [class.btn-danger]="user.isActive" (click)="toggleUserStatus(user)">
+								{{ user.isActive ? 'Block' : 'Unblock' }}
+							</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<!-- Logs Tab -->
+	<div *ngIf="activeTab === 'logs'" class="tab-content">
+		<h3>System Logs</h3>
+		<div *ngIf="isLogsLoading" class="loading-state">
+			<div class="spinner-border text-secondary" role="status"></div>
+			<span>Loading logs...</span>
+		</div>
+		<div *ngIf="!isLogsLoading" class="logs-list">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Timestamp</th>
+						<th>User</th>
+						<th>Action</th>
+						<th>Entity</th>
+						<th>Description</th>
+						<th>IP</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let log of logsList">
+						<td>{{ log.timestamp | date:'medium' }}</td>
+						<td>{{ log.userName }}</td>
+						<td>{{ log.action }}</td>
+						<td>{{ log.entityType }} #{{ log.entityId }}</td>
+						<td>{{ log.description }}</td>
+						<td>{{ log.ipAddress }}</td>
+					</tr>
+				</tbody>
+			</table>
+			<div class="pagination">
+				<button class="btn btn-outline-primary" (click)="loadLogs(currentPage - 1)" [disabled]="currentPage <= 1">Previous</button>
+				<span>Page {{ currentPage }} of {{ totalPages }}</span>
+				<button class="btn btn-outline-primary" (click)="loadLogs(currentPage + 1)" [disabled]="currentPage >= totalPages">Next</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Create Officer Tab -->
+	<div *ngIf="activeTab === 'create-officer'" class="tab-content">
+		<h3>Create Officer</h3>
+		<div *ngIf="formSuccessMessage" class="alert alert-success">{{ formSuccessMessage }}</div>
+		<div *ngIf="formErrorMessage" class="alert alert-danger">{{ formErrorMessage }}</div>
+		<form [formGroup]="officerForm" (ngSubmit)="submitOfficer()">
+			<div class="mb-3">
+				<label class="form-label">Username</label>
+				<input type="text" class="form-control" formControlName="username">
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Password</label>
+				<input type="password" class="form-control" formControlName="password">
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Role</label>
+				<input type="text" class="form-control" formControlName="role">
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Full Name</label>
+				<input type="text" class="form-control" formControlName="fullName">
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Email</label>
+				<input type="email" class="form-control" formControlName="email">
+			</div>
+			<button type="submit" class="btn btn-primary" [disabled]="officerForm.invalid || isFormLoading">
+				<span *ngIf="isFormLoading" class="spinner-border spinner-border-sm me-2"></span>
+				Create Officer
+			</button>
+		</form>
+	</div>
+
+	<!-- Create Admin Tab -->
+	<div *ngIf="activeTab === 'create-admin'" class="tab-content">
+		<h3>Create Admin</h3>
+		<div *ngIf="formSuccessMessage" class="alert alert-success">{{ formSuccessMessage }}</div>
+		<div *ngIf="formErrorMessage" class="alert alert-danger">{{ formErrorMessage }}</div>
+		<form [formGroup]="adminForm" (ngSubmit)="submitAdmin()">
+			<div class="mb-3">
+				<label class="form-label">Username</label>
+				<input type="text" class="form-control" formControlName="username">
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Password</label>
+				<input type="password" class="form-control" formControlName="password">
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Role</label>
+				<input type="text" class="form-control" formControlName="role" readonly>
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Full Name</label>
+				<input type="text" class="form-control" formControlName="fullName">
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Email</label>
+				<input type="email" class="form-control" formControlName="email">
+			</div>
+			<button type="submit" class="btn btn-primary" [disabled]="adminForm.invalid || isFormLoading">
+				<span *ngIf="isFormLoading" class="spinner-border spinner-border-sm me-2"></span>
+				Create Admin
+			</button>
+		</form>
+	</div>
+
+	<!-- Compliance Records Tab -->
+	<div *ngIf="activeTab === 'records'" class="tab-content">
+		<h3>Compliance Records</h3>
+		<div *ngIf="isRecordsLoading" class="loading-state">
+			<div class="spinner-border text-secondary" role="status"></div>
+			<span>Loading compliance records...</span>
+		</div>
+		<div *ngIf="!isRecordsLoading">
+			<div class="mb-4">
+				<form [formGroup]="recordForm" (ngSubmit)="submitComplianceRecord()">
+					<div class="row g-3">
+						<div class="col-md-3">
+							<label class="form-label">Entity Type</label>
+							<select class="form-select" formControlName="entityType">
+								<option value="Application">Application</option>
+								<option value="Benefit">Benefit</option>
+								<option value="Program">Program</option>
+								<option value="Other">Other</option>
+							</select>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label">Entity ID</label>
+							<input type="number" class="form-control" formControlName="entityId">
+						</div>
+						<div class="col-md-3">
+							<label class="form-label">Result</label>
+							<input type="text" class="form-control" formControlName="result">
+						</div>
+						<div class="col-md-3">
+							<label class="form-label">&nbsp;</label>
+							<button type="submit" class="btn btn-primary w-100" [disabled]="recordForm.invalid || isFormLoading">
+								<span *ngIf="isFormLoading" class="spinner-border spinner-border-sm me-2"></span>
+								Save Record
+							</button>
+						</div>
+					</div>
+					<div class="mt-3">
+						<label class="form-label">Notes</label>
+						<textarea class="form-control" rows="3" formControlName="notes"></textarea>
+					</div>
+				</form>
+			</div>
+			<div class="records-list">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Type</th>
+							<th>Entity</th>
+							<th>Result</th>
+							<th>Status</th>
+							<th>Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr *ngFor="let record of complianceRecords">
+							<td>{{ record.complianceId }}</td>
+							<td>{{ record.entityType }}</td>
+							<td>{{ record.entityId }}</td>
+							<td>{{ record.result }}</td>
+							<td>{{ record.status }}</td>
+							<td>{{ record.date | date:'medium' }}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<!-- Audits Tab -->
+	<div *ngIf="activeTab === 'audits'" class="tab-content">
+		<h3>Audit Management</h3>
+		<div *ngIf="isAuditsLoading" class="loading-state">
+			<div class="spinner-border text-secondary" role="status"></div>
+			<span>Loading audit entries...</span>
+		</div>
+		<div *ngIf="!isAuditsLoading">
+			<div class="mb-4">
+				<form [formGroup]="auditForm" (ngSubmit)="submitAudit()">
+					<div class="row g-3">
+						<div class="col-md-5">
+							<label class="form-label">Audit Scope</label>
+							<input type="text" class="form-control" formControlName="scope" placeholder="Audit scope or area">
+						</div>
+						<div class="col-md-4">
+							<label class="form-label">Status</label>
+							<select class="form-select" formControlName="status">
+								<option *ngFor="let option of newAuditStatusOptions" [value]="option">{{ option }}</option>
+							</select>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label">&nbsp;</label>
+							<button type="submit" class="btn btn-primary w-100" [disabled]="auditForm.invalid || isFormLoading">
+								<span *ngIf="isFormLoading" class="spinner-border spinner-border-sm me-2"></span>
+								Create Audit
+							</button>
+						</div>
+					</div>
+					<div class="mt-3">
+						<label class="form-label">Findings</label>
+						<textarea class="form-control" rows="3" formControlName="findings"></textarea>
+					</div>
+				</form>
+			</div>
+			<div class="audits-list">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Audit ID</th>
+							<th>Scope</th>
+							<th>Findings</th>
+							<th>Status</th>
+							<th>Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr *ngFor="let audit of auditList">
+							<td>{{ audit.auditId }}</td>
+							<td>{{ audit.scope }}</td>
+							<td>{{ audit.findings }}</td>
+							<td>{{ audit.status }}</td>
+							<td>{{ audit.date | date:'medium' }}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<!-- Notifications Tab -->
+	<div *ngIf="activeTab === 'notifications'" class="tab-content">
+		<h3>Compliance Alerts</h3>
+		<div *ngIf="isNotificationsLoading" class="loading-state">
+			<div class="spinner-border text-secondary" role="status"></div>
+			<span>Loading notifications...</span>
+		</div>
+		<div *ngIf="!isNotificationsLoading">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Message</th>
+						<th>Category</th>
+						<th>Date</th>
+						<th>Status</th>
+						<th>Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let notification of notifications">
+						<td>{{ notification.message }}</td>
+						<td>{{ notification.category }}</td>
+						<td>{{ notification.createdDate | date:'medium' }}</td>
+						<td>{{ notification.status }}</td>
+						<td>
+							<button class="btn btn-sm btn-outline-primary" [disabled]="notification.status === 'Read'" (click)="markAsRead(notification)">
+								Mark Read
+							</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+
