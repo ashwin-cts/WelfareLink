@@ -1,47 +1,79 @@
 <app-auditor-navbar></app-auditor-navbar>
 
-<div class="container-fluid mt-4" style="max-width: 1000px;">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h1 class="mb-3">Government Auditor Dashboard</h1>
-            <hr />
-        </div>
+<div class="container-fluid mt-4" style="max-width: 1000px">
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h1 class="mb-3">Government Auditor Dashboard</h1>
+      <hr />
     </div>
+  </div>
 
-    <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
-        <strong>Error:</strong> {{ errorMessage }}
+  @if (errorMessage) {
+    <div class="alert alert-danger" role="alert"><strong>Error:</strong> {{ errorMessage }}</div>
+  }
+
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <ul class="nav nav-tabs" id="auditorTabs" role="tablist">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            [class.active]="activeTab === 'dashboard'"
+            (click)="setTab('dashboard')"
+            style="cursor: pointer"
+            >Dashboard</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            [class.active]="activeTab === 'budget'"
+            (click)="setTab('budget')"
+            style="cursor: pointer"
+            >Budget Monitoring</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            [class.active]="activeTab === 'resource'"
+            (click)="setTab('resource')"
+            style="cursor: pointer"
+            >Resource Statement</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            [class.active]="activeTab === 'disbursement'"
+            (click)="setTab('disbursement')"
+            style="cursor: pointer"
+            >Disbursement Statement</a
+          >
+        </li>
+      </ul>
     </div>
+  </div>
 
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <ul class="nav nav-tabs" id="auditorTabs" role="tablist">
-                <li class="nav-item"><a class="nav-link" [class.active]="activeTab === 'dashboard'" (click)="setTab('dashboard')" style="cursor: pointer;">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" [class.active]="activeTab === 'budget'" (click)="setTab('budget')" style="cursor: pointer;">Budget Monitoring</a></li>
-                <li class="nav-item"><a class="nav-link" [class.active]="activeTab === 'resource'" (click)="setTab('resource')" style="cursor: pointer;">Resource Statement</a></li>
-                <li class="nav-item"><a class="nav-link" [class.active]="activeTab === 'disbursement'" (click)="setTab('disbursement')" style="cursor: pointer;">Disbursement Statement</a></li>
-            </ul>
-        </div>
-    </div>
+  @if (activeTab === 'dashboard') {
+    <app-summary-cards [stats]="dashboardStats" (changeTab)="setTab($event)"> </app-summary-cards>
+  }
 
-    <app-summary-cards *ngIf="activeTab === 'dashboard'" 
-        [stats]="dashboardStats" 
-        (changeTab)="setTab($event)">
-    </app-summary-cards>
+  @if (activeTab === 'budget') {
+    <app-budget-table [items]="budgetItems"> </app-budget-table>
+  }
 
-    <app-budget-table *ngIf="activeTab === 'budget'" 
-        [items]="budgetItems">
-    </app-budget-table>
-
-    <app-resource-history *ngIf="activeTab === 'resource'" 
-        [items]="resourceItems" 
-        (print)="printReport()" 
-        (export)="exportToCSV()">
+  @if (activeTab === 'resource') {
+    <app-resource-history [items]="resourceItems" (print)="printReport()" (export)="exportToCSV()">
     </app-resource-history>
+  }
 
-    <app-disbursement-history *ngIf="activeTab === 'disbursement'" 
-        [items]="disbursementItems" 
-        (print)="printReport()" 
-        (export)="exportToCSV()">
+  @if (activeTab === 'disbursement') {
+    <app-disbursement-history
+      [items]="disbursementItems"
+      (print)="printReport()"
+      (export)="exportToCSV()"
+    >
     </app-disbursement-history>
-
+  }
 </div>

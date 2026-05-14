@@ -1,219 +1,312 @@
 <app-welfare-application-navbar></app-welfare-application-navbar>
 
-<div class="container mt-4 pb-5" style="max-width: 1000px;">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="mb-0 text-navy fw-bold">
-                <i class="bi" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-clipboard-check'"></i>
-                {{ isEditMode ? 'Edit Eligibility Check' : 'Perform Eligibility Check' }}
-            </h2>
-            <p class="text-muted mt-1 mb-0">
-                {{ isEditMode ? 'Update the assessment details and result.' : 'Review the application and record your
-                eligibility decision.' }}
-            </p>
-        </div>
-        <a routerLink="/eligibility-list" class="btn btn-outline-secondary shadow-sm">
-            <i class="bi bi-arrow-left me-1"></i> Back to List
-        </a>
+<div class="container mt-4 pb-5" style="max-width: 1000px">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-0 text-navy fw-bold">
+        <i class="bi" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-clipboard-check'"></i>
+        {{ isEditMode ? 'Edit Eligibility Check' : 'Perform Eligibility Check' }}
+      </h2>
+      <p class="text-muted mt-1 mb-0">
+        {{
+          isEditMode
+            ? 'Update the assessment details and result.'
+            : 'Review the application and record your
+        eligibility decision.'
+        }}
+      </p>
     </div>
+    <a routerLink="/eligibility-list" class="btn btn-outline-secondary shadow-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to List
+    </a>
+  </div>
 
-    <div *ngIf="errorMessage" class="alert alert-danger shadow-sm">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
+  @if (errorMessage) {
+    <div class="alert alert-danger shadow-sm">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
     </div>
+  }
 
-    <div *ngIf="isLoading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-3 text-muted fw-bold">Loading assessment details...</p>
+  @if (isLoading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="mt-3 text-muted fw-bold">Loading assessment details...</p>
     </div>
+  }
 
-    <div *ngIf="!isLoading">
-        <div class="row mb-4" *ngIf="applicationData">
-            <div class="col-md-6 mb-3 mb-md-0">
-                <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
-                    <h6 class="fw-bold text-primary mb-3"><i class="bi bi-file-earmark-text me-2"></i> Application Info
-                    </h6>
-                    <div class="small">
-                        <p class="mb-2"><strong>ID:</strong> #{{applicationData.applicationID ||
-                            applicationData.applicationId}}</p>
-                        <p class="mb-2"><strong>Program:</strong> {{applicationData.program?.title || 'N/A'}}</p>
-                        <p class="mb-0"><strong>Status:</strong> <span
-                                class="badge bg-secondary">{{applicationData.status || 'Pending'}}</span></p>
-                    </div>
-                </div>
+  @if (!isLoading) {
+    <div>
+      @if (applicationData) {
+        <div class="row mb-4">
+          <div class="col-md-6 mb-3 mb-md-0">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+              <h6 class="fw-bold text-primary mb-3">
+                <i class="bi bi-file-earmark-text me-2"></i> Application Info
+              </h6>
+              <div class="small">
+                <p class="mb-2">
+                  <strong>ID:</strong> #{{
+                    applicationData.applicationID || applicationData.applicationId
+                  }}
+                </p>
+                <p class="mb-2">
+                  <strong>Program:</strong> {{ applicationData.program?.title || 'N/A' }}
+                </p>
+                <p class="mb-0">
+                  <strong>Status:</strong>
+                  <span class="badge bg-secondary">{{ applicationData.status || 'Pending' }}</span>
+                </p>
+              </div>
             </div>
-            <div class="col-md-6" *ngIf="citizenData">
-                <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
-                    <h6 class="fw-bold text-success mb-3"><i class="bi bi-person-badge me-2"></i> Citizen Info</h6>
-                    <div class="small">
-                        <p class="mb-2"><strong>Name:</strong> {{citizenData.name || citizenData.firstName + ' ' +
-                            citizenData.lastName}}</p>
-                        <p class="mb-2"><strong>Contact:</strong> {{citizenData.contactInfo || citizenData.email ||
-                            'N/A'}}</p>
-                        <p class="mb-0"><strong>Address:</strong> {{citizenData.address || 'N/A'}}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden" *ngIf="documents && documents.length > 0">
-            <div class="card-header bg-light border-bottom py-3">
-                <h6 class="mb-0 text-dark fw-bold">
-                    <i class="bi bi-file-earmark-pdf text-danger me-2"></i> Submitted Documents
+          </div>
+          @if (citizenData) {
+            <div class="col-md-6">
+              <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <h6 class="fw-bold text-success mb-3">
+                  <i class="bi bi-person-badge me-2"></i> Citizen Info
                 </h6>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light text-muted small">
-                            <tr>
-                                <th class="ps-4">Doc ID</th>
-                                <th>Type</th>
-                                <th>Status</th>
-                                <th>View</th>
-                                <th class="text-end pe-4">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let doc of documents">
-                                <td class="ps-4"><span class="badge bg-secondary">#{{doc.documentID}}</span></td>
-                                <td class="fw-bold text-dark">{{doc.docType || doc.documentName}}</td>
-                                <td>
-                                    <span class="badge" [ngClass]="{
-                                            'bg-success': doc.verificationStatus === 'Approved',
-                                            'bg-danger': doc.verificationStatus === 'Rejected',
-                                            'bg-warning text-dark': doc.verificationStatus === 'Pending' || !doc.verificationStatus
-                                          }">
-                                        <i class="bi" [ngClass]="{
-                                             'bi-check-circle': doc.verificationStatus === 'Approved',
-                                             'bi-x-circle': doc.verificationStatus === 'Rejected',
-                                             'bi-clock': doc.verificationStatus === 'Pending' || !doc.verificationStatus
-                                           }"></i>
-                                        {{doc.verificationStatus || 'Pending'}}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button type="button" (click)="onViewDocument(doc.documentID)"
-                                        class="btn btn-sm btn-info text-white shadow-sm">
-                                        <i class="bi bi-eye"></i> View
-                                    </button>
-                                </td>
-                                <td class="text-end pe-4">
-                                    <button *ngIf="doc.verificationStatus !== 'Approved'" type="button"
-                                        class="btn btn-sm btn-outline-success me-1"
-                                        (click)="updateDocStatus(doc.documentID, 'Approved')">
-                                        <i class="bi bi-check-lg"></i> Approve
-                                    </button>
-                                    <button *ngIf="doc.verificationStatus !== 'Rejected'" type="button"
-                                        class="btn btn-sm btn-outline-danger"
-                                        (click)="updateDocStatus(doc.documentID, 'Rejected')">
-                                        <i class="bi bi-x-lg"></i> Reject
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="small">
+                  <p class="mb-2">
+                    <strong>Name:</strong>
+                    {{ citizenData.name || citizenData.firstName + ' ' + citizenData.lastName }}
+                  </p>
+                  <p class="mb-2">
+                    <strong>Contact:</strong>
+                    {{ citizenData.contactInfo || citizenData.email || 'N/A' }}
+                  </p>
+                  <p class="mb-0"><strong>Address:</strong> {{ citizenData.address || 'N/A' }}</p>
                 </div>
+              </div>
             </div>
+          }
         </div>
-
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-            <div class="card-header bg-light border-bottom py-3">
-                <h6 class="mb-0 text-dark fw-bold"><i class="bi bi-clipboard-data me-2"></i> Assessment Details</h6>
-            </div>
-
-            <div class="card-body p-4">
-                <form [formGroup]="eligibilityForm" (ngSubmit)="onSubmit()">
-                    <div class="row g-4">
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold text-secondary">Application ID</label>
-
-                            <div *ngIf="applicationData; else manualInput"
-                                class="p-2 bg-light rounded border d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-dark">#{{applicationData.applicationID ||
-                                    applicationData.applicationId}}</span>
-                                <span class="badge bg-success shadow-sm">Linked</span>
-                            </div>
-
-                            <ng-template #manualInput>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" formControlName="applicationId"
-                                        placeholder="Enter ID">
-                                    <button class="btn btn-outline-primary fw-bold" type="button"
-                                        (click)="onAppIdChange()">Fetch Data</button>
-                                </div>
-                                <span
-                                    *ngIf="eligibilityForm.get('applicationId')?.touched && eligibilityForm.get('applicationId')?.invalid"
-                                    class="text-danger small mt-1">Application ID is required.</span>
-                            </ng-template>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold text-secondary">Officer ID</label>
-                            <input type="number" class="form-control bg-light" formControlName="officerID" readonly>
-                            <small class="form-text text-muted">Auto-populated from account.</small>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold text-secondary">Eligibility Result</label>
-                            <select class="form-select" formControlName="result">
-                                <option value="">-- Select Result --</option>
-                                <option value="Eligible">✓ Eligible</option>
-                                <option value="Ineligible">✗ Ineligible</option>
-                            </select>
-                            <span
-                                *ngIf="eligibilityForm.get('result')?.touched && eligibilityForm.get('result')?.invalid"
-                                class="text-danger small mt-1">Please select a result.</span>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold text-secondary">Result Code</label>
-                            <input type="text" class="form-control" formControlName="resultCode"
-                                placeholder="e.g., ELIG-001">
-                            <span
-                                *ngIf="eligibilityForm.get('resultCode')?.touched && eligibilityForm.get('resultCode')?.invalid"
-                                class="text-danger small mt-1">Result Code is required.</span>
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label fw-bold text-secondary">Assessment Notes</label>
-                            <textarea class="form-control" rows="4" formControlName="notes"
-                                placeholder="Enter detailed reasons for decision..."></textarea>
-                            <span *ngIf="eligibilityForm.get('notes')?.touched && eligibilityForm.get('notes')?.invalid"
-                                class="text-danger small mt-1">Notes are required.</span>
-                        </div>
-
-                        <div class="col-12 mt-4">
-                            <div class="alert alert-warning border-warning shadow-sm rounded-3">
-                                <i class="bi bi-exclamation-triangle-fill text-warning fs-5 me-2"
-                                    style="vertical-align: middle;"></i>
-                                <strong>Important:</strong> This check will automatically update the application status:
-                                <ul class="mb-0 mt-2 text-dark small">
-                                    <li><strong>Eligible</strong> → Application marked as <span
-                                            class="badge bg-success">Approved</span> + Benefit created</li>
-                                    <li><strong>Ineligible</strong> → Application marked as <span
-                                            class="badge bg-danger">Rejected</span></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
-                        <a routerLink="/eligibility-list"
-                            class="btn btn-light border px-4 fw-bold text-muted shadow-sm">
-                            <i class="bi bi-x-circle me-1"></i> Cancel
-                        </a>
-                        <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm"
-                            [disabled]="isSaving || isLoading">
-                            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
-                            <i *ngIf="!isSaving" class="bi bi-check-circle me-1"></i>
-                            {{ isEditMode ? 'Update Check' : 'Submit Check' }}
+      }
+      @if (documents && documents.length > 0) {
+        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+          <div class="card-header bg-light border-bottom py-3">
+            <h6 class="mb-0 text-dark fw-bold">
+              <i class="bi bi-file-earmark-pdf text-danger me-2"></i> Submitted Documents
+            </h6>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted small">
+                  <tr>
+                    <th class="ps-4">Doc ID</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>View</th>
+                    <th class="text-end pe-4">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (doc of documents; track doc) {
+                    <tr>
+                      <td class="ps-4">
+                        <span class="badge bg-secondary">#{{ doc.documentID }}</span>
+                      </td>
+                      <td class="fw-bold text-dark">{{ doc.docType || doc.documentName }}</td>
+                      <td>
+                        <span
+                          class="badge"
+                          [ngClass]="{
+                            'bg-success': doc.verificationStatus === 'Approved',
+                            'bg-danger': doc.verificationStatus === 'Rejected',
+                            'bg-warning text-dark':
+                              doc.verificationStatus === 'Pending' || !doc.verificationStatus,
+                          }"
+                        >
+                          <i
+                            class="bi"
+                            [ngClass]="{
+                              'bi-check-circle': doc.verificationStatus === 'Approved',
+                              'bi-x-circle': doc.verificationStatus === 'Rejected',
+                              'bi-clock':
+                                doc.verificationStatus === 'Pending' || !doc.verificationStatus,
+                            }"
+                          ></i>
+                          {{ doc.verificationStatus || 'Pending' }}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          (click)="onViewDocument(doc.documentID)"
+                          class="btn btn-sm btn-info text-white shadow-sm"
+                        >
+                          <i class="bi bi-eye"></i> View
                         </button>
-                    </div>
-
-                </form>
+                      </td>
+                      <td class="text-end pe-4">
+                        @if (doc.verificationStatus !== 'Approved') {
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-success me-1"
+                            (click)="updateDocStatus(doc.documentID, 'Approved')"
+                          >
+                            <i class="bi bi-check-lg"></i> Approve
+                          </button>
+                        }
+                        @if (doc.verificationStatus !== 'Rejected') {
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            (click)="updateDocStatus(doc.documentID, 'Rejected')"
+                          >
+                            <i class="bi bi-x-lg"></i> Reject
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
+          </div>
         </div>
+      }
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-light border-bottom py-3">
+          <h6 class="mb-0 text-dark fw-bold">
+            <i class="bi bi-clipboard-data me-2"></i> Assessment Details
+          </h6>
+        </div>
+        <div class="card-body p-4">
+          <form [formGroup]="eligibilityForm" (ngSubmit)="onSubmit()">
+            <div class="row g-4">
+              <div class="col-md-6">
+                <label class="form-label fw-bold text-secondary">Application ID</label>
+                @if (applicationData) {
+                  <div
+                    class="p-2 bg-light rounded border d-flex justify-content-between align-items-center"
+                  >
+                    <span class="fw-bold text-dark"
+                      >#{{ applicationData.applicationID || applicationData.applicationId }}</span
+                    >
+                    <span class="badge bg-success shadow-sm">Linked</span>
+                  </div>
+                } @else {
+                  <div class="input-group">
+                    <input
+                      type="number"
+                      class="form-control"
+                      formControlName="applicationId"
+                      placeholder="Enter ID"
+                    />
+                    <button
+                      class="btn btn-outline-primary fw-bold"
+                      type="button"
+                      (click)="onAppIdChange()"
+                    >
+                      Fetch Data
+                    </button>
+                  </div>
+                  @if (
+                    eligibilityForm.get('applicationId')?.touched &&
+                    eligibilityForm.get('applicationId')?.invalid
+                  ) {
+                    <span class="text-danger small mt-1">Application ID is required.</span>
+                  }
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold text-secondary">Officer ID</label>
+                <input
+                  type="number"
+                  class="form-control bg-light"
+                  formControlName="officerID"
+                  readonly
+                />
+                <small class="form-text text-muted">Auto-populated from account.</small>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold text-secondary">Eligibility Result</label>
+                <select class="form-select" formControlName="result">
+                  <option value="">-- Select Result --</option>
+                  <option value="Eligible">✓ Eligible</option>
+                  <option value="Ineligible">✗ Ineligible</option>
+                </select>
+                @if (
+                  eligibilityForm.get('result')?.touched && eligibilityForm.get('result')?.invalid
+                ) {
+                  <span class="text-danger small mt-1">Please select a result.</span>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold text-secondary">Result Code</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="resultCode"
+                  placeholder="e.g., ELIG-001"
+                />
+                @if (
+                  eligibilityForm.get('resultCode')?.touched &&
+                  eligibilityForm.get('resultCode')?.invalid
+                ) {
+                  <span class="text-danger small mt-1">Result Code is required.</span>
+                }
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-bold text-secondary">Assessment Notes</label>
+                <textarea
+                  class="form-control"
+                  rows="4"
+                  formControlName="notes"
+                  placeholder="Enter detailed reasons for decision..."
+                ></textarea>
+                @if (
+                  eligibilityForm.get('notes')?.touched && eligibilityForm.get('notes')?.invalid
+                ) {
+                  <span class="text-danger small mt-1">Notes are required.</span>
+                }
+              </div>
+              <div class="col-12 mt-4">
+                <div class="alert alert-warning border-warning shadow-sm rounded-3">
+                  <i
+                    class="bi bi-exclamation-triangle-fill text-warning fs-5 me-2"
+                    style="vertical-align: middle"
+                  ></i>
+                  <strong>Important:</strong> This check will automatically update the application
+                  status:
+                  <ul class="mb-0 mt-2 text-dark small">
+                    <li>
+                      <strong>Eligible</strong> → Application marked as
+                      <span class="badge bg-success">Approved</span> + Benefit created
+                    </li>
+                    <li>
+                      <strong>Ineligible</strong> → Application marked as
+                      <span class="badge bg-danger">Rejected</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
+              <a
+                routerLink="/eligibility-list"
+                class="btn btn-light border px-4 fw-bold text-muted shadow-sm"
+              >
+                <i class="bi bi-x-circle me-1"></i> Cancel
+              </a>
+              <button
+                type="submit"
+                class="btn btn-primary px-4 fw-bold shadow-sm"
+                [disabled]="isSaving || isLoading"
+              >
+                @if (isSaving) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                @if (!isSaving) {
+                  <i class="bi bi-check-circle me-1"></i>
+                }
+                {{ isEditMode ? 'Update Check' : 'Submit Check' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
+  }
 </div>

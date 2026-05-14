@@ -1,83 +1,99 @@
 <app-citizen-navbar></app-citizen-navbar>
 
 <div class="container mt-4">
-    <h2 class="mb-4">Welcome, {{ profile?.name || 'Citizen' }}</h2>
+  <h2 class="mb-4">Welcome, {{ profile?.name || 'Citizen' }}</h2>
 
-    <div class="row mb-4" *ngIf="stats">
-        <div class="col-md-4 mb-3">
-            <div class="card text-white bg-warning shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-clock me-2"></i>Pending Documents</h5>
-                    <h2 class="display-5 fw-bold mb-0">{{ stats.pendingDocuments }}</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card text-white bg-success shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-check-circle me-2"></i>Approved Documents</h5>
-                    <h2 class="display-5 fw-bold mb-0">{{ stats.approvedDocuments }}</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card text-white bg-danger shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-x-circle me-2"></i>Rejected Documents</h5>
-                    <h2 class="display-5 fw-bold mb-0">{{ stats.rejectedDocuments }}</h2>
-                </div>
-            </div>
-        </div>
-    </div>
-
+  @if (stats) {
     <div class="row mb-4">
-        <div class="col-md-6 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0 text-primary"><i class="bi bi-person-lines-fill me-2"></i>Profile Information</h5>
-                </div>
-
-                <div class="card-body d-flex flex-column justify-content-center align-items-center py-4"
-                    *ngIf="isProfileLoading">
-                    <div class="spinner-border text-primary mb-2" role="status"></div>
-                    <span class="text-muted small">Loading profile details...</span>
-                </div>
-
-                <div class="card-body" *ngIf="!isProfileLoading && profile">
-                    <p class="mb-2"><strong>Name:</strong> {{ profile.name }}</p>
-                    <p class="mb-2"><strong>Date of Birth:</strong> {{ profile.dateOfBirth | date:'mediumDate' }}</p>
-                    <p class="mb-2"><strong>Gender:</strong> {{ profile.gender || 'Not specified' }}</p>
-                    <p class="mb-2"><strong>Contact:</strong> {{ profile.contactInfo }}</p>
-                    <p class="mb-3"><strong>Address:</strong> {{ profile.address }}</p>
-                    <a routerLink="/citizen/profile" class="btn btn-outline-primary btn-sm"><i
-                            class="bi bi-pencil me-1"></i> Edit Profile</a>
-                </div>
-
-                <div class="card-body text-center text-muted py-4" *ngIf="!isProfileLoading && !profile">
-                    <i class="bi bi-exclamation-circle fs-3 d-block mb-2 text-warning"></i>
-                    <p class="mb-0">Profile data could not be found.</p>
-                </div>
-            </div>
+      <div class="col-md-4 mb-3">
+        <div class="card text-white bg-warning shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-clock me-2"></i>Pending Documents</h5>
+            <h2 class="display-5 fw-bold mb-0">{{ stats.pendingDocuments }}</h2>
+          </div>
         </div>
-
-        <div class="col-md-6 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0 text-primary"><i class="bi bi-lightning-charge me-2"></i>Quick Actions</h5>
-                </div>
-                <div class="card-body d-flex flex-column justify-content-center gap-3">
-                    <a routerLink="/citizen/programs" class="btn btn-primary btn-lg text-start shadow-sm">
-                        <i class="bi bi-grid-3x3-gap me-2"></i> Browse Welfare Programs
-                    </a>
-                    <a routerLink="/citizen/documents" class="btn btn-success btn-lg text-start shadow-sm">
-                        <i class="bi bi-cloud-upload me-2"></i> Manage Documents
-                    </a>
-                    <a routerLink="/citizen/my-applications"
-                        class="btn btn-info btn-lg text-start text-white shadow-sm">
-                        <i class="bi bi-file-text me-2"></i> View My Applications
-                    </a>
-                </div>
-            </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card text-white bg-success shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-check-circle me-2"></i>Approved Documents</h5>
+            <h2 class="display-5 fw-bold mb-0">{{ stats.approvedDocuments }}</h2>
+          </div>
         </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card text-white bg-danger shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-x-circle me-2"></i>Rejected Documents</h5>
+            <h2 class="display-5 fw-bold mb-0">{{ stats.rejectedDocuments }}</h2>
+          </div>
+        </div>
+      </div>
     </div>
+  }
+
+  <div class="row mb-4">
+    <div class="col-md-6 mb-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-white">
+          <h5 class="mb-0 text-primary">
+            <i class="bi bi-person-lines-fill me-2"></i>Profile Information
+          </h5>
+        </div>
+
+        @if (isProfileLoading) {
+          <div class="card-body d-flex flex-column justify-content-center align-items-center py-4">
+            <div class="spinner-border text-primary mb-2" role="status"></div>
+            <span class="text-muted small">Loading profile details...</span>
+          </div>
+        }
+
+        @if (!isProfileLoading && profile) {
+          <div class="card-body">
+            <p class="mb-2"><strong>Name:</strong> {{ profile.name }}</p>
+            <p class="mb-2">
+              <strong>Date of Birth:</strong> {{ profile.dateOfBirth | date: 'mediumDate' }}
+            </p>
+            <p class="mb-2"><strong>Gender:</strong> {{ profile.gender || 'Not specified' }}</p>
+            <p class="mb-2"><strong>Contact:</strong> {{ profile.contactInfo }}</p>
+            <p class="mb-3"><strong>Address:</strong> {{ profile.address }}</p>
+            <a routerLink="/citizen/profile" class="btn btn-outline-primary btn-sm"
+              ><i class="bi bi-pencil me-1"></i> Edit Profile</a
+            >
+          </div>
+        }
+
+        @if (!isProfileLoading && !profile) {
+          <div class="card-body text-center text-muted py-4">
+            <i class="bi bi-exclamation-circle fs-3 d-block mb-2 text-warning"></i>
+            <p class="mb-0">Profile data could not be found.</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-white">
+          <h5 class="mb-0 text-primary">
+            <i class="bi bi-lightning-charge me-2"></i>Quick Actions
+          </h5>
+        </div>
+        <div class="card-body d-flex flex-column justify-content-center gap-3">
+          <a routerLink="/citizen/programs" class="btn btn-primary btn-lg text-start shadow-sm">
+            <i class="bi bi-grid-3x3-gap me-2"></i> Browse Welfare Programs
+          </a>
+          <a routerLink="/citizen/documents" class="btn btn-success btn-lg text-start shadow-sm">
+            <i class="bi bi-cloud-upload me-2"></i> Manage Documents
+          </a>
+          <a
+            routerLink="/citizen/my-applications"
+            class="btn btn-info btn-lg text-start text-white shadow-sm"
+          >
+            <i class="bi bi-file-text me-2"></i> View My Applications
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

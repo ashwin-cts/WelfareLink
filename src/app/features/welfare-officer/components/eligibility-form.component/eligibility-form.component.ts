@@ -88,19 +88,36 @@ export class EligibilityFormComponent implements OnInit {
         this.applicationData = data.application || data;
         this.citizenData = data.citizen || null;
 
-        // 1. Safely extract documents whether they are at the root or nested inside applicationDocuments
-        const rawDocs = data.documents ||
-          (data.application?.applicationDocuments?.map((ad: any) => ad.citizenDocument || ad)) ||
-          [];
+        // 1. Safely extract ONLY the documents mapped to this specific application.
+        // We prioritize the mapping tables FIRST.
+        const mappedDocs = this.applicationData?.welfareApplicationDocuments ||
+          this.applicationData?.applicationDocuments ||
+          data.welfareApplicationDocuments ||
+          data.applicationDocuments;
+
+        let rawDocs = [];
+
+        if (mappedDocs && mappedDocs.length > 0) {
+          // We found the mapping table! Extract the actual citizen documents from it.
+          rawDocs = mappedDocs.map((ad: any) => ad.citizenDocument || ad.document || ad);
+        } else if (data.documents) {
+          // Fallback: If the backend sent a generic "documents" list, attempt to filter
+          // it so we ONLY see documents attached to THIS application ID.
+          const filteredDocs = data.documents.filter((d: any) =>
+            d.applicationId === appId ||
+            d.ApplicationID === appId ||
+            d.welfareApplicationId === appId
+          );
+
+          // Use filtered docs if we found any, otherwise fallback to all (last resort)
+          rawDocs = filteredDocs.length > 0 ? filteredDocs : data.documents;
+        }
 
         // 2. Normalize all the C# properties so the HTML template can easily read them!
         this.documents = rawDocs.map((doc: any) => ({
           ...doc,
-          // Handles capital V or lowercase v, defaults to 'Pending'
           verificationStatus: doc.verificationStatus || doc.VerificationStatus || 'Pending',
-          // Handles capital D or lowercase d
           documentID: doc.documentID || doc.DocumentID || doc.id,
-          // Handles docType naming
           docType: doc.docType || doc.DocType || doc.documentName || 'Unknown Document'
         }));
 

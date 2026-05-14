@@ -1,192 +1,228 @@
 <app-welfare-application-navbar></app-welfare-application-navbar>
 <div class="container py-4">
-    <div class="page-header d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0"><i class="bi bi-pie-chart-fill"></i> Application Analytics</h1>
-        <span class="badge bg-primary px-3 py-2">Manager View</span>
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0"><i class="bi bi-pie-chart-fill"></i> Application Analytics</h1>
+    <span class="badge bg-primary px-3 py-2">Manager View</span>
+  </div>
+
+  @if (isLoading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
     </div>
+  }
 
-    <div *ngIf="isLoading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status"></div>
+  @if (hasError) {
+    <div class="alert alert-danger text-center">
+      <i class="bi bi-exclamation-triangle-fill fs-4 d-block mb-2"></i>
+      <strong>Error loading analytics!</strong> Please check your network or API endpoints.
+      <br /><button class="btn btn-outline-danger mt-3" (click)="loadAllData()">Try Again</button>
     </div>
+  }
 
-    <div *ngIf="hasError" class="alert alert-danger text-center">
-        <i class="bi bi-exclamation-triangle-fill fs-4 d-block mb-2"></i>
-        <strong>Error loading analytics!</strong> Please check your network or API endpoints.
-        <br><button class="btn btn-outline-danger mt-3" (click)="loadAllData()">Try Again</button>
-    </div>
-
-    <div *ngIf="!isLoading && !hasError">
-
-        <div class="row g-4 mb-4">
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="d-flex align-items-center">
-                        <div class="stat-icon blue"><i class="bi bi-file-earmark-text"></i></div>
-                        <div class="ms-3">
-                            <div class="stat-value">{{ dashboardData?.TotalApplications || 0 }}</div>
-                            <div class="stat-label">Total Applications</div>
-                        </div>
-                    </div>
-                </div>
+  @if (!isLoading && !hasError) {
+    <div>
+      <div class="row g-4 mb-4">
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="d-flex align-items-center">
+              <div class="stat-icon blue"><i class="bi bi-file-earmark-text"></i></div>
+              <div class="ms-3">
+                <div class="stat-value">{{ dashboardData?.TotalApplications || 0 }}</div>
+                <div class="stat-label">Total Applications</div>
+              </div>
             </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="d-flex align-items-center">
-                        <div class="stat-icon green"><i class="bi bi-check-circle"></i></div>
-                        <div class="ms-3">
-                            <div class="stat-value">{{ dashboardData?.ApprovedApplications || 0 }}</div>
-                            <div class="stat-label">Approved</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="d-flex align-items-center">
-                        <div class="stat-icon yellow"><i class="bi bi-hourglass-split"></i></div>
-                        <div class="ms-3">
-                            <div class="stat-value">{{ (dashboardData?.PendingApplications || 0) +
-                                (dashboardData?.UnderReviewApplications || 0) }}</div>
-                            <div class="stat-label">Pending / Review</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="d-flex align-items-center">
-                        <div class="stat-icon red"><i class="bi bi-x-circle"></i></div>
-                        <div class="ms-3">
-                            <div class="stat-value">{{ dashboardData?.RejectedApplications || 0 }}</div>
-                            <div class="stat-label">Rejected</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
-
-        <div class="row g-4 mb-4">
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="stat-icon purple"><i class="bi bi-shield-check"></i></div>
-                        <div class="ms-3">
-                            <div class="stat-value">{{ dashboardData?.TotalChecks || 0 }}</div>
-                            <div class="stat-label">Total Automated Checks</div>
-                        </div>
-                    </div>
-                </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="d-flex align-items-center">
+              <div class="stat-icon green"><i class="bi bi-check-circle"></i></div>
+              <div class="ms-3">
+                <div class="stat-value">{{ dashboardData?.ApprovedApplications || 0 }}</div>
+                <div class="stat-label">Approved</div>
+              </div>
             </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="stat-icon green"><i class="bi bi-person-check"></i></div>
-                        <div class="ms-3">
-                            <div class="stat-value">{{ dashboardData?.EligibleChecks || 0 }}</div>
-                            <div class="stat-label">Eligible Applications</div>
-                        </div>
-                    </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="d-flex align-items-center">
+              <div class="stat-icon yellow"><i class="bi bi-hourglass-split"></i></div>
+              <div class="ms-3">
+                <div class="stat-value">
+                  {{
+                    (dashboardData?.PendingApplications || 0) +
+                      (dashboardData?.UnderReviewApplications || 0)
+                  }}
                 </div>
+                <div class="stat-label">Pending / Review</div>
+              </div>
             </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <h6 class="text-muted mb-3">Overall Approval Rate</h6>
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="stat-value" style="font-size: 1.5rem;">{{ approvalRate?.approvalRate ||
-                            dashboardData?.ApprovalRate || 0 }}%</span>
-                        <i class="bi bi-graph-up-arrow text-success" style="font-size: 1.5rem;"></i>
-                    </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="d-flex align-items-center">
+              <div class="stat-icon red"><i class="bi bi-x-circle"></i></div>
+              <div class="ms-3">
+                <div class="stat-value">{{ dashboardData?.RejectedApplications || 0 }}</div>
+                <div class="stat-label">Rejected</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row g-4 mb-4">
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div class="d-flex align-items-center mb-3">
+              <div class="stat-icon purple"><i class="bi bi-shield-check"></i></div>
+              <div class="ms-3">
+                <div class="stat-value">{{ dashboardData?.TotalChecks || 0 }}</div>
+                <div class="stat-label">Total Automated Checks</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div class="d-flex align-items-center mb-3">
+              <div class="stat-icon green"><i class="bi bi-person-check"></i></div>
+              <div class="ms-3">
+                <div class="stat-value">{{ dashboardData?.EligibleChecks || 0 }}</div>
+                <div class="stat-label">Eligible Applications</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card">
+            <h6 class="text-muted mb-3">Overall Approval Rate</h6>
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="stat-value" style="font-size: 1.5rem"
+                >{{ approvalRate?.approvalRate || dashboardData?.ApprovalRate || 0 }}%</span
+              >
+              <i class="bi bi-graph-up-arrow text-success" style="font-size: 1.5rem"></i>
+            </div>
+            <div class="progress-custom">
+              <div
+                class="progress-bar-custom"
+                [style.width.%]="approvalRate?.approvalRate || dashboardData?.ApprovalRate || 0"
+                style="background: linear-gradient(90deg, #10b981, #059669)"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="chart-card h-100">
+            <h5 class="chart-title"><i class="bi bi-pie-chart"></i> Distribution by Status</h5>
+            @if (statusBreakdown.length) {
+              @for (item of statusBreakdown; track item) {
+                <div class="type-bar mt-4">
+                  <div class="type-label">{{ item.status }}</div>
+                  <div class="type-progress">
                     <div class="progress-custom">
-                        <div class="progress-bar-custom"
-                            [style.width.%]="approvalRate?.approvalRate || dashboardData?.ApprovalRate || 0"
-                            style="background: linear-gradient(90deg, #10b981, #059669);"></div>
+                      <div
+                        class="progress-bar-custom"
+                        [ngClass]="getStatusColorClass(item.status)"
+                        [style.width.%]="item.percentage"
+                      ></div>
                     </div>
+                  </div>
+                  <div class="type-value">{{ item.count }} Apps</div>
                 </div>
-            </div>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="chart-card h-100">
-                    <h5 class="chart-title"><i class="bi bi-pie-chart"></i> Distribution by Status</h5>
-
-                    <ng-container *ngIf="statusBreakdown.length; else noData">
-                        <div class="type-bar mt-4" *ngFor="let item of statusBreakdown">
-                            <div class="type-label">{{ item.status }}</div>
-                            <div class="type-progress">
-                                <div class="progress-custom">
-                                    <div class="progress-bar-custom" [ngClass]="getStatusColorClass(item.status)"
-                                        [style.width.%]="item.percentage"></div>
-                                </div>
-                            </div>
-                            <div class="type-value">{{ item.count }} Apps</div>
-                        </div>
-                    </ng-container>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="chart-card h-100">
-                    <h5 class="chart-title"><i class="bi bi-bar-chart"></i> Application Trends ({{ trendYear }})</h5>
-
-                    <div class="trend-chart mt-4">
-                        <div class="trend-bar-group" *ngFor="let trend of monthlyTrends">
-                            <div class="trend-bars">
-                                <div class="trend-bar allocated" [style.height.px]="getBarHeight(trend.total)"
-                                    [title]="'Total: ' + trend.total"></div>
-                                <div class="trend-bar disbursed" [style.height.px]="getBarHeight(trend.approved)"
-                                    [title]="'Approved: ' + trend.approved"></div>
-                            </div>
-                            <div class="trend-label">{{ trend.month | slice:0:3 }}</div>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-center gap-4 mt-3">
-                        <span class="small text-muted"><i class="bi bi-square-fill text-primary"></i> Total
-                            Received</span>
-                        <span class="small text-muted"><i class="bi bi-square-fill text-success"></i> Approved</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4 mt-2 mb-4">
-            <div class="col-md-12">
-                <div class="chart-card">
-                    <h5 class="chart-title"><i class="bi bi-clipboard-check"></i> Monthly Eligibility Checks</h5>
-
-                    <ng-container *ngIf="eligibilityMonthly.length; else noData">
-                        <div class="activity-item" *ngFor="let rep of eligibilityMonthly">
-                            <div class="activity-icon text-white bg-warning text-dark">
-                                <i class="bi bi-calendar-check"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <strong>{{ rep.month }} Processing</strong>
-                                <span class="badge bg-secondary ms-2">{{ rep.total }} Applications Checked</span>
-                                <div class="text-muted small mt-1">
-                                    <span class="text-success fw-bold"><i class="bi bi-check"></i> {{ rep.eligible }}
-                                        Eligible</span> |
-                                    <span class="text-danger fw-bold"><i class="bi bi-x"></i> {{ rep.ineligible }}
-                                        Ineligible</span>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <div class="text-muted small mb-1">Eligibility Rate</div>
-                                <span class="status-badge bg-success text-white">
-                                    {{ rep.total > 0 ? (rep.eligible / rep.total * 100) : 0 | number:'1.0-1' }}%
-                                </span>
-                            </div>
-                        </div>
-                    </ng-container>
-                </div>
-            </div>
-        </div>
-
-        <ng-template #noData>
-            <div class="text-center py-4 text-muted">
-                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+              }
+            } @else {
+              <div class="text-center py-4 text-muted">
+                <i class="bi bi-inbox" style="font-size: 2rem"></i>
                 <p class="mt-2">No data available</p>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="chart-card h-100">
+            <h5 class="chart-title">
+              <i class="bi bi-bar-chart"></i> Application Trends ({{ trendYear }})
+            </h5>
+            <div class="trend-chart mt-4">
+              @for (trend of monthlyTrends; track trend) {
+                <div class="trend-bar-group">
+                  <div class="trend-bars">
+                    <div
+                      class="trend-bar allocated"
+                      [style.height.px]="getBarHeight(trend.total)"
+                      [title]="'Total: ' + trend.total"
+                    ></div>
+                    <div
+                      class="trend-bar disbursed"
+                      [style.height.px]="getBarHeight(trend.approved)"
+                      [title]="'Approved: ' + trend.approved"
+                    ></div>
+                  </div>
+                  <div class="trend-label">{{ trend.month | slice: 0 : 3 }}</div>
+                </div>
+              }
             </div>
-        </ng-template>
-
+            <div class="d-flex justify-content-center gap-4 mt-3">
+              <span class="small text-muted"
+                ><i class="bi bi-square-fill text-primary"></i> Total Received</span
+              >
+              <span class="small text-muted"
+                ><i class="bi bi-square-fill text-success"></i> Approved</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row g-4 mt-2 mb-4">
+        <div class="col-md-12">
+          <div class="chart-card">
+            <h5 class="chart-title">
+              <i class="bi bi-clipboard-check"></i> Monthly Eligibility Checks
+            </h5>
+            @if (eligibilityMonthly.length) {
+              @for (rep of eligibilityMonthly; track rep) {
+                <div class="activity-item">
+                  <div class="activity-icon text-white bg-warning text-dark">
+                    <i class="bi bi-calendar-check"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <strong>{{ rep.month }} Processing</strong>
+                    <span class="badge bg-secondary ms-2"
+                      >{{ rep.total }} Applications Checked</span
+                    >
+                    <div class="text-muted small mt-1">
+                      <span class="text-success fw-bold"
+                        ><i class="bi bi-check"></i> {{ rep.eligible }} Eligible</span
+                      >
+                      |
+                      <span class="text-danger fw-bold"
+                        ><i class="bi bi-x"></i> {{ rep.ineligible }} Ineligible</span
+                      >
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <div class="text-muted small mb-1">Eligibility Rate</div>
+                    <span class="status-badge bg-success text-white">
+                      {{
+                        rep.total > 0 ? (rep.eligible / rep.total) * 100 : (0 | number: '1.0-1')
+                      }}%
+                    </span>
+                  </div>
+                </div>
+              }
+            } @else {
+              <div class="text-center py-4 text-muted">
+                <i class="bi bi-inbox" style="font-size: 2rem"></i>
+                <p class="mt-2">No data available</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
     </div>
+  }
 </div>

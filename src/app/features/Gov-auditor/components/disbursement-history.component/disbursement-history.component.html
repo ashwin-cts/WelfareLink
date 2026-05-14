@@ -1,42 +1,70 @@
 <div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header"><h5 class="mb-0">Section 3: Disbursement History</h5></div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover table-bordered">
-                        <thead class="table-dark">
-                            <tr><th>Date</th><th>ID</th><th>Citizen</th><th>Program</th><th>Amount (₹)</th><th>Status</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let item of items">
-                                <td>{{ item.date | date:'mediumDate' }}</td>
-                                <td><span class="badge bg-secondary">DIS-{{ item.disbursementID }}</span></td>
-                                <td>{{ item.citizenName }}</td>
-                                <td><strong>{{ item.programName }}</strong></td>
-                                <td>₹ {{ item.amount | number:'1.2-2' }}</td>
-                                <td>
-                                    <span class="badge" [ngClass]="{'bg-success': item.status === 'Completed' || item.status === 'Disbursed', 'bg-warning text-dark': item.status === 'Pending', 'bg-danger': item.status === 'Failed'}">
-                                        {{ item.status }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr *ngIf="items.length === 0"><td colspan="6" class="text-center"><em>No disbursements found</em></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0">Section 3: Disbursement History</h5></div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered">
+            <thead class="table-dark">
+              <tr>
+                <th>Date</th>
+                <th>ID</th>
+                <th>Citizen</th>
+                <th>Program</th>
+                <th>Amount (₹)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of items; track item) {
+                <tr>
+                  <td>{{ item.date | date: 'mediumDate' }}</td>
+                  <td>
+                    <span class="badge bg-secondary">DIS-{{ item.disbursementID }}</span>
+                  </td>
+                  <td>{{ item.citizenName }}</td>
+                  <td>
+                    <strong>{{ item.programName }}</strong>
+                  </td>
+                  <td>₹ {{ item.amount | number: '1.2-2' }}</td>
+                  <td>
+                    <span
+                      class="badge"
+                      [ngClass]="{
+                        'bg-success': item.status === 'Completed' || item.status === 'Disbursed',
+                        'bg-warning text-dark': item.status === 'Pending',
+                        'bg-danger': item.status === 'Failed',
+                      }"
+                    >
+                      {{ item.status }}
+                    </span>
+                  </td>
+                </tr>
+              }
+              @if (items.length === 0) {
+                <tr>
+                  <td colspan="6" class="text-center"><em>No disbursements found</em></td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
-                <button class="btn btn-secondary me-2" (click)="print.emit()"><i class="fas fa-print"></i> Print Report</button>
-                <button class="btn btn-success" (click)="export.emit()"><i class="fas fa-download"></i> Export to CSV</button>
-            </div>
-        </div>
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <button class="btn btn-secondary me-2" (click)="print.emit()">
+          <i class="fas fa-print"></i> Print Report
+        </button>
+        <button class="btn btn-success" (click)="export.emit()">
+          <i class="fas fa-download"></i> Export to CSV
+        </button>
+      </div>
     </div>
+  </div>
 </div>

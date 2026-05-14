@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 
 // 1. Import the Welfare Officer Navbar
@@ -13,13 +13,12 @@ import { EditProfileComponent } from '../../../account/components/edit-profile.c
   selector: 'app-welfare-officer-profile',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterModule, 
-    WelfareApplicationNavbarComponent, 
-    ChangePasswordComponent, 
-    EditProfileComponent
+    RouterModule,
+    WelfareApplicationNavbarComponent,
+    ChangePasswordComponent,
+    EditProfileComponent,
   ],
   templateUrl: './welfare-officer-profile.component.html',
-  styleUrls: ['./welfare-officer-profile.component.css']
+  styleUrls: ['./welfare-officer-profile.component.css'],
 })
-export class WelfareOfficerProfileComponent { }
+export class WelfareOfficerProfileComponent {}

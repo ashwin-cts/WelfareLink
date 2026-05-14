@@ -1,13 +1,12 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-admin-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './admin-navbar.html',
-  styleUrls: ['./admin-navbar.css']
+  styleUrls: ['./admin-navbar.css'],
 })
 export class AdminNavbarComponent implements OnInit {
   public router = inject(Router);
@@ -36,11 +35,11 @@ export class AdminNavbarComponent implements OnInit {
   }
 
   goToDashboard(event: Event) {
-    event.preventDefault(); 
-    
+    event.preventDefault();
+
     if (this.router.url === '/admin-dashboard') {
       this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-          this.router.navigate(['/admin-dashboard']);
+        this.router.navigate(['/admin-dashboard']);
       });
     } else {
       this.router.navigate(['/admin-dashboard']);

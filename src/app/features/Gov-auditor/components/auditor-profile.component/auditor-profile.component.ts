@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { EditProfileComponent } from '../../../account/components/edit-profile.component/edit-profile.component'; // Adjust path if needed
 import { ChangePasswordComponent } from '../../../account/components/change-password.component/change-password.component'; // Adjust path if needed
 import { AuditorNavbarComponent } from '../auditor-navbar.component/auditor-navbar.component';
@@ -7,12 +7,7 @@ import { AuditorNavbarComponent } from '../auditor-navbar.component/auditor-navb
 @Component({
   selector: 'app-auditor-profile',
   standalone: true,
-  imports: [
-    CommonModule, 
-    AuditorNavbarComponent, 
-    EditProfileComponent, 
-    ChangePasswordComponent
-  ],
+  imports: [AuditorNavbarComponent, EditProfileComponent, ChangePasswordComponent],
   template: `
     <app-auditor-navbar></app-auditor-navbar>
     <div class="container py-4">
@@ -26,6 +21,6 @@ import { AuditorNavbarComponent } from '../auditor-navbar.component/auditor-navb
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class AuditorProfileComponent {}

@@ -1,6 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { AuditorService, AuditorDashboardStats, BudgetMonitoringItem, ResourceStatementItem, DisbursementStatementItem } from '../services/auditor.service';
+
+import {
+  AuditorService,
+  AuditorDashboardStats,
+  BudgetMonitoringItem,
+  ResourceStatementItem,
+  DisbursementStatementItem,
+} from '../services/auditor.service';
 import { AuditorNavbarComponent } from '../auditor-navbar.component/auditor-navbar.component';
 
 // IMPORT THE NEW CHILDREN
@@ -13,15 +19,14 @@ import { DisbursementHistoryComponent } from '../disbursement-history.component/
   selector: 'app-auditor-dashboard',
   standalone: true,
   imports: [
-    CommonModule, 
     AuditorNavbarComponent,
     SummaryCardsComponent,
     BudgetTableComponent,
     ResourceHistoryComponent,
-    DisbursementHistoryComponent
+    DisbursementHistoryComponent,
   ],
   templateUrl: './auditor-dashboard.component.html',
-  styleUrls: ['./auditor-dashboard.component.css']
+  styleUrls: ['./auditor-dashboard.component.css'],
 })
 export class AuditorDashboardComponent implements OnInit {
   activeTab: 'dashboard' | 'budget' | 'resource' | 'disbursement' = 'dashboard';
@@ -31,7 +36,7 @@ export class AuditorDashboardComponent implements OnInit {
   dashboardStats: AuditorDashboardStats | null = null;
   budgetItems: BudgetMonitoringItem[] = [];
   resourceItems: ResourceStatementItem[] = [];
-  disbursementItems: DisbursementStatementItem[] = []; 
+  disbursementItems: DisbursementStatementItem[] = [];
 
   constructor(private auditorService: AuditorService) {}
 
@@ -42,7 +47,7 @@ export class AuditorDashboardComponent implements OnInit {
   setTab(tabName: 'dashboard' | 'budget' | 'resource' | 'disbursement') {
     this.activeTab = tabName;
     this.errorMessage = null; // Clear errors when switching tabs
-    
+
     // Lazy load data based on the selected tab
     if (tabName === 'dashboard' && !this.dashboardStats) {
       this.loadDashboardData();
@@ -51,7 +56,7 @@ export class AuditorDashboardComponent implements OnInit {
     } else if (tabName === 'resource' && this.resourceItems.length === 0) {
       this.loadResourceData();
     } else if (tabName === 'disbursement' && this.disbursementItems.length === 0) {
-       this.loadDisbursementData();
+      this.loadDisbursementData();
     }
   }
 
@@ -64,13 +69,13 @@ export class AuditorDashboardComponent implements OnInit {
           totalPrograms: res.TotalPrograms || res.totalPrograms || 0,
           totalBudget: res.TotalBudget || res.totalBudget || 0,
           totalResource: res.TotalResource || res.totalResource || 0,
-          totalDisbursement: res.TotalDisbursement || res.totalDisbursement || 0
+          totalDisbursement: res.TotalDisbursement || res.totalDisbursement || 0,
         };
       },
       error: (err: unknown) => {
-        console.error(err); 
+        console.error(err);
         this.errorMessage = 'Failed to load dashboard statistics.';
-      }
+      },
     });
   }
 
@@ -87,13 +92,13 @@ export class AuditorDashboardComponent implements OnInit {
           citizensApplied: item.CitizensApplied || item.citizensApplied || 0,
           totalDisbursed: item.TotalDisbursed || item.totalDisbursed || 0,
           remainingResource: item.RemainingResource || item.remainingResource || 0,
-          utilizationPercent: item.UtilizationPercent || item.utilizationPercent || 0
+          utilizationPercent: item.UtilizationPercent || item.utilizationPercent || 0,
         }));
       },
       error: (err: unknown) => {
         console.error(err);
         this.errorMessage = 'Failed to load budget monitoring data.';
-      }
+      },
     });
   }
 
@@ -105,41 +110,43 @@ export class AuditorDashboardComponent implements OnInit {
           date: item.Date || item.date || new Date().toISOString(),
           programName: item.ProgramName || item.programName || 'Unknown Program',
           allocatedResource: item.AllocatedResource || item.allocatedResource || 0,
-          remainingAllocationPending: item.RemainingAllocationPending || item.remainingAllocationPending || 0
+          remainingAllocationPending:
+            item.RemainingAllocationPending || item.remainingAllocationPending || 0,
         }));
       },
       error: (err: unknown) => {
         console.error(err);
         this.errorMessage = 'Failed to load resource statement data.';
-      }
+      },
     });
   }
 
   loadDisbursementData() {
-     this.auditorService.getDisbursementStatement().subscribe({
+    this.auditorService.getDisbursementStatement().subscribe({
       next: (res: any) => {
         this.disbursementItems = res.map((item: any) => ({
-          disbursementID: item.DisbursementID || item.disbursementID || Math.floor(Math.random() * 1000),
+          disbursementID:
+            item.DisbursementID || item.disbursementID || Math.floor(Math.random() * 1000),
           date: item.Date || item.date || new Date().toISOString(),
           citizenName: item.CitizenName || item.citizenName || 'Unknown Citizen',
           programName: item.ProgramName || item.programName || 'Welfare Program',
-          
+
           // Map properties safely from what C# provides
           amount: item.Disbursed || item.disbursed || item.Amount || item.amount || 0,
           status: item.Status || item.status || (item.Disbursed > 0 ? 'Completed' : 'Pending'),
-          
+
           // Extra properties from your updated model
           citizenID: item.CitizenID || item.citizenID,
           maxBenefit: item.MaxBenefit || item.maxBenefit,
           benefitAllocated: item.BenefitAllocated || item.benefitAllocated,
           remainDisburse: item.RemainDisburse || item.remainDisburse,
-          disbursementPercent: item.DisbursementPercent || item.disbursementPercent
+          disbursementPercent: item.DisbursementPercent || item.disbursementPercent,
         }));
       },
       error: (err: unknown) => {
         console.error(err);
         this.errorMessage = 'Failed to load disbursement statement data.';
-      }
+      },
     });
   }
 
@@ -169,13 +176,13 @@ export class AuditorDashboardComponent implements OnInit {
 
     // 1. Get dynamic headers from the object keys
     const headers = Object.keys(dataToExport[0]);
-    
+
     // 2. Build the CSV string
     const csvRows = [];
     csvRows.push(headers.join(',')); // Add Header Row
 
     for (const row of dataToExport) {
-      const values = headers.map(header => {
+      const values = headers.map((header) => {
         const val = row[header as keyof typeof row] || '';
         // Escape quotes to prevent breaking the CSV format
         return `"${String(val).replace(/"/g, '""')}"`;
@@ -184,7 +191,7 @@ export class AuditorDashboardComponent implements OnInit {
     }
 
     const csvData = csvRows.join('\n');
-    
+
     // 3. Trigger the browser download
     const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
@@ -195,8 +202,8 @@ export class AuditorDashboardComponent implements OnInit {
     link.click();
     document.body.removeChild(link);
   }
-  
+
   printReport() {
-      window.print();
+    window.print();
   }
 }

@@ -1,13 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-auditor-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './auditor-navbar.component.html',
-  styleUrls: ['./auditor-navbar.component.css']
+  styleUrls: ['./auditor-navbar.component.css'],
 })
 export class AuditorNavbarComponent implements OnInit {
   public router = inject(Router);
@@ -33,12 +33,12 @@ export class AuditorNavbarComponent implements OnInit {
   }
 
   goToDashboard(event: Event) {
-    event.preventDefault(); 
-    
+    event.preventDefault();
+
     if (this.router.url === '/auditor-dashboard') {
       // Force reload to refresh dashboard data if already there
       this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-          this.router.navigate(['/auditor-dashboard']);
+        this.router.navigate(['/auditor-dashboard']);
       });
     } else {
       this.router.navigate(['/auditor-dashboard']);

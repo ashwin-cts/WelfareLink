@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { AccountService } from '../../services/account.service';
@@ -8,8 +8,8 @@ import { UpdateProfileRequest } from '../../models/account.model';
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './edit-profile.component.html'
+  imports: [ReactiveFormsModule],
+  templateUrl: './edit-profile.component.html',
 })
 export class EditProfileComponent implements OnInit {
   profileForm: FormGroup;
@@ -22,11 +22,11 @@ export class EditProfileComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private accountService: AccountService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     this.profileForm = this.fb.group({
       fullName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.email]],
     });
   }
 
@@ -42,10 +42,11 @@ export class EditProfileComponent implements OnInit {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const nameIdentifier = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+        const nameIdentifier =
+          payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
         this.currentUserId = Number(payload.UserId || payload.sub || nameIdentifier);
       } catch (e) {
-        this.errorMessage = "Session error. Please log in again.";
+        this.errorMessage = 'Session error. Please log in again.';
       }
     }
   }
@@ -56,16 +57,16 @@ export class EditProfileComponent implements OnInit {
       next: (data) => {
         this.profileForm.patchValue({
           fullName: data.fullName,
-          email: data.email
+          email: data.email,
         });
         this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: () => {
-        this.errorMessage = "Failed to load profile data.";
+        this.errorMessage = 'Failed to load profile data.';
         this.isLoading = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -93,7 +94,7 @@ export class EditProfileComponent implements OnInit {
         this.isSaving = false;
         this.errorMessage = err.error?.Error || 'Failed to update profile.';
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 }

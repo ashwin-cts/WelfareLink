@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 
 // 1. Import the PM Navbar
@@ -12,15 +12,14 @@ import { EditProfileComponent } from '../../../account/components/edit-profile.c
   selector: 'app-pm-profile',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterModule, 
-    ProgramManagerNavbarComponent, 
-    ChangePasswordComponent, 
-    EditProfileComponent
+    RouterModule,
+    ProgramManagerNavbarComponent,
+    ChangePasswordComponent,
+    EditProfileComponent,
   ],
   template: `
     <app-program-manager-navbar></app-program-manager-navbar>
-    
+
     <div class="container mt-4 mb-5">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -28,7 +27,7 @@ import { EditProfileComponent } from '../../../account/components/edit-profile.c
           <p class="text-muted">Manage your profile details and security credentials.</p>
         </div>
         <a routerLink="/program-manager/dashboard" class="btn btn-secondary shadow-sm">
-            <i class="bi bi-arrow-left"></i> Back to Dashboard
+          <i class="bi bi-arrow-left"></i> Back to Dashboard
         </a>
       </div>
 
@@ -50,6 +49,6 @@ import { EditProfileComponent } from '../../../account/components/edit-profile.c
         </div>
       </div>
     </div>
-  `
+  `,
 })
-export class PmProfileComponent { }
+export class PmProfileComponent {}

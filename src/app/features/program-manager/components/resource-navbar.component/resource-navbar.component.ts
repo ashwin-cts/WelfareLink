@@ -1,13 +1,12 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-resource-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './resource-navbar.component.html',
-  styleUrls: ['./resource-navbar.component.css']
+  styleUrls: ['./resource-navbar.component.css'],
 })
 export class ResourceNavbarComponent implements OnInit {
   public router = inject(Router);

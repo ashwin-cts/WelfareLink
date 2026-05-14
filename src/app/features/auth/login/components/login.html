@@ -1,168 +1,253 @@
 <div class="login-page d-flex align-items-center justify-content-center vh-100 overflow-hidden">
-
-  <div class="card shadow border-0 rounded-lg p-3 custom-card" [style.max-width]="isLoginMode ? '400px' : '550px'"
-    style="width: 100%; max-height: 95vh; overflow-y: auto;">
-
+  <div
+    class="card shadow border-0 rounded-lg p-3 custom-card"
+    [style.max-width]="isLoginMode ? '400px' : '550px'"
+    style="width: 100%; max-height: 95vh; overflow-y: auto"
+  >
     <div class="card-body">
       <div class="text-center mb-3">
         <h3 class="fw-bold custom-title mb-1">WelfareLink</h3>
-        <p class="text-muted small mb-0">{{ isLoginMode ? 'Access your portal' : 'Create a Citizen Account' }}</p>
+        <p class="text-muted small mb-0">
+          {{ isLoginMode ? 'Access your portal' : 'Create a Citizen Account' }}
+        </p>
       </div>
 
-      <div *ngIf="errorMessage" class="alert alert-danger text-center border-0 py-2 mb-3" role="alert">
-        {{ errorMessage }}
-      </div>
-      <div *ngIf="successMessage" class="alert alert-success text-center border-0 py-2 mb-3" role="alert">
-        {{ successMessage }}
-      </div>
-
-      <div *ngIf="isLoginMode">
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-
-          <div class="mb-2">
-            <label for="userType" class="form-label fw-semibold text-secondary small mb-1">I am logging in as:</label>
-            <select id="userType" class="form-select custom-input" formControlName="userType">
-              <option *ngFor="let role of userRoles" [value]="role.id">{{ role.label }}</option>
-            </select>
-          </div>
-
-          <div class="mb-2">
-            <label class="form-label fw-semibold text-secondary small mb-1">Username</label>
-            <input type="text" class="form-control custom-input" formControlName="username"
-              placeholder="Enter your username"
-              [class.is-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-semibold text-secondary small mb-1">Password</label>
-            <div class="input-group">
-              <input [type]="showLoginPassword ? 'text' : 'password'" class="form-control custom-input border-end-0"
-                formControlName="password" placeholder="Enter your password"
-                [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-              <span class="input-group-text bg-white border-start-0" style="cursor: pointer;"
-                (click)="toggleVisibility('login')">
-                <i class="bi" [ngClass]="showLoginPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
-              </span>
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-primary w-100 fw-bold custom-btn"
-            [disabled]="loginForm.invalid || isLoading">
-            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-            {{ isLoading ? 'Verifying...' : 'Login' }}
-          </button>
-        </form>
-
-        <div class="mt-3 text-center border-top pt-3">
-          <div *ngIf="isCitizenSelected">
-            <p class="text-muted small mb-2">New to WelfareLink?</p>
-            <button (click)="toggleMode()"
-              class="btn btn-sm btn-outline-secondary w-100 fw-bold custom-btn-outline">Register
-              as a Citizen</button>
-          </div>
-          <div *ngIf="!isCitizenSelected">
-            <small class="text-muted" style="font-size: 0.8rem;">Staff accounts are provisioned by System
-              Administrators.</small>
-          </div>
+      @if (errorMessage) {
+        <div class="alert alert-danger text-center border-0 py-2 mb-3" role="alert">
+          {{ errorMessage }}
         </div>
-      </div>
+      }
+      @if (successMessage) {
+        <div class="alert alert-success text-center border-0 py-2 mb-3" role="alert">
+          {{ successMessage }}
+        </div>
+      }
 
-      <div *ngIf="!isLoginMode">
-        <form [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()">
-
-          <div class="row g-2">
-            <div class="col-md-6 mb-2">
-              <label class="form-label fw-semibold text-secondary small mb-1">Full Name</label>
-              <input type="text" class="form-control form-control-sm custom-input" formControlName="fullName"
-                placeholder="Legal Name">
-            </div>
-            <div class="col-md-6 mb-2">
-              <label class="form-label fw-semibold text-secondary small mb-1">Username</label>
-              <input type="text" class="form-control form-control-sm custom-input" formControlName="username"
-                placeholder="Choose a username">
-            </div>
-          </div>
-
-          <div class="row g-2">
-            <div class="col-md-6 mb-2">
-              <label class="form-label fw-semibold text-secondary small mb-1">Email Address</label>
-              <input type="email" class="form-control form-control-sm custom-input" formControlName="email"
-                placeholder="name@example.com">
-            </div>
-            <div class="col-md-6 mb-2">
-              <label class="form-label fw-semibold text-secondary small mb-1">Password</label>
-              <div class="input-group input-group-sm">
-                <input [type]="showRegisterPassword ? 'text' : 'password'"
-                  class="form-control custom-input border-end-0" formControlName="password"
-                  placeholder="Create a password">
-                <span class="input-group-text bg-white border-start-0" style="cursor: pointer;"
-                  (click)="toggleVisibility('register')">
-                  <i class="bi" [ngClass]="showRegisterPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
-                </span>
-              </div>
-              <div *ngIf="registerForm.get('password')?.errors?.['pattern'] && registerForm.get('password')?.touched"
-                class="text-danger" style="font-size: 0.75rem; margin-top: 2px;">
-                Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase
-                letter, one number, and one special character.
-              </div>
-            </div>
-          </div>
-
-          <div class="row g-2">
-            <div class="col-md-6 mb-2">
-              <label class="form-label fw-semibold text-secondary small mb-1">Date of Birth</label>
-              <input type="date" class="form-control form-control-sm custom-input" formControlName="dateOfBirth">
-            </div>
-            <div class="col-md-6 mb-2">
-              <label class="form-label fw-semibold text-secondary small mb-1">Gender</label>
-              <select class="form-select form-select-sm custom-input" formControlName="gender">
-                <option value="">Select...</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+      @if (isLoginMode) {
+        <div>
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="mb-2">
+              <label for="userType" class="form-label fw-semibold text-secondary small mb-1"
+                >I am logging in as:</label
+              >
+              <select id="userType" class="form-select custom-input" formControlName="userType">
+                @for (role of userRoles; track role) {
+                  <option [value]="role.id">{{ role.label }}</option>
+                }
               </select>
             </div>
-          </div>
-
-          <div class="mb-2">
-            <label class="form-label fw-semibold text-secondary small mb-1">Contact Number</label>
-
-            <input type="text" class="form-control form-control-sm custom-input" formControlName="contactInfo"
-              placeholder="Mobile number"
-              [class.is-invalid]="registerForm.get('contactInfo')?.invalid && registerForm.get('contactInfo')?.touched">
-
-            <div
-              *ngIf="registerForm.get('contactInfo')?.errors?.['pattern'] && registerForm.get('contactInfo')?.touched"
-              class="text-danger" style="font-size: 0.75rem; margin-top: 2px;">
-              Mobile number must be exactly 10 digits.
+            <div class="mb-2">
+              <label class="form-label fw-semibold text-secondary small mb-1">Username</label>
+              <input
+                type="text"
+                class="form-control custom-input"
+                formControlName="username"
+                placeholder="Enter your username"
+                [class.is-invalid]="
+                  loginForm.get('username')?.invalid && loginForm.get('username')?.touched
+                "
+              />
             </div>
-
-            <div
-              *ngIf="registerForm.get('contactInfo')?.errors?.['required'] && registerForm.get('contactInfo')?.touched && !registerForm.get('contactInfo')?.errors?.['pattern']"
-              class="text-danger" style="font-size: 0.75rem; margin-top: 2px;">
-              Mobile number is required.
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-secondary small mb-1">Password</label>
+              <div class="input-group">
+                <input
+                  [type]="showLoginPassword ? 'text' : 'password'"
+                  class="form-control custom-input border-end-0"
+                  formControlName="password"
+                  placeholder="Enter your password"
+                  [class.is-invalid]="
+                    loginForm.get('password')?.invalid && loginForm.get('password')?.touched
+                  "
+                />
+                <span
+                  class="input-group-text bg-white border-start-0"
+                  style="cursor: pointer"
+                  (click)="toggleVisibility('login')"
+                >
+                  <i class="bi" [ngClass]="showLoginPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                </span>
+              </div>
             </div>
+            <button
+              type="submit"
+              class="btn btn-primary w-100 fw-bold custom-btn"
+              [disabled]="loginForm.invalid || isLoading"
+            >
+              @if (isLoading) {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+              }
+              {{ isLoading ? 'Verifying...' : 'Login' }}
+            </button>
+          </form>
+          <div class="mt-3 text-center border-top pt-3">
+            @if (isCitizenSelected) {
+              <div>
+                <p class="text-muted small mb-2">New to WelfareLink?</p>
+                <button
+                  (click)="toggleMode()"
+                  class="btn btn-sm btn-outline-secondary w-100 fw-bold custom-btn-outline"
+                >
+                  Register as a Citizen
+                </button>
+              </div>
+            }
+            @if (!isCitizenSelected) {
+              <div>
+                <small class="text-muted" style="font-size: 0.8rem"
+                  >Staff accounts are provisioned by System Administrators.</small
+                >
+              </div>
+            }
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold text-secondary small mb-1">Full Address</label>
-            <textarea class="form-control form-control-sm custom-input" formControlName="address" rows="1"
-              placeholder="Street, City, Zip"></textarea>
-          </div>
-
-          <button type="submit" class="btn btn-success w-100 fw-bold" [disabled]="registerForm.invalid || isLoading">
-            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-            {{ isLoading ? 'Registering...' : 'Complete Registration' }}
-          </button>
-        </form>
-
-        <div class="mt-3 text-center border-top pt-3">
-          <p class="text-muted small mb-2">Already have an account?</p>
-          <button (click)="toggleMode()" class="btn btn-sm btn-outline-secondary w-100 fw-bold custom-btn-outline">Back
-            to
-            Login</button>
         </div>
-      </div>
+      }
 
+      @if (!isLoginMode) {
+        <div>
+          <form [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()">
+            <div class="row g-2">
+              <div class="col-md-6 mb-2">
+                <label class="form-label fw-semibold text-secondary small mb-1">Full Name</label>
+                <input
+                  type="text"
+                  class="form-control form-control-sm custom-input"
+                  formControlName="fullName"
+                  placeholder="Legal Name"
+                />
+              </div>
+              <div class="col-md-6 mb-2">
+                <label class="form-label fw-semibold text-secondary small mb-1">Username</label>
+                <input
+                  type="text"
+                  class="form-control form-control-sm custom-input"
+                  formControlName="username"
+                  placeholder="Choose a username"
+                />
+              </div>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6 mb-2">
+                <label class="form-label fw-semibold text-secondary small mb-1"
+                  >Email Address</label
+                >
+                <input
+                  type="email"
+                  class="form-control form-control-sm custom-input"
+                  formControlName="email"
+                  placeholder="name@example.com"
+                />
+              </div>
+              <div class="col-md-6 mb-2">
+                <label class="form-label fw-semibold text-secondary small mb-1">Password</label>
+                <div class="input-group input-group-sm">
+                  <input
+                    [type]="showRegisterPassword ? 'text' : 'password'"
+                    class="form-control custom-input border-end-0"
+                    formControlName="password"
+                    placeholder="Create a password"
+                  />
+                  <span
+                    class="input-group-text bg-white border-start-0"
+                    style="cursor: pointer"
+                    (click)="toggleVisibility('register')"
+                  >
+                    <i class="bi" [ngClass]="showRegisterPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                  </span>
+                </div>
+                @if (
+                  registerForm.get('password')?.errors?.['pattern'] &&
+                  registerForm.get('password')?.touched
+                ) {
+                  <div class="text-danger" style="font-size: 0.75rem; margin-top: 2px">
+                    Password must be at least 8 characters long and contain at least one uppercase
+                    letter, one lowercase letter, one number, and one special character.
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6 mb-2">
+                <label class="form-label fw-semibold text-secondary small mb-1"
+                  >Date of Birth</label
+                >
+                <input
+                  type="date"
+                  class="form-control form-control-sm custom-input"
+                  formControlName="dateOfBirth"
+                />
+              </div>
+              <div class="col-md-6 mb-2">
+                <label class="form-label fw-semibold text-secondary small mb-1">Gender</label>
+                <select class="form-select form-select-sm custom-input" formControlName="gender">
+                  <option value="">Select...</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="mb-2">
+              <label class="form-label fw-semibold text-secondary small mb-1">Contact Number</label>
+              <input
+                type="text"
+                class="form-control form-control-sm custom-input"
+                formControlName="contactInfo"
+                placeholder="Mobile number"
+                [class.is-invalid]="
+                  registerForm.get('contactInfo')?.invalid &&
+                  registerForm.get('contactInfo')?.touched
+                "
+              />
+              @if (
+                registerForm.get('contactInfo')?.errors?.['pattern'] &&
+                registerForm.get('contactInfo')?.touched
+              ) {
+                <div class="text-danger" style="font-size: 0.75rem; margin-top: 2px">
+                  Mobile number must be exactly 10 digits.
+                </div>
+              }
+              @if (
+                registerForm.get('contactInfo')?.errors?.['required'] &&
+                registerForm.get('contactInfo')?.touched &&
+                !registerForm.get('contactInfo')?.errors?.['pattern']
+              ) {
+                <div class="text-danger" style="font-size: 0.75rem; margin-top: 2px">
+                  Mobile number is required.
+                </div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-secondary small mb-1">Full Address</label>
+              <textarea
+                class="form-control form-control-sm custom-input"
+                formControlName="address"
+                rows="1"
+                placeholder="Street, City, Zip"
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              class="btn btn-success w-100 fw-bold"
+              [disabled]="registerForm.invalid || isLoading"
+            >
+              @if (isLoading) {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+              }
+              {{ isLoading ? 'Registering...' : 'Complete Registration' }}
+            </button>
+          </form>
+          <div class="mt-3 text-center border-top pt-3">
+            <p class="text-muted small mb-2">Already have an account?</p>
+            <button
+              (click)="toggleMode()"
+              class="btn btn-sm btn-outline-secondary w-100 fw-bold custom-btn-outline"
+            >
+              Back to Login
+            </button>
+          </div>
+        </div>
+      }
     </div>
   </div>
 </div>

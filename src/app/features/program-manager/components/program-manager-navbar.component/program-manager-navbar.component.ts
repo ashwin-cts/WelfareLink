@@ -1,13 +1,12 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-program-manager-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './program-manager-navbar.component.html',
-  styleUrls: ['./program-manager-navbar.component.css']
+  styleUrls: ['./program-manager-navbar.component.css'],
 })
 export class ProgramManagerNavbarComponent implements OnInit {
   public router = inject(Router);
@@ -40,7 +39,7 @@ export class ProgramManagerNavbarComponent implements OnInit {
     event.preventDefault();
     if (this.router.url === '/program-manager/dashboard') {
       this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-          this.router.navigate(['/program-manager/dashboard']);
+        this.router.navigate(['/program-manager/dashboard']);
       });
     } else {
       this.router.navigate(['/program-manager/dashboard']);

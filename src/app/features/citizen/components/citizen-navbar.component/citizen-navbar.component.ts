@@ -1,12 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-citizen-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
-  templateUrl: './citizen-navbar.component.html'
+  imports: [RouterModule],
+  templateUrl: './citizen-navbar.component.html',
 })
 export class CitizenNavbarComponent implements OnInit {
   public router = inject(Router);
@@ -32,12 +32,12 @@ export class CitizenNavbarComponent implements OnInit {
   }
 
   goToDashboard(event: Event) {
-    event.preventDefault(); 
-    
+    event.preventDefault();
+
     if (this.router.url === '/citizen-dashboard') {
       // Force reload to refresh dashboard data if already there
       this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-          this.router.navigate(['/citizen-dashboard']);
+        this.router.navigate(['/citizen-dashboard']);
       });
     } else {
       this.router.navigate(['/citizen-dashboard']);

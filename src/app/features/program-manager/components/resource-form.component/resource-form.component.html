@@ -1,157 +1,211 @@
 <app-resource-navbar></app-resource-navbar>
 
-<div class="container mt-4" style="padding-bottom: 40px; max-width: 800px;">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="mb-0 text-primary fw-bold">
-                <i class="bi" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-distribute-vertical'"></i>
-                {{ isEditMode ? 'Edit Resource' : 'Resource Allocation' }}
-            </h2>
-            <p class="text-muted mt-1 mb-0">
-                {{ isEditMode ? 'Update resource allocation details and status.' : 'Allocate new funds or materials to a
-                programme.' }}
-            </p>
-        </div>
-        <a routerLink="/resource-manager" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Back to List
-        </a>
+<div class="container mt-4" style="padding-bottom: 40px; max-width: 800px">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-0 text-primary fw-bold">
+        <i class="bi" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-distribute-vertical'"></i>
+        {{ isEditMode ? 'Edit Resource' : 'Resource Allocation' }}
+      </h2>
+      <p class="text-muted mt-1 mb-0">
+        {{
+          isEditMode
+            ? 'Update resource allocation details and status.'
+            : 'Allocate new funds or materials to a
+        programme.'
+        }}
+      </p>
     </div>
+    <a routerLink="/resource-manager" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i> Back to List
+    </a>
+  </div>
 
-    <div *ngIf="errorMessage" class="alert alert-danger shadow-sm">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
+  @if (errorMessage) {
+    <div class="alert alert-danger shadow-sm">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
     </div>
+  }
 
-    <div *ngIf="isLoading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-3 text-muted fw-bold">Loading resource details...</p>
+  @if (isLoading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="mt-3 text-muted fw-bold">Loading resource details...</p>
     </div>
+  }
 
-    <div class="card shadow-sm border-0" *ngIf="!isLoading">
-        <div class="card-body p-4">
-            <form [formGroup]="resourceForm" (ngSubmit)="onSubmit()">
-
-                <div class="row g-4">
-
-                    <div class="col-12" *ngIf="!isEditMode">
-                        <label class="form-label fw-bold">Select Programme <span class="text-danger">*</span></label>
-                        <select class="form-select form-select-lg bg-light" formControlName="programID">
-                            <option value="" disabled selected>-- Select a Programme --</option>
-                            <option *ngFor="let p of programs" [value]="p.programID">PRG-{{ p.programID }}: {{ p.title
-                                }}</option>
-                        </select>
-                        <span *ngIf="resourceForm.get('programID')?.touched && resourceForm.get('programID')?.invalid"
-                            class="text-danger small">You must select a programme.</span>
-                    </div>
-
-                    <div class="col-12" *ngIf="isEditMode && selectedProgramDetails">
-                        <div class="p-3 rounded"
-                            style="background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); border-left: 4px solid #0284c7;">
-                            <label class="text-muted text-uppercase fw-bold"
-                                style="font-size: 0.8rem;">Programme</label>
-                            <p class="fs-5 mb-0 fw-bold" style="color: #1e3c72;">{{ selectedProgramDetails.title }}</p>
-                            <small class="text-muted mt-1 d-block"><i class="bi bi-info-circle"></i> Programme cannot be
-                                changed after resource creation.</small>
-                        </div>
-                    </div>
-
-                    <div class="col-12" *ngIf="selectedProgramDetails">
-                        <div class="p-3 rounded border" style="background-color: #f8fafc;">
-                            <h6 class="text-primary fw-bold mb-3"><i class="bi bi-cash-stack me-2"></i>Budget
-                                Information</h6>
-
-                            <div class="row text-center g-2">
-                                <div class="col-md-4">
-                                    <div class="bg-white p-2 rounded border shadow-sm">
-                                        <small class="text-muted fw-bold text-uppercase d-block mb-1">Total
-                                            Budget</small>
-                                        <span class="fs-5 fw-bold text-primary">₹{{ selectedProgramDetails.budget |
-                                            number:'1.2-2' }}</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="bg-white p-2 rounded border shadow-sm">
-                                        <small class="text-muted fw-bold text-uppercase d-block mb-1">Already
-                                            Allocated</small>
-                                        <span class="fs-5 fw-bold text-warning">₹{{ selectedProgramDetails.allocated |
-                                            number:'1.2-2' }}</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="bg-white p-2 rounded border shadow-sm">
-                                        <small class="text-muted fw-bold text-uppercase d-block mb-1">Remaining</small>
-                                        <span class="fs-5 fw-bold"
-                                            [ngClass]="selectedProgramDetails.remaining > 0 ? 'text-success' : 'text-danger'">
-                                            ₹{{ selectedProgramDetails.remaining | number:'1.2-2' }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div *ngIf="selectedProgramDetails.remaining <= 0"
-                                class="alert alert-danger mt-3 mb-0 py-2">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Warning:</strong> No budget
-                                remaining. Increase programme budget before allocating more funds.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 mt-4">
-                        <label class="form-label fw-bold">Resource Type <span class="text-danger">*</span></label>
-                        <select class="form-select bg-light" formControlName="type">
-                            <option value="" disabled selected>-- Select Type --</option>
-                            <option value="Funds">💰 Funds</option>
-                            <option value="Materials">📦 Materials</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-6 mt-4">
-                        <label class="form-label fw-bold">Quantity / Amount <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white"
-                                *ngIf="resourceForm.get('type')?.value === 'Funds'">₹</span>
-                            <span class="input-group-text bg-white"
-                                *ngIf="resourceForm.get('type')?.value !== 'Funds'"><i class="bi bi-hash"></i></span>
-                            <input type="number" step="0.01" class="form-control bg-light fw-bold"
-                                formControlName="quantity" placeholder="0.00">
-                        </div>
-                    </div>
-
-                    <div class="col-12 mt-4" *ngIf="isEditMode">
-                        <label class="form-label fw-bold">Resource Status</label>
-                        <select class="form-select bg-light" formControlName="status">
-                            <option value="Available">Available</option>
-                            <option value="Reserved">Reserved</option>
-                            <option value="Depleted">Depleted</option>
-                        </select>
-                        <div class="mt-2 p-2 bg-light rounded text-muted small">
-                            <i class="bi bi-info-circle text-primary me-1"></i>
-                            <strong>Available:</strong> Ready to use | <strong>Reserved:</strong> Allocated to
-                            application | <strong>Depleted:</strong> Consumed
-                        </div>
-                    </div>
-
-                    <div class="col-12 mt-3" *ngIf="!isEditMode">
-                        <div class="alert alert-info border-0 shadow-sm py-2 mb-0">
-                            <i class="bi bi-info-circle-fill me-2"></i> <strong>Note:</strong> Resource will be created
-                            with "Available" status.
-                        </div>
-                    </div>
-
+  @if (!isLoading) {
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <form [formGroup]="resourceForm" (ngSubmit)="onSubmit()">
+          <div class="row g-4">
+            @if (!isEditMode) {
+              <div class="col-12">
+                <label class="form-label fw-bold"
+                  >Select Programme <span class="text-danger">*</span></label
+                >
+                <select class="form-select form-select-lg bg-light" formControlName="programID">
+                  <option value="" disabled selected>-- Select a Programme --</option>
+                  @for (p of programs; track p) {
+                    <option [value]="p.programID">PRG-{{ p.programID }}: {{ p.title }}</option>
+                  }
+                </select>
+                @if (
+                  resourceForm.get('programID')?.touched && resourceForm.get('programID')?.invalid
+                ) {
+                  <span class="text-danger small">You must select a programme.</span>
+                }
+              </div>
+            }
+            @if (isEditMode && selectedProgramDetails) {
+              <div class="col-12">
+                <div
+                  class="p-3 rounded"
+                  style="
+                    background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+                    border-left: 4px solid #0284c7;
+                  "
+                >
+                  <label class="text-muted text-uppercase fw-bold" style="font-size: 0.8rem"
+                    >Programme</label
+                  >
+                  <p class="fs-5 mb-0 fw-bold" style="color: #1e3c72">
+                    {{ selectedProgramDetails.title }}
+                  </p>
+                  <small class="text-muted mt-1 d-block"
+                    ><i class="bi bi-info-circle"></i> Programme cannot be changed after resource
+                    creation.</small
+                  >
                 </div>
-
-                <div class="d-flex justify-content-end gap-2 mt-5 pt-4 border-top">
-                    <a routerLink="/resource-manager" class="btn btn-light border px-4 fw-bold text-muted">
-                        <i class="bi bi-x-circle me-1"></i> Cancel
-                    </a>
-                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm"
-                        [disabled]="resourceForm.invalid || isSaving">
-                        <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
-                        <i *ngIf="!isSaving" class="bi bi-check-circle me-1"></i>
-                        {{ isEditMode ? 'Update Resource' : 'Allocate Resource' }}
-                    </button>
+              </div>
+            }
+            @if (selectedProgramDetails) {
+              <div class="col-12">
+                <div class="p-3 rounded border" style="background-color: #f8fafc">
+                  <h6 class="text-primary fw-bold mb-3">
+                    <i class="bi bi-cash-stack me-2"></i>Budget Information
+                  </h6>
+                  <div class="row text-center g-2">
+                    <div class="col-md-4">
+                      <div class="bg-white p-2 rounded border shadow-sm">
+                        <small class="text-muted fw-bold text-uppercase d-block mb-1"
+                          >Total Budget</small
+                        >
+                        <span class="fs-5 fw-bold text-primary"
+                          >₹{{ selectedProgramDetails.budget | number: '1.2-2' }}</span
+                        >
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="bg-white p-2 rounded border shadow-sm">
+                        <small class="text-muted fw-bold text-uppercase d-block mb-1"
+                          >Already Allocated</small
+                        >
+                        <span class="fs-5 fw-bold text-warning"
+                          >₹{{ selectedProgramDetails.allocated | number: '1.2-2' }}</span
+                        >
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="bg-white p-2 rounded border shadow-sm">
+                        <small class="text-muted fw-bold text-uppercase d-block mb-1"
+                          >Remaining</small
+                        >
+                        <span
+                          class="fs-5 fw-bold"
+                          [ngClass]="
+                            selectedProgramDetails.remaining > 0 ? 'text-success' : 'text-danger'
+                          "
+                        >
+                          ₹{{ selectedProgramDetails.remaining | number: '1.2-2' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  @if (selectedProgramDetails.remaining <= 0) {
+                    <div class="alert alert-danger mt-3 mb-0 py-2">
+                      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                      <strong>Warning:</strong> No budget remaining. Increase programme budget
+                      before allocating more funds.
+                    </div>
+                  }
                 </div>
-            </form>
-        </div>
+              </div>
+            }
+            <div class="col-md-6 mt-4">
+              <label class="form-label fw-bold"
+                >Resource Type <span class="text-danger">*</span></label
+              >
+              <select class="form-select bg-light" formControlName="type">
+                <option value="" disabled selected>-- Select Type --</option>
+                <option value="Funds">💰 Funds</option>
+                <option value="Materials">📦 Materials</option>
+              </select>
+            </div>
+            <div class="col-md-6 mt-4">
+              <label class="form-label fw-bold"
+                >Quantity / Amount <span class="text-danger">*</span></label
+              >
+              <div class="input-group">
+                @if (resourceForm.get('type')?.value === 'Funds') {
+                  <span class="input-group-text bg-white">₹</span>
+                }
+                @if (resourceForm.get('type')?.value !== 'Funds') {
+                  <span class="input-group-text bg-white"><i class="bi bi-hash"></i></span>
+                }
+                <input
+                  type="number"
+                  step="0.01"
+                  class="form-control bg-light fw-bold"
+                  formControlName="quantity"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+            @if (isEditMode) {
+              <div class="col-12 mt-4">
+                <label class="form-label fw-bold">Resource Status</label>
+                <select class="form-select bg-light" formControlName="status">
+                  <option value="Available">Available</option>
+                  <option value="Reserved">Reserved</option>
+                  <option value="Depleted">Depleted</option>
+                </select>
+                <div class="mt-2 p-2 bg-light rounded text-muted small">
+                  <i class="bi bi-info-circle text-primary me-1"></i>
+                  <strong>Available:</strong> Ready to use | <strong>Reserved:</strong> Allocated to
+                  application | <strong>Depleted:</strong> Consumed
+                </div>
+              </div>
+            }
+            @if (!isEditMode) {
+              <div class="col-12 mt-3">
+                <div class="alert alert-info border-0 shadow-sm py-2 mb-0">
+                  <i class="bi bi-info-circle-fill me-2"></i> <strong>Note:</strong> Resource will
+                  be created with "Available" status.
+                </div>
+              </div>
+            }
+          </div>
+          <div class="d-flex justify-content-end gap-2 mt-5 pt-4 border-top">
+            <a routerLink="/resource-manager" class="btn btn-light border px-4 fw-bold text-muted">
+              <i class="bi bi-x-circle me-1"></i> Cancel
+            </a>
+            <button
+              type="submit"
+              class="btn btn-primary px-4 fw-bold shadow-sm"
+              [disabled]="resourceForm.invalid || isSaving"
+            >
+              @if (isSaving) {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+              }
+              @if (!isSaving) {
+                <i class="bi bi-check-circle me-1"></i>
+              }
+              {{ isEditMode ? 'Update Resource' : 'Allocate Resource' }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+  }
 </div>
