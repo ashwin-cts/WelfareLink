@@ -1,39 +1,46 @@
 <header>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg corona-navbar">
         <div class="container">
-            <a class="navbar-brand text-white" (click)="goToDashboard($event)" style="cursor: pointer;">
-                <i class="bi bi-shield-lock-fill text-warning"></i> WelfareLink Admin
+            <a class="navbar-brand d-flex align-items-center gap-2" (click)="goToDashboard($event)"
+                style="cursor: pointer;">
+                <i class="bi bi-shield-lock-fill text-warning fs-4"></i> WelfareLink Admin
             </a>
 
             <div class="navbar-collapse collapse">
-                <ul class="navbar-nav ms-auto align-items-center">
+                <ul class="navbar-nav ms-auto align-items-center gap-2">
                     <li class="nav-item">
-                        <a class="nav-link" 
-                           (click)="goToDashboard($event)" 
-                           [class.active]="router.url === '/admin-dashboard'" 
-                           style="cursor: pointer;">
+                        <a class="nav-link" (click)="goToDashboard($event)"
+                            [class.active]="router.url === '/admin-dashboard'" style="cursor: pointer;">
                             Dashboard
                         </a>
                     </li>
-                    
-                    <li class="nav-item dropdown ms-3">
-                        <a class="nav-link dropdown-toggle text-white" style="cursor: pointer;" (click)="toggleDropdown()">
-                            <i class="bi bi-person-circle"></i> {{ userName() }}
+
+                    <li class="nav-item dropdown ms-2">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" style="cursor: pointer;"
+                            (click)="toggleDropdown()">
+                            <i class="bi bi-person-circle fs-5 text-primary"></i> <span class="text-white">{{ userName()
+                                }}</span>
                         </a>
-                        
+
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0" [class.show]="isDropdownOpen">
                             <li><span class="dropdown-item-text"><strong>Role:</strong> {{ userRole() }}</span></li>
-                            <li><hr class="dropdown-divider"></li>
-                            
                             <li>
-                                <a class="dropdown-item" routerLink="/admin/profile" (click)="closeDropdown()">
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2" routerLink="/admin/profile"
+                                    (click)="closeDropdown()">
                                     <i class="bi bi-person-gear"></i> Account Settings
                                 </a>
                             </li>
-                            
-                            <li><hr class="dropdown-divider"></li>
+
                             <li>
-                                <a class="dropdown-item text-danger" (click)="logout()" style="cursor:pointer;">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger d-flex align-items-center gap-2" (click)="logout()"
+                                    style="cursor:pointer;">
                                     <i class="bi bi-box-arrow-right"></i> Logout
                                 </a>
                             </li>
