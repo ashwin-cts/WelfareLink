@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ResourceStatementItem } from '../services/auditor.service';
+import { ResourceStatementItem } from '../../models/auditor.model';
 
 @Component({
   selector: 'app-resource-history',

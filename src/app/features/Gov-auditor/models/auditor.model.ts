@@ -1,4 +1,54 @@
-// 1. Program & Budget Level (Where the money starts)
+// ==========================================
+// AUDITOR DASHBOARD API MODELS
+// ==========================================
+export interface AuditorDashboardStats {
+  totalApplications: number;
+  totalPrograms: number;
+  totalBudget: number;
+  totalResource: number;
+  totalDisbursement: number;
+}
+
+export interface BudgetMonitoringItem {
+  programName: string;
+  programStatus: string;
+  programBudget: number;
+  allocatedResource: number;
+  citizensApplied: number;
+  totalDisbursed: number;
+  remainingResource: number;
+  utilizationPercent: number;
+}
+
+export interface ResourceStatementItem {
+  date: string;
+  resourceID: number;
+  programName: string;
+  allocatedResource: number;
+  remainingAllocationPending: number;
+}
+
+export interface DisbursementStatementItem {
+  CitizenID: number;
+  CitizenName: string;
+  MaxBenefit: number;
+  BenefitAllocated: number;
+  Disbursed: number;
+  RemainDisburse: number;
+  DisbursementPercent: number;
+}
+
+export interface AuditorDashboardSummary {
+  totalBudget: number;
+  totalUtilized: number;
+  totalDisbursed: number;
+  totalPendingBenefits: number;
+  activeProgramsCount: number;
+}
+
+// ==========================================
+// CORE ENTITY MODELS
+// ==========================================
 export interface WelfareProgram {
   programID: number;
   title: string;
@@ -12,7 +62,6 @@ export interface WelfareProgram {
   requiredDocuments: string;
 }
 
-// 2. Citizen Level (Who receives the money)
 export interface Citizen {
   citizenId: number;
   userId: number;
@@ -25,7 +74,6 @@ export interface Citizen {
   createdAt: string;
 }
 
-// 3. Disbursement Level (The actual money sent)
 export interface Disbursement {
   disbursementID: number;
   benefitID: number;
@@ -36,7 +84,6 @@ export interface Disbursement {
   status: string;
 }
 
-// 4. Benefit Level (The approved amount before disbursement)
 export interface Benefit {
   benefitID: number;
   applicationID: number;
@@ -74,7 +121,6 @@ export interface ApplicationDocument {
   citizenDocument: CitizenDocument;
 }
 
-// 5. Application Level (Tying it all together for the Auditor)
 export interface WelfareApplication {
   applicationID: number;
   citizenID: number;
@@ -86,13 +132,4 @@ export interface WelfareApplication {
   program?: WelfareProgram;
   citizen?: Citizen;
   applicationDocuments?: ApplicationDocument[];
-}
-
-// 6. Auditor Specific Dashboard Summaries (Mapped to your Auditor API endpoints)
-export interface AuditorDashboardSummary {
-  totalBudget: number;
-  totalUtilized: number;
-  totalDisbursed: number;
-  totalPendingBenefits: number;
-  activeProgramsCount: number;
 }

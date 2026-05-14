@@ -1,12 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AuditorDashboardStats, BudgetMonitoringItem, ResourceStatementItem, DisbursementStatementItem } from '../../models/auditor.model';
+import { AuditorService } from '../services/auditor.service';
 
-import {
-  AuditorService,
-  AuditorDashboardStats,
-  BudgetMonitoringItem,
-  ResourceStatementItem,
-  DisbursementStatementItem,
-} from '../services/auditor.service';
+// IMPORT THE NEW COMPONENTS
 import { AuditorNavbarComponent } from '../auditor-navbar.component/auditor-navbar.component';
 
 // IMPORT THE NEW CHILDREN
@@ -38,7 +35,7 @@ export class AuditorDashboardComponent implements OnInit {
   resourceItems: ResourceStatementItem[] = [];
   disbursementItems: DisbursementStatementItem[] = [];
 
-  constructor(private auditorService: AuditorService) {}
+  constructor(private auditorService: AuditorService) { }
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -64,7 +61,9 @@ export class AuditorDashboardComponent implements OnInit {
     this.auditorService.getDashboardStats().subscribe({
       // We use 'any' to read the PascalCase keys from C# and map them to camelCase
       next: (res: any) => {
+
         this.dashboardStats = {
+
           totalApplications: res.TotalApplications || res.totalApplications || 0,
           totalPrograms: res.TotalPrograms || res.totalPrograms || 0,
           totalBudget: res.TotalBudget || res.totalBudget || 0,
@@ -124,24 +123,12 @@ export class AuditorDashboardComponent implements OnInit {
   loadDisbursementData() {
     this.auditorService.getDisbursementStatement().subscribe({
       next: (res: any) => {
-        this.disbursementItems = res.map((item: any) => ({
-          disbursementID:
-            item.DisbursementID || item.disbursementID || Math.floor(Math.random() * 1000),
-          date: item.Date || item.date || new Date().toISOString(),
-          citizenName: item.CitizenName || item.citizenName || 'Unknown Citizen',
-          programName: item.ProgramName || item.programName || 'Welfare Program',
+        console.log("Disbursement Data:", res); // debug
 
-          // Map properties safely from what C# provides
-          amount: item.Disbursed || item.disbursed || item.Amount || item.amount || 0,
-          status: item.Status || item.status || (item.Disbursed > 0 ? 'Completed' : 'Pending'),
+        // THE FIX: Your API already returns exactly what the HTML needs!
+        // No .map() required. Just assign it directly.
+        this.disbursementItems = res;
 
-          // Extra properties from your updated model
-          citizenID: item.CitizenID || item.citizenID,
-          maxBenefit: item.MaxBenefit || item.maxBenefit,
-          benefitAllocated: item.BenefitAllocated || item.benefitAllocated,
-          remainDisburse: item.RemainDisburse || item.remainDisburse,
-          disbursementPercent: item.DisbursementPercent || item.disbursementPercent,
-        }));
       },
       error: (err: unknown) => {
         console.error(err);

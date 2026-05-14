@@ -1,50 +1,56 @@
 <div class="row">
   <div class="col-md-12">
-    <div class="card">
-      <div class="card-header"><h5 class="mb-0">Section 3: Disbursement History</h5></div>
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h5 class="mb-0">Section 3: Disbursement Statement</h5>
+      </div>
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-hover table-bordered">
+          <table class="table table-hover table-bordered text-nowrap align-middle">
             <thead class="table-dark">
               <tr>
-                <th>Date</th>
-                <th>ID</th>
-                <th>Citizen</th>
-                <th>Program</th>
-                <th>Amount (₹)</th>
-                <th>Status</th>
+                <th>Citizen ID</th>
+                <th>Citizen Name</th>
+                <th>Max Benefit (₹)</th>
+                <th>Benefit Allocated (₹)</th>
+                <th>Total Disbursed (₹)</th>
+                <th>Remaining to Disburse (₹)</th>
+                <th>Disbursement %</th>
               </tr>
             </thead>
             <tbody>
-              @for (item of items; track item) {
-                <tr>
-                  <td>{{ item.date | date: 'mediumDate' }}</td>
-                  <td>
-                    <span class="badge bg-secondary">DIS-{{ item.disbursementID }}</span>
-                  </td>
-                  <td>{{ item.citizenName }}</td>
-                  <td>
-                    <strong>{{ item.programName }}</strong>
-                  </td>
-                  <td>₹ {{ item.amount | number: '1.2-2' }}</td>
-                  <td>
-                    <span
-                      class="badge"
-                      [ngClass]="{
-                        'bg-success': item.status === 'Completed' || item.status === 'Disbursed',
-                        'bg-warning text-dark': item.status === 'Pending',
-                        'bg-danger': item.status === 'Failed',
-                      }"
-                    >
-                      {{ item.status }}
-                    </span>
-                  </td>
-                </tr>
-              }
-              @if (items.length === 0) {
-                <tr>
-                  <td colspan="6" class="text-center"><em>No disbursements found</em></td>
-                </tr>
+              @for (item of items; track $index) {
+              <tr>
+                <td><span class="badge bg-secondary">CIT-{{ item.CitizenID }}</span></td>
+                <td><strong>{{ item.CitizenName }}</strong></td>
+                <td>₹ {{ item.MaxBenefit | number:'1.2-2' }}</td>
+                <td>₹ {{ item.BenefitAllocated | number:'1.2-2' }}</td>
+
+                <td><span class="text-success fw-bold">₹ {{ item.Disbursed | number:'1.2-2' }}</span></td>
+
+                <td>
+                  <span [ngClass]="item.RemainDisburse > 0 ? 'text-danger fw-bold' : 'text-success'">
+                    ₹ {{ item.RemainDisburse | number:'1.2-2' }}
+                  </span>
+                </td>
+
+                <td style="min-width: 150px;">
+                  <div class="progress position-relative" style="height: 22px;">
+                    <div class="progress-bar bg-info" role="progressbar"
+                      [style.width.%]="item.DisbursementPercent > 100 ? 100 : item.DisbursementPercent">
+                    </div>
+                    <div
+                      class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center text-dark fw-bold"
+                      style="top: 0; left: 0;">
+                      {{ item.DisbursementPercent | number:'1.1-1' }}%
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="7" class="text-center text-muted"><em>No disbursement records found</em></td>
+              </tr>
               }
             </tbody>
           </table>
@@ -56,14 +62,11 @@
 
 <div class="row mt-4">
   <div class="col-md-12">
-    <div class="card">
+    <div class="card shadow-sm">
       <div class="card-body">
-        <button class="btn btn-secondary me-2" (click)="print.emit()">
-          <i class="fas fa-print"></i> Print Report
-        </button>
-        <button class="btn btn-success" (click)="export.emit()">
-          <i class="fas fa-download"></i> Export to CSV
-        </button>
+        <button class="btn btn-secondary me-2" (click)="print.emit()"><i class="bi bi-printer"></i> Print
+          Report</button>
+        <button class="btn btn-success" (click)="export.emit()"><i class="bi bi-download"></i> Export to CSV</button>
       </div>
     </div>
   </div>

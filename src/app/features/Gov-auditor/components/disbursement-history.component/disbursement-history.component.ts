@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DisbursementStatementItem } from '../services/auditor.service';
+import { DisbursementStatementItem } from '../../models/auditor.model';
+import { AuditorService } from '../services/auditor.service';
 
 @Component({
   selector: 'app-disbursement-history',
