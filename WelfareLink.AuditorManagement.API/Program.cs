@@ -16,7 +16,7 @@ namespace WelfareLink.AuditorManagement.API
 
             Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
-            .WriteTo.File("logs/microservice-.txt", rollingInterval: RollingInterval.Day)
+            .WriteTo.File("logs/AuditorService-.txt", rollingInterval: RollingInterval.Day)
             .CreateBootstrapLogger();
             try
             {

@@ -7,7 +7,7 @@ using WelfareLink.Authentication.API.Middleware;
 // 1. Bootstrap Logger to catch startup crashes
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
-    .WriteTo.File("logs/microservice-.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.File("logs/AuthenticationService-.txt", rollingInterval: RollingInterval.Day)
     .CreateBootstrapLogger();
 
 try

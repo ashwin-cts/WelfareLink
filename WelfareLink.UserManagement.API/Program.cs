@@ -15,7 +15,7 @@ namespace WelfareLink.UserManagement.API
         {
             Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
-            .WriteTo.File("logs/microservice-.txt", rollingInterval: RollingInterval.Day)
+            .WriteTo.File("logs/UserService-.txt", rollingInterval: RollingInterval.Day)
             .CreateBootstrapLogger();
             try {
                 //exception
