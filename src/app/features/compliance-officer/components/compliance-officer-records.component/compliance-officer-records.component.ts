@@ -7,35 +7,8 @@ import { ComplianceRecord } from '../../models/compliance-officer.model';
   selector: 'app-compliance-records',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="card shadow-sm">
-      <div class="card-header bg-white"><h5 class="mb-0">Compliance Records</h5></div>
-      <div class="card-body p-0">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="bg-light">
-            <tr><th>Type</th><th>Violation</th><th>Description</th><th>Status</th><th>Action</th></tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let record of records">
-              <!-- <td>{{record.recordID }}</td> -->
-              <td>{{ record.entityType }} 
-                <!-- <small>(#{{ record.entityId }})</small> -->
-              </td>
-              <td><span class="text-danger fw-bold">{{ record.violationType }}</span></td>
-              <td>{{ record.description }}</td>
-              <td>
-                <span class="badge" [ngClass]="record.status === 'Open' ? 'bg-warning text-dark' : 'bg-success'">{{ record.status }}</span>
-              </td>
-              <td>
-                <button *ngIf="record.status === 'Open'" class="btn btn-sm btn-success" (click)="resolve(record)">Clear Flag</button>
-                <span *ngIf="record.status !== 'Open'" class="text-muted small">Resolved: {{ record.notes }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `
+  templateUrl: './compliance-officer-records.component.html',
+  styleUrls: ['./compliance-officer-records.component.css']
 })
 export class ComplianceRecordsComponent implements OnInit {
   records: ComplianceRecord[] = [];

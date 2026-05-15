@@ -65,3 +65,13 @@ export interface ComplianceRecord {
   status: string;
   notes?: string;
 }
+//to get Eligiblity status
+export interface EligibilityCheck {
+  checkID: number;
+  applicationID: number;
+  officerID: number;
+  result: string;
+  resultCode: string;
+  date: string;
+  notes: string;
+}

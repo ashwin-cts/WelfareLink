@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { API_CONFIG, ApiConfig } from '../../../core/config/api.config';
-import { ComplianceMetrics, DashboardApplication, ApplicationDetail, ComplianceRecord } from '../models/compliance-officer.model';
+import { ComplianceMetrics, DashboardApplication, ApplicationDetail, ComplianceRecord,EligibilityCheck } from '../models/compliance-officer.model';
 
 @Injectable({
   providedIn: 'root',
@@ -43,5 +43,9 @@ export class ComplianceOfficerService {
     return this.http.get(`${this.apiConfig.citizenApi}/CitizenDocumentApi/${docId}/file`, {
       responseType: 'blob'
     });
+  }
+  getLatestEligibilityCheck(applicationId: number): Observable<EligibilityCheck> {
+    
+    return this.http.get<EligibilityCheck>(`${this.apiConfig.eligibilityApi}/application/${applicationId}/latest`);
   }
 }
