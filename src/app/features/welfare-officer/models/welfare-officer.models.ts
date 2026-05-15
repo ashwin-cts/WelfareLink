@@ -34,6 +34,7 @@ export interface DashboardStats {
   pending: number;
   approved: number;
   rejected: number;
+  fullyDisbursed: number;
 }
 // ----------Welfare Application Analytics----------------
 export interface AppAnalyticsDashboard {

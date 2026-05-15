@@ -1,147 +1,145 @@
 <app-benefit-navbar></app-benefit-navbar>
 <div class="container py-4">
   @if (isLoading) {
-    <div class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
     </div>
+  </div>
   }
 
   @if (!isLoading && benefit) {
-    <div>
-      <div class="page-header">
-        <h1><i class="bi bi-info-circle-fill"></i> Benefit Details</h1>
+  <div>
+    <div class="page-header">
+      <h1><i class="bi bi-info-circle-fill"></i> Benefit Details</h1>
+      <a routerLink="/welfare-officer/benefit-list" class="btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> Back to List
+      </a>
+    </div>
+    <div class="content-card">
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center"
+              style="width: 60px; height: 60px">
+              <i class="bi bi-gift-fill text-white" style="font-size: 1.8rem"></i>
+            </div>
+            @if (benefit.welfareApplication && benefit.welfareApplication.program){
+            <div>
+              <h3 class="mb-0">Benefit of {{benefit.welfareApplication.citizen?.name}} for program
+                {{benefit.welfareApplication.program.title}}</h3>
+              <span class="status-badge mt-1" [ngClass]="getStatusClass(benefit.status)">
+                <i class="bi bi-circle-fill" style="font-size: 8px"></i> {{ benefit.status }}
+              </span>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="detail-grid mb-4">
+        <!-- <div class="detail-item">
+          <label><i class="bi bi-hash"></i> Benefit ID</label>
+          <p>{{ benefit.benefitID }}</p>
+        </div> -->
+        <div class="detail-item">
+          <label><i class="bi bi-tag"></i> Benefit Type</label>
+          <p>{{ benefit.type }}</p>
+        </div>
+        <div class="detail-item">
+          <label><i class="bi bi-currency-rupee"></i> Amount</label>
+          <p>
+            <strong style="color: #10b981; font-size: 1.3rem">{{
+              benefit.amount | currency: 'INR' : 'symbol' : '1.2-2'
+              }}</strong>
+          </p>
+        </div>
+        <div class="detail-item">
+          <label><i class="bi bi-calendar-event"></i> Allocation Date</label>
+          <p>{{ benefit.date | date: 'MMMM dd, yyyy' }}</p>
+        </div>
+        <div class="detail-item">
+          <label><i class="bi bi-flag"></i> Current Status</label>
+          <p>{{ benefit.status }}</p>
+        </div>
+      </div>
+      @if (benefit.welfareApplication) {
+      <h5 class="fw-bold mb-3">
+        <i class="bi bi-file-earmark-text text-primary me-2"></i>Application Details
+      </h5>
+      <div class="detail-grid mb-4">
+        <!-- <div class="detail-item">
+          <label><i class="bi bi-hash"></i> Application ID</label>
+          <p class="fw-bold text-primary">
+            App #{{ benefit.welfareApplication.applicationID }}
+          </p>
+        </div> -->
+        <div class="detail-item">
+          <label><i class="bi bi-calendar"></i> Submitted Date</label>
+          <p>{{ benefit.welfareApplication.submittedDate | date: 'MMMM dd, yyyy' }}</p>
+        </div>
+        <div class="detail-item">
+          <label><i class="bi bi-flag"></i> Application Status</label>
+          <p>{{ benefit.welfareApplication.status }}</p>
+        </div>
+      </div>
+      <h5 class="fw-bold mb-3">
+        <i class="bi bi-person-fill text-success me-2"></i>Citizen Details
+      </h5>
+      <div class="detail-grid mb-4">
+        <!-- <div class="detail-item">
+          <label><i class="bi bi-person-badge"></i> Citizen ID</label>
+          <p>#{{ benefit.welfareApplication.citizenID }}</p>
+        </div> -->
+        <div class="detail-item">
+          <label><i class="bi bi-person"></i> Citizen Name</label>
+          <p>{{ benefit.welfareApplication.citizen?.name || '-' }}</p>
+        </div>
+      </div>
+      @if (benefit.welfareApplication.program) {
+      <h5 class="fw-bold mb-3">
+        <i class="bi bi-diagram-3-fill text-warning me-2"></i>Program Details
+      </h5>
+      <div class="detail-grid mb-4">
+        <!-- <div class="detail-item">
+          <label><i class="bi bi-hash"></i> Program ID</label>
+          <p>#{{ benefit.welfareApplication.program.programID }}</p>
+        </div> -->
+        <div class="detail-item">
+          <label><i class="bi bi-grid"></i> Program Title</label>
+          <p>{{ benefit.welfareApplication.program.title }}</p>
+        </div>
+        <div class="detail-item">
+          <label><i class="bi bi-flag"></i> Program Status</label>
+          <p>{{ benefit.welfareApplication.program.status }}</p>
+        </div>
+        <div class="detail-item">
+          <label><i class="bi bi-currency-rupee"></i> Budget</label>
+          <p>
+            {{
+            benefit.welfareApplication.program.budget | currency: 'INR' : 'symbol' : '1.2-2'
+            }}
+          </p>
+        </div>
+        <div class="detail-item" style="grid-column: span 2">
+          <label><i class="bi bi-card-text"></i> Description</label>
+          <p>{{ benefit.welfareApplication.program.description || '-' }}</p>
+        </div>
+      </div>
+      }
+      }
+      <hr class="my-4" />
+      <div class="d-flex gap-3">
+        <a [routerLink]="['/welfare-officer/benefit-edit', benefit.benefitID]" class="btn-modern btn-warning-modern">
+          <i class="bi bi-pencil"></i> Edit Benefit
+        </a>
+        <button (click)="onDelete()" class="btn-modern btn-danger-modern">
+          <i class="bi bi-trash"></i> Delete
+        </button>
         <a routerLink="/welfare-officer/benefit-list" class="btn-modern btn-secondary-modern">
-          <i class="bi bi-arrow-left"></i> Back to List
+          <i class="bi bi-list"></i> View All
         </a>
       </div>
-      <div class="content-card">
-        <div class="row mb-4">
-          <div class="col-12">
-            <div class="d-flex align-items-center gap-3 mb-4">
-              <div
-                class="rounded-circle bg-primary d-flex align-items-center justify-content-center"
-                style="width: 60px; height: 60px"
-              >
-                <i class="bi bi-gift-fill text-white" style="font-size: 1.8rem"></i>
-              </div>
-              <div>
-                <h3 class="mb-0">Benefit #{{ benefit.benefitID }}</h3>
-                <span class="status-badge mt-1" [ngClass]="getStatusClass(benefit.status)">
-                  <i class="bi bi-circle-fill" style="font-size: 8px"></i> {{ benefit.status }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="detail-grid mb-4">
-          <div class="detail-item">
-            <label><i class="bi bi-hash"></i> Benefit ID</label>
-            <p>{{ benefit.benefitID }}</p>
-          </div>
-          <div class="detail-item">
-            <label><i class="bi bi-tag"></i> Benefit Type</label>
-            <p>{{ benefit.type }}</p>
-          </div>
-          <div class="detail-item">
-            <label><i class="bi bi-currency-rupee"></i> Amount</label>
-            <p>
-              <strong style="color: #10b981; font-size: 1.3rem">{{
-                benefit.amount | currency: 'INR' : 'symbol' : '1.2-2'
-              }}</strong>
-            </p>
-          </div>
-          <div class="detail-item">
-            <label><i class="bi bi-calendar-event"></i> Allocation Date</label>
-            <p>{{ benefit.date | date: 'MMMM dd, yyyy' }}</p>
-          </div>
-          <div class="detail-item">
-            <label><i class="bi bi-flag"></i> Current Status</label>
-            <p>{{ benefit.status }}</p>
-          </div>
-        </div>
-        @if (benefit.welfareApplication) {
-          <h5 class="fw-bold mb-3">
-            <i class="bi bi-file-earmark-text text-primary me-2"></i>Application Details
-          </h5>
-          <div class="detail-grid mb-4">
-            <div class="detail-item">
-              <label><i class="bi bi-hash"></i> Application ID</label>
-              <p class="fw-bold text-primary">
-                App #{{ benefit.welfareApplication.applicationID }}
-              </p>
-            </div>
-            <div class="detail-item">
-              <label><i class="bi bi-calendar"></i> Submitted Date</label>
-              <p>{{ benefit.welfareApplication.submittedDate | date: 'MMMM dd, yyyy' }}</p>
-            </div>
-            <div class="detail-item">
-              <label><i class="bi bi-flag"></i> Application Status</label>
-              <p>{{ benefit.welfareApplication.status }}</p>
-            </div>
-          </div>
-          <h5 class="fw-bold mb-3">
-            <i class="bi bi-person-fill text-success me-2"></i>Citizen Details
-          </h5>
-          <div class="detail-grid mb-4">
-            <div class="detail-item">
-              <label><i class="bi bi-person-badge"></i> Citizen ID</label>
-              <p>#{{ benefit.welfareApplication.citizenID }}</p>
-            </div>
-            <div class="detail-item">
-              <label><i class="bi bi-person"></i> Citizen Name</label>
-              <p>{{ benefit.welfareApplication.citizen?.name || '-' }}</p>
-            </div>
-          </div>
-          @if (benefit.welfareApplication.program) {
-            <h5 class="fw-bold mb-3">
-              <i class="bi bi-diagram-3-fill text-warning me-2"></i>Program Details
-            </h5>
-            <div class="detail-grid mb-4">
-              <div class="detail-item">
-                <label><i class="bi bi-hash"></i> Program ID</label>
-                <p>#{{ benefit.welfareApplication.program.programID }}</p>
-              </div>
-              <div class="detail-item">
-                <label><i class="bi bi-grid"></i> Program Title</label>
-                <p>{{ benefit.welfareApplication.program.title }}</p>
-              </div>
-              <div class="detail-item">
-                <label><i class="bi bi-flag"></i> Program Status</label>
-                <p>{{ benefit.welfareApplication.program.status }}</p>
-              </div>
-              <div class="detail-item">
-                <label><i class="bi bi-currency-rupee"></i> Budget</label>
-                <p>
-                  {{
-                    benefit.welfareApplication.program.budget | currency: 'INR' : 'symbol' : '1.2-2'
-                  }}
-                </p>
-              </div>
-              <div class="detail-item" style="grid-column: span 2">
-                <label><i class="bi bi-card-text"></i> Description</label>
-                <p>{{ benefit.welfareApplication.program.description || '-' }}</p>
-              </div>
-            </div>
-          }
-        }
-        <hr class="my-4" />
-        <div class="d-flex gap-3">
-          <a
-            [routerLink]="['/welfare-officer/benefit-edit', benefit.benefitID]"
-            class="btn-modern btn-warning-modern"
-          >
-            <i class="bi bi-pencil"></i> Edit Benefit
-          </a>
-          <button (click)="onDelete()" class="btn-modern btn-danger-modern">
-            <i class="bi bi-trash"></i> Delete
-          </button>
-          <a routerLink="/welfare-officer/benefit-list" class="btn-modern btn-secondary-modern">
-            <i class="bi bi-list"></i> View All
-          </a>
-        </div>
-      </div>
     </div>
+  </div>
   }
 </div>
