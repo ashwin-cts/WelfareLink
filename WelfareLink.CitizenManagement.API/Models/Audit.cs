@@ -13,7 +13,7 @@ namespace WelfareLink.CitizenManagement.API.Models
 
         public int AuditedByUserId { get; set; }
 
-        public DateTime AuditDate { get; set; } = DateTime.UtcNow;
+        public DateTime AuditDate { get; set; } = DateTime.Now;
 
         [Required, StringLength(100)]
         public string FindingType { get; set; } = string.Empty;

@@ -52,7 +52,7 @@ public class CitizenDocumentService : ICitizenDocumentService
                 document.FileURI = await SaveFileAsync(file, document.DocType);
             }
 
-            document.UploadedDate = DateTime.UtcNow;
+            document.UploadedDate = DateTime.Now;
             document.VerificationStatus = "Pending";
 
             await _documentRepository.AddAsync(document);
@@ -151,7 +151,7 @@ public class CitizenDocumentService : ICitizenDocumentService
 
             // Save new file
             document.FileURI = await SaveFileAsync(file, document.DocType);
-            document.UploadedDate = DateTime.UtcNow;
+            document.UploadedDate = DateTime.Now;
             document.VerificationStatus = "Pending";
 
             await _documentRepository.UpdateAsync(document);
@@ -188,7 +188,7 @@ public class CitizenDocumentService : ICitizenDocumentService
         }
 
         var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
-        var istTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
+        var istTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now, istZone);
 
         var uniqueFileName = $"{docType}_{istTime:yyyyMMddHHmmss}_{Guid.NewGuid()}_{file.FileName}";
         var filePath = Path.Combine(uploadsFolder, uniqueFileName);

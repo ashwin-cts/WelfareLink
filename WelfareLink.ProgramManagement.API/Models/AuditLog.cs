@@ -37,7 +37,7 @@ namespace WelfareLink.ProgramManagement.API.Models
         [StringLength(50)]
         public string Status { get; set; } = "Success";
 
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.Now;
 
         [ForeignKey("UserId")]
         [JsonIgnore]

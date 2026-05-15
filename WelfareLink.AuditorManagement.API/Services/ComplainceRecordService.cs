@@ -29,7 +29,7 @@ public class ComplainceRecordService : IComplainceRecordService
 
     public async Task<ComplainceRecord> CreateRecordAsync(ComplainceRecord record)
     {
-        record.CreatedDate = DateTime.UtcNow;
+        record.CreatedDate = DateTime.Now;
         record.Status = "Open";
 
         // Auto-populate ApplicationID and CitizenID based on EntityType and EntityId
@@ -47,7 +47,7 @@ public class ComplainceRecordService : IComplainceRecordService
         if (notes != null) record.Notes = notes;
         if (status is "Resolved" or "Dismissed")
         {
-            record.ResolvedDate = DateTime.UtcNow;
+            record.ResolvedDate = DateTime.Now;
             record.ResolvedByUserId = resolvedByUserId;
         }
         await _repo.UpdateAsync(record);

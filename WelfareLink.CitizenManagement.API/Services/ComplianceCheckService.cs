@@ -76,7 +76,7 @@ namespace WelfareLink.CitizenManagement.API.Services
         /// </summary>
         public async Task CheckDisbursementDelayComplianceAsync()
         {
-            var twoDaysAgo = DateTime.UtcNow.AddDays(-2);
+            var twoDaysAgo = DateTime.Now.AddDays(-2);
 
             // Find benefits created 2 days ago but not fully disbursed
             var delayedBenefits = await _context.Benefits
@@ -207,7 +207,7 @@ namespace WelfareLink.CitizenManagement.API.Services
             if (record != null)
             {
                 record.Status = "Resolved";
-                record.ResolvedDate = DateTime.UtcNow;
+                record.ResolvedDate = DateTime.Now;
                 record.ResolvedByUserId = resolvedByUserId;
                 record.Notes = notes;
 
@@ -229,7 +229,7 @@ namespace WelfareLink.CitizenManagement.API.Services
                 ViolationType = "OfficerFlagged",
                 Description = reason,
                 Status = "Open",
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = DateTime.Now
             };
 
             _context.ComplianceRecords.Add(flag);

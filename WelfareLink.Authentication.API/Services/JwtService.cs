@@ -57,7 +57,7 @@ namespace WelfareLink.Authentication.API.Services
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_expiryMinutes),
+                expires: DateTime.Now.AddMinutes(_expiryMinutes),
                 signingCredentials: credentials
             );
 
@@ -66,7 +66,7 @@ namespace WelfareLink.Authentication.API.Services
 
         public DateTime GetTokenExpiry()
         {
-            return DateTime.UtcNow.AddMinutes(_expiryMinutes);
+            return DateTime.Now.AddMinutes(_expiryMinutes);
         }
     }
 }

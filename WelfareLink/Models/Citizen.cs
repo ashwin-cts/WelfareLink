@@ -25,7 +25,7 @@ namespace WelfareLink.Models
         public string? Status { get; set; }
         [StringLength(20)]
         public string? Gender { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         //Navigation Property one to many for CitizenDocument
         public virtual ICollection<CitizenDocument>? CitizenDocuments { get; set; }

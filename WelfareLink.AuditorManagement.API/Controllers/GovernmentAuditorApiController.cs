@@ -250,7 +250,7 @@ namespace WelfareLink.AuditorManagement.API.Controllers
                     dynamic item = new System.Dynamic.ExpandoObject();
                     var itemDict = (IDictionary<string, object>)item;
                     itemDict["ResourceID"] = resource.ResourceID;
-                    itemDict["Date"] = DateTime.UtcNow;
+                    itemDict["Date"] = DateTime.Now;
                     itemDict["ProgramName"] = program?.Title ?? "Unknown";
                     itemDict["AllocatedResource"] = resource.Quantity;
                     itemDict["RemainingAllocationPending"] = Math.Max(remainingAllocation, 0);

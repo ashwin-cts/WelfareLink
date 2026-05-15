@@ -23,7 +23,7 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Models
         [StringLength(500)]
         public string FileURI { get; set; }
 
-        public DateTime UploadedDate { get; set; } = DateTime.UtcNow;
+        public DateTime UploadedDate { get; set; } = DateTime.Now;
 
         [StringLength(30)]
         public string VerificationStatus { get; set; }

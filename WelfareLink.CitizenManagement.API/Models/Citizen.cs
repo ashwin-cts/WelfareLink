@@ -35,7 +35,7 @@ namespace WelfareLink.CitizenManagement.API.Models
         [StringLength(20)]
         public string? Gender { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         [JsonIgnore]
         public virtual ICollection<CitizenDocument>? CitizenDocuments { get; set; }

@@ -48,7 +48,7 @@ namespace WelfareLink.Authentication.API.Examples
                 username,
                 role,
                 email,
-                accessedAt = DateTime.UtcNow
+                accessedAt = DateTime.Now
             });
         }
 
@@ -102,7 +102,7 @@ namespace WelfareLink.Authentication.API.Examples
             return Ok(new
             {
                 message = "This is public information",
-                timestamp = DateTime.UtcNow
+                timestamp = DateTime.Now
             });
         }
 
@@ -164,7 +164,7 @@ namespace WelfareLink.Authentication.API.Examples
                 id = 1,
                 name = request.Name,
                 createdBy = userId,
-                createdAt = DateTime.UtcNow
+                createdAt = DateTime.Now
             });
         }
 

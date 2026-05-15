@@ -144,7 +144,7 @@ namespace WelfareLink.ProgramManagement.API.Repositories
 
         public async Task<bool> DeleteOldLogsAsync(int daysOld)
         {
-            var cutoffDate = DateTime.UtcNow.AddDays(-daysOld);
+            var cutoffDate = DateTime.Now.AddDays(-daysOld);
             var logsToDelete = await _context.AuditLogs
                 .Where(a => a.Timestamp < cutoffDate)
                 .ToListAsync();

@@ -119,7 +119,7 @@ namespace WelfareLink.UserManagement.API.Services
                 IPAddress = ipAddress,
                 UserAgent = userAgent,
                 Status = status,
-                Timestamp = DateTime.UtcNow
+                Timestamp = DateTime.Now
             };
 
             return await _auditLogRepository.AddAsync(auditLog);

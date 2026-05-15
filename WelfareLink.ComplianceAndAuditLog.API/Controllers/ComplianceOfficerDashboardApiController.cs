@@ -170,7 +170,7 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
                     Description = request.Description,
                     Status = "Open",
                     RaisedByUserId = userId > 0 ? userId : null,
-                    CreatedDate = DateTime.UtcNow
+                    CreatedDate = DateTime.Now
                 };
             }
             else if (applicationID.HasValue)
@@ -189,7 +189,7 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
                     Description = request.Description,
                     Status = "Open",
                     RaisedByUserId = userId > 0 ? userId : null,
-                    CreatedDate = DateTime.UtcNow
+                    CreatedDate = DateTime.Now
                 };
             }
             else
@@ -230,7 +230,7 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
                 Description = request.Description,
                 Status = "Open",
                 RaisedByUserId = userId > 0 ? userId : null,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = DateTime.Now
             };
 
             _context.ComplianceRecords.Add(compliance);
@@ -253,7 +253,7 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
             var userId = GetCurrentUserId();
 
             record.Status = "Resolved";
-            record.ResolvedDate = DateTime.UtcNow;
+            record.ResolvedDate = DateTime.Now;
             record.ResolvedByUserId = userId > 0 ? userId : null;
             record.Notes = request.Notes;
 
@@ -290,7 +290,7 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
             var userId = GetCurrentUserId();
 
             // Create a new note indicating the officer has been flagged
-            record.Notes = $"[FLAGGED] Officer flagged on {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}: {request.Reason}";
+            record.Notes = $"[FLAGGED] Officer flagged on {DateTime.Now:yyyy-MM-dd HH:mm:ss}: {request.Reason}";
 
             _context.ComplianceRecords.Update(record);
             await _context.SaveChangesAsync();
@@ -405,7 +405,7 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
                     b.Type,
                     b.Status,
                     b.Date,
-                    DaysElapsed = (DateTime.UtcNow - b.Date).Days,
+                    DaysElapsed = (DateTime.Now - b.Date).Days,
                     Citizen = b.WelfareApplication?.Citizen?.Name ?? "Unknown",
                     Program = b.WelfareApplication?.Program?.Title ?? "Unknown",
                     MaxAllowedBenefit = b.WelfareApplication?.Program?.MaxBenefitPerCitizen ?? 0,
@@ -439,7 +439,7 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
                     d.Amount,
                     d.Status,
                     d.Date,
-                    DaysElapsed = (DateTime.UtcNow - d.Date).Days,
+                    DaysElapsed = (DateTime.Now - d.Date).Days,
                     CitizenID = d.CitizenID,
                     OfficerID = d.OfficerID,
                     BenefitAmount = d.Benefit?.Amount ?? 0,
@@ -474,7 +474,7 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
                     h.Status,
                     h.CreatedDate,
                     h.ResolvedDate,
-                    DaysOpen = h.ResolvedDate.HasValue ? (h.ResolvedDate.Value - h.CreatedDate).Days : (DateTime.UtcNow - h.CreatedDate).Days,
+                    DaysOpen = h.ResolvedDate.HasValue ? (h.ResolvedDate.Value - h.CreatedDate).Days : (DateTime.Now - h.CreatedDate).Days,
                     RaisedBy = h.RaisedByUser?.Username ?? "System",
                     ResolvedBy = h.ResolvedByUser?.Username,
                     h.Notes
@@ -505,7 +505,7 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
                     .OrderByDescending(a => a.SubmittedDate)
                     .ToListAsync();
 
-                var now = DateTime.UtcNow;
+                var now = DateTime.Now;
 
                 var result = applications.Select(a => new
                 {

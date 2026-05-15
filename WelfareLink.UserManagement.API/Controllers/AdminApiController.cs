@@ -136,7 +136,7 @@ namespace WelfareLink.UserManagement.API.Controllers
                 }
 
                 user.IsActive = true;
-                user.CreatedAt = DateTime.UtcNow;
+                user.CreatedAt = DateTime.Now;
 
                 // Create the user
                 var createdUser = await _userRepository.AddAsync(user);
@@ -208,7 +208,7 @@ namespace WelfareLink.UserManagement.API.Controllers
 
                 user.Role = "Admin";
                 user.IsActive = true;
-                user.CreatedAt = DateTime.UtcNow;
+                user.CreatedAt = DateTime.Now;
 
                 // Create the admin user
                 var createdUser = await _userRepository.AddAsync(user);

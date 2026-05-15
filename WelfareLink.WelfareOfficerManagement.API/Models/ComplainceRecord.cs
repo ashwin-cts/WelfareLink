@@ -29,7 +29,7 @@ namespace WelfareLink.WelfareOfficerManagement.API.Models
         [Required, StringLength(50)]
         public string Status { get; set; } = "Open";
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
 
         public DateTime? ResolvedDate { get; set; }
 

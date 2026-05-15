@@ -70,7 +70,7 @@ namespace WelfareLink.Controllers
             }
 
             user.IsActive = true;
-            user.CreatedAt = DateTime.UtcNow;
+            user.CreatedAt = DateTime.Now;
 
             // Call API to create user and log audit trail
             var (createdUser, error) = await _apiClient.CreateUserAsync(user);
@@ -114,7 +114,7 @@ namespace WelfareLink.Controllers
 
             user.Role = "Admin";
             user.IsActive = true;
-            user.CreatedAt = DateTime.UtcNow;
+            user.CreatedAt = DateTime.Now;
 
             // Call API to create user and log audit trail
             var (createdUser, error) = await _apiClient.CreateUserAsync(user);

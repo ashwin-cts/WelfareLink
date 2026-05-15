@@ -136,7 +136,7 @@ namespace WelfareLink.CitizenManagement.API.Controllers
                 FullName = request.Name,
                 Email = request.Email,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             _context.Users.Add(user);
@@ -151,7 +151,7 @@ namespace WelfareLink.CitizenManagement.API.Controllers
                 ContactInfo = request.ContactInfo,
                 Gender = request.Gender,
                 Status = "Active",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             var success = await _citizenService.CreateCitizenProfileAsync(citizen);
