@@ -144,7 +144,7 @@
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title">
-          <i class="bi bi-diagram-3-fill me-2"></i>{{ selectedProgram?.title }}
+          <i class="bi bi-diagram-3-fill me-2"></i>Program Details
         </h5>
         <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
       </div>
@@ -152,7 +152,10 @@
         <div class="modal-body p-4">
           <div class="row mb-3">
             <div class="col-md-6">
-              <p><strong>Program ID:</strong> #{{ selectedProgram.programID }}</p>
+              <p><strong>Program Name:</strong>
+                 <!-- #{{ selectedProgram.programID }} -->
+                  {{selectedProgram.title}}
+                </p>
             </div>
             <div class="col-md-6">
               <p>

@@ -54,11 +54,11 @@
         >
           <div class="card-body d-flex align-items-center gap-3 p-4">
             <i class="bi bi-cash-stack fs-1 opacity-75"></i>
-            <div>
+            <div class="flex-grow-1" style="min-width: 0;">
               <h6 class="mb-1 opacity-75 fw-bold text-uppercase" style="font-size: 0.85rem">
                 Total Budget
               </h6>
-              <h3 class="mb-0 fw-bold">₹{{ program()?.budget | number: '1.2-2' }}</h3>
+              <h4 class="mb-0 fw-bold text-break fs-5">₹{{ program()?.budget | number: '1.2-2' }}</h4>
             </div>
           </div>
         </div>
@@ -70,11 +70,11 @@
         >
           <div class="card-body d-flex align-items-center gap-3 p-4">
             <i class="bi bi-pie-chart-fill fs-1 opacity-75"></i>
-            <div>
+            <div class="flex-grow-1" style="min-width: 0;">
               <h6 class="mb-1 opacity-75 fw-bold text-uppercase" style="font-size: 0.85rem">
                 Allocated
               </h6>
-              <h3 class="mb-0 fw-bold">₹{{ totalAllocated() | number: '1.2-2' }}</h3>
+              <h4 class="mb-0 fw-bold text-break fs-5">₹{{ totalAllocated() | number: '1.2-2' }}</h4>
             </div>
           </div>
         </div>
@@ -86,16 +86,16 @@
         >
           <div class="card-body d-flex align-items-center gap-3 p-4">
             <i class="bi bi-piggy-bank-fill fs-1 opacity-75"></i>
-            <div>
+            <div class="flex-grow-1" style="min-width: 0;">
               <h6 class="mb-1 opacity-75 fw-bold text-uppercase" style="font-size: 0.85rem">
                 Remaining
               </h6>
-              <h3
-                class="mb-0 fw-bold"
+              <h4
+                class="mb-0 fw-bold text-break fs-5"
                 [ngClass]="remainingBudget() < 0 ? 'text-danger bg-white px-2 rounded' : ''"
               >
                 ₹{{ remainingBudget() | number: '1.2-2' }}
-              </h3>
+              </h4>
             </div>
           </div>
         </div>
@@ -107,11 +107,11 @@
         >
           <div class="card-body d-flex align-items-center gap-3 p-4">
             <i class="bi bi-graph-up-arrow fs-1 opacity-75"></i>
-            <div>
+            <div class="flex-grow-1" style="min-width: 0;">
               <h6 class="mb-1 opacity-75 fw-bold text-uppercase" style="font-size: 0.85rem">
                 Utilisation
               </h6>
-              <h3 class="mb-0 fw-bold">{{ utilisationPercentage() | number: '1.1-1' }}%</h3>
+              <h4 class="mb-0 fw-bold text-break fs-5">{{ utilisationPercentage() | number: '1.1-1' }}%</h4>
             </div>
           </div>
         </div>
@@ -132,7 +132,6 @@
                 style="font-size: 0.85rem; letter-spacing: 0.5px"
               >
                 <tr>
-                  <th class="py-3 px-3">Resource ID</th>
                   <th>Type</th>
                   <th>Quantity</th>
                   <th>Status</th>
@@ -142,9 +141,6 @@
               <tbody>
                 @for (resource of resources(); track resource) {
                   <tr>
-                    <td class="px-3">
-                      <span class="fw-bold text-dark">RES-{{ resource.resourceID }}</span>
-                    </td>
                     <td>
                       <span
                         class="badge rounded-pill px-3 py-2"

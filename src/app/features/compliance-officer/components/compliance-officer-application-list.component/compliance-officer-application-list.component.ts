@@ -13,7 +13,7 @@ import { ApplicationDetail } from '../../models/compliance-officer.model';
       
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 class="h4 mb-1"><i class="bi bi-file-earmark-text text-primary me-2"></i>Compliance View - Application #{{ app.applicationID }}</h2>
+          <h2 class="h4 mb-1"><i class="bi bi-file-earmark-text text-primary me-2"></i>Compliance View <!-- Application #{{ app.applicationID }}--></h2>
           <p class="text-muted mb-0">Detailed view for compliance investigations</p>
         </div>
         <div>
@@ -31,14 +31,7 @@ import { ApplicationDetail } from '../../models/compliance-officer.model';
               <h5 class="card-title text-primary border-bottom pb-2 mb-3">Application Information</h5>
               
               <div class="row g-3 mb-4">
-                <div class="col-sm-4">
-                  <label class="text-muted small fw-bold text-uppercase">Application ID</label>
-                  <p class="mb-0 fw-medium">#{{ app.applicationID }}</p>
-                </div>
-                <div class="col-sm-4">
-                  <label class="text-muted small fw-bold text-uppercase">Citizen ID</label>
-                  <p class="mb-0 fw-medium">#{{ app.citizenID }}</p>
-                </div>
+                
                 <div class="col-sm-4">
                   <label class="text-muted small fw-bold text-uppercase">Citizen Name</label>
                   <p class="mb-0 fw-medium">{{ app.citizen?.name || '-' }}</p>
@@ -96,7 +89,7 @@ import { ApplicationDetail } from '../../models/compliance-officer.model';
               <div *ngIf="app.benefits && app.benefits.length > 0; else noBenefits">
                 <div *ngFor="let b of app.benefits" class="p-3 border rounded bg-light mb-3">
                   <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="mb-0 text-dark fw-bold">Benefit #{{ b.benefitID }} - {{ b.type }}</h6>
+                    <h6 class="mb-0 text-dark fw-bold">Benefit #<!--{{b.benefitID}}-->{{ b.type }}</h6>
                     <span class="badge bg-success">{{ b.status }}</span>
                   </div>
                   <div class="row mb-3">
@@ -109,7 +102,7 @@ import { ApplicationDetail } from '../../models/compliance-officer.model';
                     <table class="table table-sm bg-white mb-0">
                       <thead>
                         <tr>
-                          <th>ID</th>
+                          <!-- <th>ID</th> -->
                           <th>Date</th>
                           <th>Amount</th>
                           <th>Status</th>
@@ -117,7 +110,7 @@ import { ApplicationDetail } from '../../models/compliance-officer.model';
                       </thead>
                       <tbody>
                         <tr *ngFor="let d of b.disbursements">
-                          <td>#{{ d.disbursementID }}</td>
+                          <!-- <td>#{{ d.disbursementID }}</td> -->
                           <td>{{ d.date | date:'mediumDate' }}</td>
                           <td class="fw-medium text-success">{{ d.amount | currency:'INR' }}</td>
                           <td><span class="badge bg-secondary">{{ d.status }}</span></td>

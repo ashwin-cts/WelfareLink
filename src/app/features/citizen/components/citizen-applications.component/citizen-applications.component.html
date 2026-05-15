@@ -28,7 +28,7 @@
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
-                <th>Application ID</th>
+                <!-- <th>Application ID</th> -->
                 <th>Program</th>
                 <th>Submitted Date</th>
                 <th>Status</th>
@@ -38,9 +38,9 @@
             <tbody>
               @for (app of applications; track app) {
                 <tr>
-                  <td>
+                  <!-- <td>
                     <strong>#{{ app.applicationID }}</strong>
-                  </td>
+                  </td> -->
                   <td>
                     <strong>{{ app.program?.title || 'Program #' + app.programID }}</strong>
                     @if (app.program?.status === 'Suspended') {

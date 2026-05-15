@@ -9,7 +9,7 @@
           <table class="table table-hover table-bordered text-nowrap align-middle">
             <thead class="table-dark">
               <tr>
-                <th>Citizen ID</th>
+                <!-- <th>Citizen ID</th> -->
                 <th>Citizen Name</th>
                 <th>Max Benefit (₹)</th>
                 <th>Benefit Allocated (₹)</th>
@@ -21,7 +21,7 @@
             <tbody>
               @for (item of items; track $index) {
               <tr>
-                <td><span class="badge bg-secondary">CIT-{{ item.CitizenID }}</span></td>
+                <!-- <td><span class="badge bg-secondary">CIT-{{ item.CitizenID }}</span></td> -->
                 <td><strong>{{ item.CitizenName }}</strong></td>
                 <td>₹ {{ item.MaxBenefit | number:'1.2-2' }}</td>
                 <td>₹ {{ item.BenefitAllocated | number:'1.2-2' }}</td>

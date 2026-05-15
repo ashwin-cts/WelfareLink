@@ -13,12 +13,14 @@ import { ComplianceRecord } from '../../models/compliance-officer.model';
       <div class="card-body p-0">
         <table class="table table-hover align-middle mb-0">
           <thead class="bg-light">
-            <tr><th>ID</th><th>Type</th><th>Violation</th><th>Description</th><th>Status</th><th>Action</th></tr>
+            <tr><th>Type</th><th>Violation</th><th>Description</th><th>Status</th><th>Action</th></tr>
           </thead>
           <tbody>
             <tr *ngFor="let record of records">
-              <td>{{ record.recordID }}</td>
-              <td>{{ record.entityType }} <small>(#{{ record.entityId }})</small></td>
+              <!-- <td>{{record.recordID }}</td> -->
+              <td>{{ record.entityType }} 
+                <!-- <small>(#{{ record.entityId }})</small> -->
+              </td>
               <td><span class="text-danger fw-bold">{{ record.violationType }}</span></td>
               <td>{{ record.description }}</td>
               <td>

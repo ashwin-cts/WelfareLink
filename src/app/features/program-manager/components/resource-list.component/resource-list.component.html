@@ -38,7 +38,7 @@
           <input
             type="text"
             class="form-control border-0 ps-0 search-input"
-            placeholder="Search by ID, Programme, or Type..."
+            placeholder="Search by Programme, or Type..."
             [(ngModel)]="searchTerm"
             (input)="onSearch()"
           />
@@ -60,7 +60,7 @@
               style="font-size: 0.85rem; letter-spacing: 0.5px"
             >
               <tr>
-                <th class="py-3 px-3">Resource ID</th>
+                <!-- <th class="py-3 px-3">Resource ID</th> -->
                 <th class="py-3">Programme</th>
                 <th class="py-3">Type</th>
                 <th class="py-3">Quantity</th>
@@ -79,15 +79,15 @@
               }
               @for (item of filteredResources; track item) {
                 <tr>
-                  <td class="px-3">
+                  <!-- <td class="px-3">
                     <span class="fw-bold text-dark">RES-{{ item.resourceID }}</span>
-                  </td>
+                  </td> -->
                   <td>
                     <div>
                       <strong style="color: #1e3c72">{{
                         item.program?.title || item.programTitle || 'Programme ' + item.programID
                       }}</strong>
-                      <br /><small class="text-muted">PRG-{{ item.programID }}</small>
+                      <!-- <br /><small class="text-muted">PRG-{{ item.programID }}</small> -->
                     </div>
                   </td>
                   <td>

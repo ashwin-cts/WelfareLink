@@ -15,7 +15,7 @@ import { ApplicationDetail, BenefitDetail, DisbursementDetail } from '../../mode
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 class="h4 mb-1"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Raise Compliance Issue</h2>
-          <p class="text-muted mb-0">Flag a violation for Application #{{ applicationId }}</p>
+          <p class="text-muted mb-0">Flag a violation for Application <!--#{{ applicationId }}--></p>
         </div>
         <div>
           <button class="btn btn-outline-secondary shadow-sm" [routerLink]="['/compliance/application', applicationId]">
@@ -52,7 +52,7 @@ import { ApplicationDetail, BenefitDetail, DisbursementDetail } from '../../mode
               <select class="form-select bg-light" [(ngModel)]="selectedEntityId">
                 <option [ngValue]="null">-- Select Benefit --</option>
                 <option *ngFor="let b of availableBenefits" [ngValue]="b.benefitID">
-                  Benefit #{{ b.benefitID }} - {{ b.type }} ({{ b.amount | currency:'INR' }})
+                  Benefit #<!--{{ b.benefitID }}-->{{ b.type }} - ({{ b.amount | currency:'INR' }})
                 </option>
               </select>
             </div>
@@ -62,7 +62,7 @@ import { ApplicationDetail, BenefitDetail, DisbursementDetail } from '../../mode
               <select class="form-select bg-light" [(ngModel)]="selectedEntityId">
                 <option [ngValue]="null">-- Select Disbursement --</option>
                 <option *ngFor="let d of availableDisbursements" [ngValue]="d.disbursementID">
-                  Disbursement #{{ d.disbursementID }} - {{ d.status }} ({{ d.amount | currency:'INR' }})
+                  Disbursement #<!--{{ d.disbursementID }}-->{{ d.status }} - ({{ d.amount | currency:'INR' }})
                 </option>
               </select>
             </div>

@@ -47,7 +47,7 @@
                 <select class="form-select form-select-lg bg-light" formControlName="programID">
                   <option value="" disabled selected>-- Select a Programme --</option>
                   @for (p of programs; track p) {
-                    <option [value]="p.programID">PRG-{{ p.programID }}: {{ p.title }}</option>
+                    <option [value]="p.programID">PRG-<!--{{ p.programID }}-->: {{ p.title }}</option>
                   }
                 </select>
                 @if (

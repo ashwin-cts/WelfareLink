@@ -18,7 +18,7 @@ import { DashboardApplication } from '../../models/compliance-officer.model';
           <table class="table table-hover align-middle mb-0">
             <thead class="bg-light">
               <tr>
-                <th>App ID</th>
+                <!-- <th>App ID</th> -->
                 <th>Citizen Details</th>
                 <th>Program</th>
                 <th>Max Benefit</th>
@@ -33,10 +33,10 @@ import { DashboardApplication } from '../../models/compliance-officer.model';
                 <td colspan="8" class="text-center py-4 text-muted">Loading applications or no data available...</td>
               </tr>
               <tr *ngFor="let app of applications">
-                <td><strong>APP-{{ app.applicationID }}</strong></td>
+                <!-- <td><strong>APP-{{ app.applicationID }}</strong></td> -->
                 <td>
                   {{ app.citizenName }}<br>
-                  <small class="text-muted">ID: {{ app.citizenID }}</small>
+                  <!-- <small class="text-muted">ID: {{ app.citizenID }}</small> -->
                 </td>
                 <td>{{ app.programTitle }}</td>
                 <td>{{ app.maxBenefit | currency:'INR' }}</td>

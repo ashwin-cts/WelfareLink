@@ -11,7 +11,7 @@
             <thead class="table-dark">
               <tr>
                 <th>Date</th>
-                <th>Resource ID</th>
+                <!-- <th>Resource ID</th> -->
                 <th>Program Name</th>
                 <th>Allocated Resource (₹)</th>
                 <th>Remaining Allocation Pending (₹)</th>
@@ -21,9 +21,9 @@
               @for (resource of items; track resource) {
                 <tr>
                   <td>{{ resource.date | date: 'yyyy-MM-dd HH:mm' }}</td>
-                  <td>
+                  <!-- <td>
                     <span class="badge bg-secondary">RES-{{ resource.resourceID }}</span>
-                  </td>
+                  </td> -->
                   <td>
                     <strong>{{ resource.programName }}</strong>
                   </td>

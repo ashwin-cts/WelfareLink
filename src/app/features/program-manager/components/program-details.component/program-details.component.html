@@ -19,8 +19,8 @@
           </div>
           <div class="card-body p-4">
             <dl class="row mb-0">
-              <dt class="col-sm-4 text-muted">Programme ID:</dt>
-              <dd class="col-sm-8 fw-bold">PRG-{{ p.programID }}</dd>
+              <!-- <dt class="col-sm-4 text-muted">Programme ID:</dt>
+              <dd class="col-sm-8 fw-bold">PRG-{{ p.programID }}</dd> -->
               <dt class="col-sm-4 text-muted">Title:</dt>
               <dd class="col-sm-8 text-primary fw-bold">{{ p.title }}</dd>
               <dt class="col-sm-4 text-muted">Description:</dt>
@@ -64,12 +64,12 @@
         </div>
       </div>
       <div class="col-lg-4">
-        <div class="card shadow-sm border-0 bg-light p-4 text-center h-100">
+        <div class="card shadow-sm border-0 bg-gray p-4 text-center h-100">
           <h6 class="text-uppercase text-muted small fw-bold mb-3">Budget Utilisation</h6>
           <h2 class="text-success mb-3">{{ utilisationPercentage() | number: '1.1-1' }}%</h2>
-          <div class="progress mb-4" style="height: 25px">
+          <div class="progress mb-4 overflow-visible" style="height: 25px">
             <div
-              class="progress-bar"
+              class="progress-bar text-dark overflow-visible fw-bold"
               [ngClass]="utilisationPercentage() > 90 ? 'bg-danger' : 'bg-success'"
               role="progressbar"
               [style.width.%]="utilisationPercentage()"
@@ -107,7 +107,7 @@
                 <table class="table table-hover align-middle mb-0">
                   <thead class="table-light">
                     <tr>
-                      <th>Resource ID</th>
+                      <!-- <th>Resource ID</th> -->
                       <th>Type</th>
                       <th>Quantity/Amount</th>
                       <th>Status</th>
@@ -116,7 +116,7 @@
                   <tbody>
                     @for (resource of resources(); track resource) {
                       <tr>
-                        <td>RES-{{ resource.resourceID }}</td>
+                        <!-- <td>RES-{{ resource.resourceID }}</td> -->
                         <td>
                           <span
                             class="badge"
