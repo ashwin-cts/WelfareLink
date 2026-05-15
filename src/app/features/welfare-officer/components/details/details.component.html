@@ -66,7 +66,11 @@
                 <label class="small text-muted text-uppercase fw-bold">Current Status</label>
                 <div>
                   <span class="status-badge" [ngClass]="getStatusClass(application.status)">
-                    <i class="bi bi-check-circle me-1"></i> {{ application.status }}
+                    <i class="bi me-1" [ngClass]="{
+                      'bi-check-circle-fill': application.status === 'Approved' || application.status === 'Fully Disbursed',
+                      'bi-exclamation-circle-fill': application.status === 'Pending',
+                      'bi-x-circle-fill': application.status === 'Rejected'
+                    }"></i>{{ application.status }}
                   </span>
                 </div>
               </div>
@@ -102,8 +106,9 @@
                   <td>{{ check.date | date: 'dd MMM yyyy' }}</td>
                   <!-- <td>{{ check.officerID }}</td> -->
                   <td>
-                    <span class="badge rounded-pill bg-success-subtle text-success px-3">
-                      <i class="bi bi-check2-circle me-1"></i> {{ check.result }}
+                    <span class="badge rounded-pill px-3 {{ check.result == 'Eligible' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }}">
+                        <i class="bi {{ check.result == 'Eligible' ? 'bi-check2-circle' : 'bi-x-circle' }} me-1"></i>
+                        {{ check.result }}
                     </span>
                   </td>
                   <td class="text-danger small fw-bold">{{ check.resultCode }}</td>
