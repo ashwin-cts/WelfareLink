@@ -27,14 +27,9 @@
           </div>
           <div class="col-md-2">
             <label class="form-label text-muted small fw-bold">Benefit Type</label>
-            <input
-              type="text"
-              formControlName="benefitType"
-              class="form-control"
-              placeholder="e.g. Pension"
-            />
+            <input type="text" formControlName="benefitType" class="form-control" placeholder="e.g. Pension" />
           </div>
-          <div class="col-md-2">
+          <!-- <div class="col-md-2">
             <label class="form-label text-muted small fw-bold">Officer ID</label>
             <input
               type="number"
@@ -42,7 +37,7 @@
               class="form-control"
               placeholder="ID Number"
             />
-          </div>
+          </div> -->
           <div class="col-md-2">
             <label class="form-label text-muted small fw-bold">Status</label>
             <select formControlName="status" class="form-select">
@@ -66,98 +61,90 @@
   </div>
 
   @if (!isLoading) {
-    <div class="row g-4 mb-4">
-      <div class="col-md-3">
-        <div class="card border-0 shadow-sm rounded-4 text-center py-4">
-          <i class="bi bi-list-ul text-primary mb-2" style="font-size: 2rem"></i>
-          <h2 class="mb-0 fw-bold">{{ totalCount }}</h2>
-          <span class="text-muted small fw-bold text-uppercase">Total Records</span>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card border-0 shadow-sm rounded-4 text-center py-4">
-          <i class="bi bi-check-circle text-success mb-2" style="font-size: 2rem"></i>
-          <h2 class="mb-0 fw-bold">{{ completedCount }}</h2>
-          <span class="text-muted small fw-bold text-uppercase">Completed</span>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card border-0 shadow-sm rounded-4 text-center py-4">
-          <i class="bi bi-hourglass-split text-warning mb-2" style="font-size: 2rem"></i>
-          <h2 class="mb-0 fw-bold">{{ pendingCount }}</h2>
-          <span class="text-muted small fw-bold text-uppercase">Pending</span>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card border-0 shadow-sm rounded-4 text-center py-4">
-          <i class="bi bi-x-circle text-danger mb-2" style="font-size: 2rem"></i>
-          <h2 class="mb-0 fw-bold">{{ failedCount }}</h2>
-          <span class="text-muted small fw-bold text-uppercase">Failed</span>
-        </div>
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 text-center py-4">
+        <i class="bi bi-list-ul text-primary mb-2" style="font-size: 2rem"></i>
+        <h2 class="mb-0 fw-bold">{{ totalCount }}</h2>
+        <span class="text-muted small fw-bold text-uppercase">Total Records</span>
       </div>
     </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 text-center py-4">
+        <i class="bi bi-check-circle text-success mb-2" style="font-size: 2rem"></i>
+        <h2 class="mb-0 fw-bold">{{ completedCount }}</h2>
+        <span class="text-muted small fw-bold text-uppercase">Completed</span>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 text-center py-4">
+        <i class="bi bi-hourglass-split text-warning mb-2" style="font-size: 2rem"></i>
+        <h2 class="mb-0 fw-bold">{{ pendingCount }}</h2>
+        <span class="text-muted small fw-bold text-uppercase">Pending</span>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 text-center py-4">
+        <i class="bi bi-x-circle text-danger mb-2" style="font-size: 2rem"></i>
+        <h2 class="mb-0 fw-bold">{{ failedCount }}</h2>
+        <span class="text-muted small fw-bold text-uppercase">Failed</span>
+      </div>
+    </div>
+  </div>
   }
 
   @if (!isLoading) {
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light text-muted small">
-            <tr>
-              <th class="ps-4">Disbursement ID</th>
-              <th>Benefit ID</th>
-              <th>Citizen ID</th>
-              <th>Date</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th class="text-end pe-4">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of historyData; track item) {
-              <tr [class.table-warning]="item.status === 'Pending'">
-                <td class="ps-4 fw-bold">#{{ item.disbursementID }}</td>
-                <td>{{ item.benefitID }}</td>
-                <td>
-                  <i class="bi bi-person-circle text-muted me-1"></i> {{ item.citizenID || 'N/A' }}
-                </td>
-                <td>{{ item.date | date: 'MMM dd, yyyy' }}</td>
-                <td class="fw-bold">₹{{ item.amount | number: '1.2-2' }}</td>
-                <td>
-                  <span
-                    class="badge"
-                    [ngClass]="{
-                      'bg-success': item.status === 'Completed',
-                      'bg-warning text-dark': item.status === 'Pending',
-                      'bg-danger': item.status === 'Failed',
-                      'bg-secondary': !['Completed', 'Pending', 'Failed'].includes(
-                        item.status || ''
-                      ),
-                    }"
-                  >
-                    {{ item.status }}
-                  </span>
-                </td>
-                <td class="text-end pe-4">
-                  <a
-                    [routerLink]="['/welfare-officer/disbursement-details/', item.disbursementID]"
-                    class="btn btn-sm btn-outline-secondary"
-                    ><i class="bi bi-eye"></i
-                  ></a>
-                </td>
-              </tr>
-            }
-            @if (historyData.length === 0) {
-              <tr>
-                <td colspan="7" class="text-center py-5 text-muted">
-                  <i class="bi bi-search fs-1 d-block mb-3"></i>
-                  No records matched your filter criteria.
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light text-muted small">
+          <tr>
+            <!-- <th class="ps-4">Disbursement ID</th> -->
+            <th>Program Name</th>
+            <th>Citizen Name</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th class="text-end pe-4">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of historyData; track item) {
+          <tr [class.table-warning]="item.status === 'Pending'">
+            <!-- <td class="ps-4 fw-bold">#{{ item.disbursementID }}</td> -->
+            <td>{{ item.programName }}</td>
+            <td>
+              <i class="bi bi-person-circle text-muted me-1"></i> {{ item.citizenName || 'N/A' }}
+            </td>
+            <td>{{ item.date | date: 'MMM dd, yyyy' }}</td>
+            <td class="fw-bold">₹{{ item.amount | number: '1.2-2' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{
+              'bg-success': item.status === 'Completed',
+              'bg-warning text-dark': item.status === 'Pending',
+              'bg-danger': item.status === 'Failed',
+              'bg-secondary': !['Completed', 'Pending', 'Failed'].includes(item.status || '')
+            }">
+                {{ item.status }}
+              </span>
+            </td>
+            <td class="text-end pe-4">
+              <a [routerLink]="['/welfare-officer/disbursement-details/', item.disbursementID]"
+                class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+            </td>
+          </tr>
+          }
+          @if (historyData.length === 0) {
+          <tr>
+            <td colspan="7" class="text-center py-5 text-muted">
+              <i class="bi bi-search fs-1 d-block mb-3"></i>
+              No records matched your filter criteria.
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
+  </div>
   }
 </div>

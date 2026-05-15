@@ -54,14 +54,14 @@ export interface WelfareApplication {
     programBudget: number;
 }
 
-export interface Benefit {
-    benefitID: number;
-    applicationID: number;
-    type: string;
-    amount: number;
-    date: string;
-    status: string;
-}
+// export interface Benefit {
+//     benefitID: number;
+//     applicationID: number;
+//     type: string;
+//     amount: number;
+//     date: string;
+//     status: string;
+// }
 
 export interface ProgramResourceInfo {
     hasResource: boolean;

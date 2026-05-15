@@ -1,9 +1,17 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+
+// RxJS Imports
+import { switchMap, catchError, map } from 'rxjs/operators';
+import { of } from 'rxjs';
+
 import { DisbursementService } from '../../services/disbursement.service';
+import { BenefitService } from '../../../welfare-officer-benefit/services/benefit.service'; // Adjust path if needed
+import { WelfareOfficerService } from '../../../welfare-officer/services/welfare-officer.services'; // Adjust path if needed
+
 import { DisbursementNavbarComponent } from '../disbursement-navbar.component/disbursement-navbar.component';
-import { Location } from '@angular/common';
+
 @Component({
   selector: 'app-disbursement-detail',
   standalone: true,
@@ -12,9 +20,12 @@ import { Location } from '@angular/common';
 })
 export class DisbursementDetailComponent implements OnInit {
   private disbursementService = inject(DisbursementService);
+  private benefitService = inject(BenefitService);
+  private applicationService = inject(WelfareOfficerService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
+
   disbursement: any | null = null;
   benefitSummary: any | null = null;
   siblingDisbursements: any[] = [];
@@ -33,10 +44,34 @@ export class DisbursementDetailComponent implements OnInit {
 
   loadDetails(id: number): void {
     this.isLoading = true;
-    this.disbursementService.getDisbursementById(id).subscribe({
-      next: (data: any) => {
-        // 1. Extract the main disbursement
-        this.disbursement = data.disbursement;
+
+    this.disbursementService.getDisbursementById(id).pipe(
+      switchMap((wrapperData: any) => {
+        const mainDisbursement = wrapperData.disbursement;
+
+        // If no benefitID exists, skip enrichment
+        if (!mainDisbursement || !mainDisbursement.benefitID) {
+          return of({ wrapper: wrapperData, application: null });
+        }
+
+        // Chain API calls: Benefit -> Application (to get Citizen and Program)
+        return this.benefitService.getBenefitById(mainDisbursement.benefitID).pipe(
+          switchMap(benefit => this.applicationService.getApplicationById(benefit.applicationID)),
+          map(application => ({ wrapper: wrapperData, application: application })),
+          catchError(() => of({ wrapper: wrapperData, application: null })) // Fallback on error
+        );
+      })
+    ).subscribe({
+      next: (result) => {
+        const data = result.wrapper;
+        const app = result.application;
+
+        // 1. Extract the main disbursement and add the names
+        this.disbursement = {
+          ...data.disbursement,
+          citizenName: app?.citizen?.name || 'Unknown Citizen',
+          programName: app?.program?.title || 'Unknown Program'
+        };
 
         // 2. Extract the siblings directly from the wrapper
         this.siblingDisbursements = data.siblingDisbursements || [];
@@ -77,6 +112,7 @@ export class DisbursementDetailComponent implements OnInit {
     if (lower.includes('failed')) return 'bg-danger';
     return 'bg-secondary';
   }
+
   goBack(): void {
     this.location.back();
   }

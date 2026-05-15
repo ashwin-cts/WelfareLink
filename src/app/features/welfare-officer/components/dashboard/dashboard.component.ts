@@ -18,7 +18,7 @@ export class DashboardComponent implements OnInit {
   filteredList: WelfareApplication[] = [];
 
   currentView: string = 'All'; // Tracks if we are in 'All' or 'Pending' view
-  stats: DashboardStats = { total: 0, pending: 0, approved: 0, rejected: 0 };
+  stats: DashboardStats = { total: 0, pending: 0, approved: 0, rejected: 0, fullyDisbursed: 0 };
   isLoading: boolean = true; // Set to true initiallyisLoading: boolean = true; // Set to true initially
   showDeleteModal = false;
   // 2. Replaced any with WelfareApplication | null (since it starts as null)
@@ -51,8 +51,10 @@ export class DashboardComponent implements OnInit {
   calculateStats(): void {
     this.stats.total = this.applications.length;
     this.stats.pending = this.applications.filter(a => a.status === 'Pending').length;
-    this.stats.approved = this.applications.filter(a => a.status === 'Approved' || a.status === 'Fully Disbursed').length;
+    this.stats.approved = this.applications.filter(a => a.status === 'Approved').length;
     this.stats.rejected = this.applications.filter(a => a.status === 'Rejected').length;
+    this.stats.fullyDisbursed = this.applications.filter(a => a.status === 'Fully Disbursed').length;
+
   }
 
   /**

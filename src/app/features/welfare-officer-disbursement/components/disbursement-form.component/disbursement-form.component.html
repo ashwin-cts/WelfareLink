@@ -3,223 +3,183 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
       <h3 class="mb-0 text-dark fw-bold">
-        <i
-          class="bi text-primary me-2"
-          [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-plus-circle-fill'"
-        ></i>
+        <i class="bi text-primary me-2" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-plus-circle-fill'"></i>
         {{ isEditMode ? 'Edit Disbursement' : 'Record New Disbursement' }}
       </h3>
     </div>
-    <button
-      type="button"
-      class="btn btn-outline-secondary btn-sm shadow-sm fw-bold px-3"
-      (click)="goBack()"
-    >
+    <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm fw-bold px-3" (click)="goBack()">
       <i class="bi bi-arrow-left me-1"></i> Back
     </button>
   </div>
 
   @if (errorMessage) {
-    <div class="alert alert-danger shadow-sm">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
-    </div>
+  <div class="alert alert-danger shadow-sm">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
+  </div>
   }
 
   @if (isLoading) {
-    <div class="text-center py-5">
-      <div class="spinner-border text-primary" role="status"></div>
-    </div>
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
   }
 
   @if (!isLoading) {
-    <div class="card border shadow-sm">
-      <div class="card-body p-4">
-        <form [formGroup]="disbursementForm" (ngSubmit)="onSubmit()">
-          <div class="row mb-4">
-            <div class="col-md-8">
-              <label class="form-label fw-bold text-secondary small text-uppercase"
-                ><i class="bi bi-gift me-1"></i> Benefit ID</label
-              >
-              <div class="input-group">
-                <span class="input-group-text bg-light">#</span>
-                <input
-                  type="number"
-                  class="form-control"
-                  formControlName="benefitID"
-                  placeholder="Enter Benefit ID"
-                  (blur)="onBenefitIdChange()"
-                />
-                @if (!isEditMode) {
-                  <button
-                    class="btn btn-primary fw-bold px-4"
-                    type="button"
-                    (click)="onBenefitIdChange()"
-                  >
-                    Search
-                  </button>
-                }
-              </div>
-              @if (
-                disbursementForm.get('benefitID')?.touched &&
-                disbursementForm.get('benefitID')?.invalid
-              ) {
-                <span class="text-danger small mt-1 d-block">Benefit ID is required.</span>
+  <div class="card border shadow-sm">
+    <div class="card-body p-4">
+      <form [formGroup]="disbursementForm" (ngSubmit)="onSubmit()">
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <label class="form-label fw-bold text-secondary small text-uppercase"><i class="bi bi-gift me-1"></i>
+              Benefit ID</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light">#</span>
+              <input type="number" class="form-control" formControlName="benefitID" placeholder="Enter Benefit ID"
+                (blur)="onBenefitIdChange()" />
+              @if (!isEditMode) {
+              <button class="btn btn-primary fw-bold px-4" type="button" (click)="onBenefitIdChange()">
+                Search
+              </button>
               }
+            </div>
+            @if (
+            disbursementForm.get('benefitID')?.touched &&
+            disbursementForm.get('benefitID')?.invalid
+            ) {
+            <span class="text-danger small mt-1 d-block">Benefit ID is required.</span>
+            }
+          </div>
+        </div>
+        @if (benefitDetails) {
+        <div class="alert alert-info border-info shadow-sm p-3 mb-4">
+          <h6 class="fw-bold text-dark mb-3 border-bottom border-info pb-2">
+            <i class="bi bi-info-circle-fill text-primary me-2"></i> Benefit & Program Context
+          </h6>
+          <div class="row g-3 small mb-2">
+            <div class="col-md-3 col-sm-6">
+              <span class="text-muted d-block opacity-75">Type</span>
+              <span class="fw-bold">{{ benefitDetails.benefitType || 'N/A' }}</span>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <span class="text-muted d-block opacity-75">Citizen Name</span>
+              <span class="fw-bold">{{ benefitDetails.citizenName || 'N/A' }}</span>
+            </div>
+            <div class="col-md-6 col-sm-12">
+              <span class="text-muted d-block opacity-75">Program Title</span>
+              <span class="fw-bold">{{ benefitDetails.programTitle || 'N/A' }}</span>
             </div>
           </div>
-          @if (benefitDetails) {
-            <div class="alert alert-info border-info shadow-sm p-3 mb-4">
-              <h6 class="fw-bold text-dark mb-3 border-bottom border-info pb-2">
-                <i class="bi bi-info-circle-fill text-primary me-2"></i> Benefit & Program Context
-              </h6>
-              <div class="row g-3 small mb-2">
-                <div class="col-md-3 col-sm-6">
-                  <span class="text-muted d-block opacity-75">Type</span>
-                  <span class="fw-bold">{{ benefitDetails.benefitType || 'N/A' }}</span>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                  <span class="text-muted d-block opacity-75">Citizen Name</span>
-                  <span class="fw-bold">{{ benefitDetails.citizenName || 'N/A' }}</span>
-                </div>
-                <div class="col-md-6 col-sm-12">
-                  <span class="text-muted d-block opacity-75">Program Title</span>
-                  <span class="fw-bold">{{ benefitDetails.programTitle || 'N/A' }}</span>
-                </div>
-              </div>
-              <div class="row g-3 small bg-white bg-opacity-50 p-2 rounded mt-2">
-                <div class="col-md-4">
-                  <span class="text-muted d-block opacity-75">Program Budget</span>
-                  <span class="fw-bold text-dark">{{
-                    benefitDetails.totalResource > 0
-                      ? (benefitDetails.totalResource | currency: 'INR')
-                      : 'N/A'
-                  }}</span>
-                </div>
-                <div class="col-md-4">
-                  <span class="text-muted d-block opacity-75">Total Disbursed</span>
-                  <span class="fw-bold text-warning">{{
-                    benefitDetails.totalResource > 0
-                      ? (benefitDetails.totalDisbursedForProgram | currency: 'INR')
-                      : 'N/A'
-                  }}</span>
-                </div>
-                <div class="col-md-4">
-                  <span class="text-muted d-block opacity-75">Available Balance</span>
-                  @if (benefitDetails.totalResource <= 0) {
-                    <span class="fw-bold text-muted">N/A</span>
-                  }
-                  @if (benefitDetails.totalResource > 0 && !benefitDetails.isResourceExhausted) {
-                    <span class="fw-bold text-success">{{
-                      benefitDetails.availableResource | currency: 'INR'
-                    }}</span>
-                  }
-                  @if (benefitDetails.totalResource > 0 && benefitDetails.isResourceExhausted) {
-                    <span class="fw-bold text-danger">₹0 (Exhausted)</span>
-                  }
-                </div>
-              </div>
-            </div>
-          }
-          @if (benefitDetails?.isResourceExhausted) {
-            <div class="alert alert-danger shadow-sm border-danger mb-4">
-              <i class="bi bi-exclamation-triangle-fill me-2"></i>
-              <strong>Insufficient Funds:</strong> Program budget is exhausted. Disbursement is
-              blocked.
-            </div>
-          }
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label fw-bold text-secondary small text-uppercase"
-                ><i class="bi bi-currency-rupee me-1"></i> Amount</label
-              >
-              <div class="input-group">
-                <span class="input-group-text bg-light">₹</span>
-                <input
-                  type="number"
-                  class="form-control"
-                  formControlName="amount"
-                  placeholder="0.00"
-                />
-              </div>
-              @if (
-                disbursementForm.get('amount')?.touched && disbursementForm.get('amount')?.invalid
-              ) {
-                <span class="text-danger small mt-1">Valid amount required.</span>
-              }
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-bold text-secondary small text-uppercase"
-                ><i class="bi bi-calendar-event me-1"></i> Date</label
-              >
-              <input type="date" class="form-control" formControlName="date" />
-              @if (disbursementForm.get('date')?.touched && disbursementForm.get('date')?.invalid) {
-                <span class="text-danger small mt-1">Date required.</span>
-              }
+          <div class="row g-3 small bg-white bg-opacity-50 p-2 rounded mt-2">
+            <div class="col-md-4">
+              <span class="text-muted d-block opacity-75">Program Budget</span>
+              <span class="fw-bold text-dark">{{
+                benefitDetails.totalResource > 0
+                ? (benefitDetails.totalResource | currency: 'INR')
+                : 'N/A'
+                }}</span>
             </div>
             <div class="col-md-4">
+              <span class="text-muted d-block opacity-75">Total Disbursed</span>
+              <span class="fw-bold text-warning">{{
+                benefitDetails.totalResource > 0
+                ? (benefitDetails.totalDisbursedForProgram | currency: 'INR')
+                : 'N/A'
+                }}</span>
+            </div>
+            <div class="col-md-4">
+              <span class="text-muted d-block opacity-75">Available Balance</span>
+              @if (benefitDetails.totalResource <= 0) { <span class="fw-bold text-muted">N/A</span>
+                }
+                @if (benefitDetails.totalResource > 0 && !benefitDetails.isResourceExhausted) {
+                <span class="fw-bold text-success">{{
+                  benefitDetails.availableResource | currency: 'INR'
+                  }}</span>
+                }
+                @if (benefitDetails.totalResource > 0 && benefitDetails.isResourceExhausted) {
+                <span class="fw-bold text-danger">₹0 (Exhausted)</span>
+                }
+            </div>
+          </div>
+        </div>
+        }
+        @if (benefitDetails?.isResourceExhausted) {
+        <div class="alert alert-danger shadow-sm border-danger mb-4">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <strong>Insufficient Funds:</strong> Program budget is exhausted. Disbursement is
+          blocked.
+        </div>
+        }
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary small text-uppercase"><i
+                class="bi bi-currency-rupee me-1"></i> Amount</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light">₹</span>
+              <input type="number" class="form-control" formControlName="amount" placeholder="0.00" />
+            </div>
+            @if (
+            disbursementForm.get('amount')?.touched && disbursementForm.get('amount')?.invalid
+            ) {
+            <span class="text-danger small mt-1">Valid amount required.</span>
+            }
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary small text-uppercase"><i
+                class="bi bi-calendar-event me-1"></i> Date</label>
+            <input type="date" class="form-control" formControlName="date" />
+            @if (disbursementForm.get('date')?.touched && disbursementForm.get('date')?.invalid) {
+            <span class="text-danger small mt-1">Date required.</span>
+            }
+          </div>
+          <!-- <div class="col-md-4">
               <label class="form-label fw-bold text-secondary small text-uppercase"
-                ><i class="bi bi-person-circle me-1"></i> Citizen ID</label
-              >
+                ><i class="bi bi-person-circle me-1"></i> Citizen ID</label>
               <input
                 type="number"
                 class="form-control bg-light"
                 formControlName="citizenID"
                 readonly
               />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label fw-bold text-secondary small text-uppercase"
-                ><i class="bi bi-person-badge me-1"></i> Officer ID</label
-              >
-              <input
-                type="number"
-                class="form-control bg-light"
-                formControlName="officerID"
-                readonly
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label fw-bold text-secondary small text-uppercase"
-                ><i class="bi bi-flag me-1"></i> Status</label
-              >
-              <select class="form-select" formControlName="status">
-                <option value="">-- Select --</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
-                <option value="Disbursement Pending">Disbursement Pending</option>
-                <option value="Failed">Failed</option>
-              </select>
-              @if (
-                disbursementForm.get('status')?.touched && disbursementForm.get('status')?.invalid
-              ) {
-                <span class="text-danger small mt-1">Status required.</span>
-              }
-            </div>
+            </div> -->
+          <!-- <div class="col-md-4">
+            <label class="form-label fw-bold text-secondary small text-uppercase"><i
+                class="bi bi-person-badge me-1"></i> Officer ID</label>
+            <input type="number" class="form-control bg-light" formControlName="officerID" readonly />
+          </div> -->
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary small text-uppercase"><i class="bi bi-flag me-1"></i>
+              Status</label>
+            <select class="form-select" formControlName="status">
+              <option value="">-- Select --</option>
+              <option value="Completed">Completed</option>
+              <option value="Pending">Pending</option>
+              <option value="Disbursement Pending">Disbursement Pending</option>
+              <option value="Failed">Failed</option>
+            </select>
+            @if (
+            disbursementForm.get('status')?.touched && disbursementForm.get('status')?.invalid
+            ) {
+            <span class="text-danger small mt-1">Status required.</span>
+            }
           </div>
-          <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-            <button
-              type="button"
-              class="btn btn-light border px-4 fw-bold text-muted shadow-sm"
-              (click)="goBack()"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="btn btn-primary px-4 fw-bold shadow-sm"
-              [disabled]="isSaving || isLoading || benefitDetails?.isResourceExhausted"
-            >
-              @if (isSaving) {
-                <span class="spinner-border spinner-border-sm me-2"></span>
-              }
-              @if (!isSaving) {
-                <i class="bi bi-check-circle me-1"></i>
-              }
-              {{ isEditMode ? 'Update Disbursement' : 'Record Disbursement' }}
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+          <button type="button" class="btn btn-light border px-4 fw-bold text-muted shadow-sm" (click)="goBack()">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm"
+            [disabled]="isSaving || isLoading || benefitDetails?.isResourceExhausted">
+            @if (isSaving) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            @if (!isSaving) {
+            <i class="bi bi-check-circle me-1"></i>
+            }
+            {{ isEditMode ? 'Update Disbursement' : 'Record Disbursement' }}
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
   }
 </div>

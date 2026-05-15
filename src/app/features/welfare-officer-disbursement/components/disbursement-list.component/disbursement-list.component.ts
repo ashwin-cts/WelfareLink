@@ -1,9 +1,24 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+
+// RxJS Imports for API chaining
+import { forkJoin, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
+
 import { DisbursementService } from '../../services/disbursement.service';
+import { BenefitService } from '../../../welfare-officer-benefit/services/benefit.service'; // Make sure path is correct
+import { WelfareOfficerService } from '../../../welfare-officer/services/welfare-officer.services'; // Make sure path is correct
+
 import { Disbursement } from '../../models/disbursement.model';
 import { DisbursementNavbarComponent } from '../disbursement-navbar.component/disbursement-navbar.component';
+
+// Extend the Disbursement model to include the mapped strings
+export interface EnrichedDisbursement extends Disbursement {
+  citizenName?: string;
+  programName?: string;
+}
+
 @Component({
   selector: 'app-disbursement-list',
   standalone: true,
@@ -13,8 +28,11 @@ import { DisbursementNavbarComponent } from '../disbursement-navbar.component/di
 })
 export class DisbursementListComponent implements OnInit {
   private disbursementService = inject(DisbursementService);
+  private benefitService = inject(BenefitService);
+  private applicationService = inject(WelfareOfficerService);
 
-  disbursements: Disbursement[] = [];
+  // Use the Enriched model here
+  disbursements: EnrichedDisbursement[] = [];
   pendingCount = 0;
   isLoading = true;
   errorMessage = '';
@@ -25,10 +43,40 @@ export class DisbursementListComponent implements OnInit {
 
   loadDisbursements(): void {
     this.isLoading = true;
-    this.disbursementService.getDisbursements().subscribe({
-      next: (data) => {
+
+    this.disbursementService.getDisbursements().pipe(
+      switchMap(disbursements => {
+        // If no disbursements returned, return empty array
+        if (!disbursements || disbursements.length === 0) {
+          return of([]);
+        }
+
         // Sort by date descending (newest first)
-        this.disbursements = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const sorted = disbursements.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        // Chain the APIs: For every disbursement, fetch Benefit -> Application
+        const enrichmentRequests = sorted.map(disb =>
+          this.benefitService.getBenefitById(disb.benefitID).pipe(
+            switchMap(benefit => this.applicationService.getApplicationById(benefit.applicationID)),
+            map(application => ({
+              ...disb,
+              citizenName: application?.citizen?.name || 'Unknown Citizen',
+              programName: application?.program?.title || 'Unknown Program'
+            }) as EnrichedDisbursement),
+            catchError(() => of({
+              ...disb,
+              citizenName: 'Data Unavailable',
+              programName: 'Data Unavailable'
+            } as EnrichedDisbursement)) // Fallback if API fails
+          )
+        );
+
+        // Wait for all the individual requests to finish
+        return forkJoin(enrichmentRequests);
+      })
+    ).subscribe({
+      next: (enrichedData) => {
+        this.disbursements = enrichedData;
 
         // Calculate pending items for the alert banner
         this.pendingCount = this.disbursements.filter(d =>
@@ -36,7 +84,6 @@ export class DisbursementListComponent implements OnInit {
         ).length;
 
         this.isLoading = false;
-        console.log(data);
       },
       error: (err) => {
         this.errorMessage = 'Failed to load disbursements. Please try again later.';
