@@ -80,8 +80,6 @@ namespace WelfareLink.UserManagement.API
                 builder.Services.AddScoped<IWelfareProgramRepository, WelfareProgramRespository>();
                 builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
                 builder.Services.AddScoped<IComplainceRecordRepository, ComplainceRecordRepository>();
-                builder.Services.AddScoped<IReportRepository, ReportRepository>();
-                builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
                 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
 
@@ -97,8 +95,6 @@ namespace WelfareLink.UserManagement.API
                 builder.Services.AddScoped<IWelfareProgramService, WelfareProgramService>();
                 builder.Services.AddScoped<IResourceService, ResourceService>();
                 builder.Services.AddScoped<IComplainceRecordService, ComplainceRecordService>();
-                builder.Services.AddScoped<IReportService, ReportService>();
-                builder.Services.AddScoped<INotificationService, NotificationService>();
                 builder.Services.AddScoped<IBenefitAnalyticsService, BenefitAnalyticsService>();
                 builder.Services.AddScoped<IWelfareApplicationAnalyticsService, WelfareApplicationAnalyticsService>();
                 builder.Services.AddScoped<IWelfareApplicationDocumentService, WelfareApplicationDocumentService>();
