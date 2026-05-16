@@ -16,7 +16,7 @@ export class CitizenApplyFormComponent implements OnInit {
   program: WelfareProgram | null = null;
   documents: CitizenDocument[] = [];
   selectedDocIds = new Set<number>();
-  
+
   tokenUserId!: number;
   actualCitizenId!: number; // Track true ID
 
@@ -28,16 +28,16 @@ export class CitizenApplyFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private citizenService: CitizenService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.programId = Number(this.route.snapshot.paramMap.get('id'));
     const token = localStorage.getItem('token');
-    
+
     if (token) {
       const payload = JSON.parse(atob(token.split('.')[1]));
       this.tokenUserId = Number(payload.UserId || payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']);
-      
+
       // 1. Fetch Profile first to get the true CitizenId!
       this.citizenService.getProfile(this.tokenUserId).subscribe({
         next: (profile) => {
@@ -56,11 +56,11 @@ export class CitizenApplyFormComponent implements OnInit {
     this.citizenService.getPrograms().subscribe(progs => {
       const p = progs.find(p => p.programID === this.programId) || null;
       if (p) {
-         const start = new Date(p.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-         const end = new Date(p.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-         
-         p.duration = `${start} - ${end}`;
-         p.requiredDocuments = p.requiredDocuments || (p as any).RequiredDocuments || 'None';
+        const start = new Date(p.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        const end = new Date(p.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+        p.duration = `${start} - ${end}`;
+        p.requiredDocuments = p.requiredDocuments || (p as any).RequiredDocuments || 'None';
       }
       this.program = p;
     });
@@ -78,14 +78,26 @@ export class CitizenApplyFormComponent implements OnInit {
     });
   }
 
+  // toggleDoc(docId: number) {
+  //   if (this.selectedDocIds.has(docId)) {
+  //     this.selectedDocIds.delete(docId);
+  //   } else {
+  //     this.selectedDocIds.add(docId);
+  //   }
+  // }
   toggleDoc(docId: number) {
-    if (this.selectedDocIds.has(docId)) {
-      this.selectedDocIds.delete(docId);
-    } else {
-      this.selectedDocIds.add(docId);
-    }
-  }
+    // Create a new Set so Angular detects the change immediately
+    const updatedIds = new Set(this.selectedDocIds);
 
+    if (updatedIds.has(docId)) {
+      updatedIds.delete(docId);
+    } else {
+      updatedIds.add(docId);
+    }
+
+    // Reassign the Set to trigger the UI update instantly
+    this.selectedDocIds = updatedIds;
+  }
   get requiredDocTypes(): string[] {
     if (!this.program || !this.program.requiredDocuments || this.program.requiredDocuments === 'None') return [];
     return this.program.requiredDocuments.split(',').map(s => s.trim());
