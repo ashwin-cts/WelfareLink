@@ -17,21 +17,21 @@ export class CitizenProgramListComponent implements OnInit {
   programs: WelfareProgram[] = [];
   appliedProgramIds = new Set<number>();
   citizenGender: string = '';
-  programApplicationsMap = new Map<number, string>();
+  
   tokenUserId!: number;
   actualCitizenId!: number;
-
+  
   isLoading = true;
-  selectedProgram: WelfareProgram | null = null;
+  selectedProgram: WelfareProgram | null = null; 
 
-  constructor(private citizenService: CitizenService) { }
+  constructor(private citizenService: CitizenService) {}
 
   ngOnInit(): void {
     const token = localStorage.getItem('token');
     if (token) {
       const payload = JSON.parse(atob(token.split('.')[1]));
       this.tokenUserId = Number(payload.UserId || payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']);
-
+      
       // 1. Fetch Profile First
       this.citizenService.getProfile(this.tokenUserId).subscribe({
         next: (profile) => {
@@ -57,7 +57,7 @@ export class CitizenProgramListComponent implements OnInit {
           // Calculate a readable duration string from startDate and endDate
           const start = new Date(p.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
           const end = new Date(p.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-
+          
           return {
             ...p,
             duration: `${start} - ${end}`, // Formats as "20 Apr 2026 - 20 Oct 2026"
@@ -65,10 +65,8 @@ export class CitizenProgramListComponent implements OnInit {
             requiredDocuments: p.requiredDocuments || (p as any).RequiredDocuments || 'None'
           };
         });
-
-        res.applications.forEach(app => {
-          this.programApplicationsMap.set(app.programID, app.status);
-        });
+        
+        res.applications.forEach(app => this.appliedProgramIds.add(app.programID));
         this.isLoading = false;
       },
       error: (err) => {
@@ -77,15 +75,9 @@ export class CitizenProgramListComponent implements OnInit {
       }
     });
   }
-  isAppliedAndActive(programId: number): boolean {
-    const status = this.programApplicationsMap.get(programId);
-    return !!status && status !== 'Rejected';
-  }
+
   isApplied(programId: number): boolean {
     return this.appliedProgramIds.has(programId);
-  }
-  isRejected(programId: number): boolean {
-    return this.programApplicationsMap.get(programId) === 'Rejected';
   }
 
   isGenderBlocked(eligibleGender?: string): boolean {
