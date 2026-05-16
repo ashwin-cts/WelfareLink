@@ -48,8 +48,8 @@ export interface BenefitDetail {
 export interface ApplicationDetail {
   applicationID: number;
   citizenID: number;
-  citizen?: { name: string; };
-  program?: { title: string; maxBenefitPerCitizen?: number; };
+  citizen?: { name: string; dateOfBirth: Date; gender: string; };
+  program?: { title: string; maxBenefitPerCitizen?: number; requiredDocuments?: string; };
   submittedDate?: string;
   status?: string;
   applicationDocuments?: ApplicationDocumentLink[];

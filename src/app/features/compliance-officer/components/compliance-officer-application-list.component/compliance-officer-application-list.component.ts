@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ComplianceOfficerService } from '../../services/compliance-officer.service'; // Added EligibilityCheck import
-import { ApplicationDetail,EligibilityCheck } from '../../models/compliance-officer.model';
+import { ApplicationDetail, EligibilityCheck } from '../../models/compliance-officer.model';
 
 @Component({
   selector: 'app-compliance-application-details',
@@ -16,9 +16,9 @@ export class ComplianceApplicationDetailsComponent implements OnInit {
   eligibilityCheck: EligibilityCheck | null = null; // ADDED: Strictly typed variable
 
   constructor(
-    private route: ActivatedRoute, 
+    private route: ActivatedRoute,
     private service: ComplianceOfficerService
-  ) {}
+  ) { }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -27,7 +27,10 @@ export class ComplianceApplicationDetailsComponent implements OnInit {
 
       // Fetch Application Details
       this.service.getApplicationDetails(appId).subscribe({
-        next: (res: ApplicationDetail) => this.app = res,
+        next: (res: ApplicationDetail) => {
+          console.log(res);
+          this.app = res
+        },
         error: (err) => console.error("Error loading application details:", err)
       });
 
@@ -42,15 +45,15 @@ export class ComplianceApplicationDetailsComponent implements OnInit {
   // Document Viewing Logic
   viewDocument(documentId: number) {
     if (!documentId) return;
-    
+
     this.service.getDocumentFile(documentId).subscribe({
       next: (blob: Blob) => {
         // Create a temporary, secure URL for the downloaded file in memory
         const fileUrl = window.URL.createObjectURL(blob);
-        
+
         // Open the file in a new tab
         window.open(fileUrl, '_blank');
-        
+
         // Optional but good practice: clean up the temporary URL after 10 seconds
         setTimeout(() => {
           window.URL.revokeObjectURL(fileUrl);
