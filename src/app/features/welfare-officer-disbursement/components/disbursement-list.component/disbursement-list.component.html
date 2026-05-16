@@ -44,7 +44,10 @@
             <th class="ps-4">Program Name</th>
             <th>Citizen Name</th>
             <th>Amount</th>
-            <th>Date</th>
+            <th (click)="toggleDateSort()" style="cursor: pointer" class="user-select-none">
+              Date
+              <i class="bi ms-1" [ngClass]="isSortDescending ? 'bi-sort-down' : 'bi-sort-up'"></i>
+            </th>
             <th>Status</th>
             <th class="text-end pe-4">Actions</th>
           </tr>
@@ -75,13 +78,12 @@
 
             <td class="text-end pe-4">
               <div class="btn-group shadow-sm">
-                <a [routerLink]="['/welfare-officer/disbursement-details/', item.disbursementID]"
-                  class="btn btn-sm btn-outline-primary" title="View Details">
+                <a [routerLink]="['/welfare-officer/disbursement-details/', item.disbursementID]" class="btn btn-sm btn-outline-primary"
+                  title="View Details">
                   <i class="bi bi-eye"></i>
                 </a>
                 @if (item.status !== 'Completed' && item.status !== 'Fully Disbursed') {
-                <a [routerLink]="['/welfare-officer/disbursement-edit/', item.disbursementID]"
-                  class="btn btn-sm btn-outline-warning" title="Edit">
+                <a [routerLink]="['/welfare-officer/disbursement-edit/', item.disbursementID]" class="btn btn-sm btn-outline-warning" title="Edit">
                   <i class="bi bi-pencil"></i>
                 </a>
                 }

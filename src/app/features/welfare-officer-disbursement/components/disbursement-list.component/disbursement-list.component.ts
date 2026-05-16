@@ -36,11 +36,26 @@ export class DisbursementListComponent implements OnInit {
   pendingCount = 0;
   isLoading = true;
   errorMessage = '';
+  isSortDescending: boolean = true;
 
   ngOnInit(): void {
     this.loadDisbursements();
   }
+  toggleDateSort() {
+    this.isSortDescending = !this.isSortDescending;
+    this.applySorting();
+  }
 
+  applySorting() {
+    this.disbursements.sort((a, b) => {
+      // Ensure 'a.date' matches the exact property name on your disbursement model
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+
+      // If descending, B - A (Newest first). If ascending, A - B (Oldest first)
+      return this.isSortDescending ? (dateB - dateA) : (dateA - dateB);
+    });
+  }
   loadDisbursements(): void {
     this.isLoading = true;
 
@@ -82,7 +97,7 @@ export class DisbursementListComponent implements OnInit {
         this.pendingCount = this.disbursements.filter(d =>
           d.status === 'Disbursement Pending' || d.status === 'Pending'
         ).length;
-
+        this.applySorting();
         this.isLoading = false;
       },
       error: (err) => {

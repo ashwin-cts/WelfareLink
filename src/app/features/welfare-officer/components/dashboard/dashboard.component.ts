@@ -16,7 +16,7 @@ export class DashboardComponent implements OnInit {
   applications: WelfareApplication[] = [];
   // 1. Replaced any[] with WelfareApplication[]
   filteredList: WelfareApplication[] = [];
-
+  isSortDescending: boolean = true; // Default to newest first
   currentView: string = 'All'; // Tracks if we are in 'All' or 'Pending' view
   stats: DashboardStats = { total: 0, pending: 0, approved: 0, rejected: 0, fullyDisbursed: 0 };
   isLoading: boolean = true; // Set to true initiallyisLoading: boolean = true; // Set to true initially
@@ -47,6 +47,12 @@ export class DashboardComponent implements OnInit {
       }
     });
   }
+  toggleDateSort() {
+    this.isSortDescending = !this.isSortDescending;
+    this.applySorting();
+  }
+
+  // Extract the sorting logic into its own method so it can be reused
 
   calculateStats(): void {
     this.stats.total = this.applications.length;
@@ -68,7 +74,18 @@ export class DashboardComponent implements OnInit {
     } else {
       this.filteredList = this.applications.filter(a => a.status === mode);
     }
+    this.applySorting();
   }
+  applySorting() {
+    this.filteredList.sort((a, b) => {
+      const dateA = new Date(a.submittedDate).getTime();
+      const dateB = new Date(b.submittedDate).getTime();
+
+      // If descending, B - A (Newest first). If ascending, A - B (Oldest first)
+      return this.isSortDescending ? (dateB - dateA) : (dateA - dateB);
+    });
+  }
+
 
   // Delete Modal Logic
   // 4. Replaced app: any with app: WelfareApplication

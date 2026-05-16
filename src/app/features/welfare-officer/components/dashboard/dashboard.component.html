@@ -128,7 +128,10 @@
               <tr>
                 <th class="ps-4">Citizen Name</th>
                 <th>Program Name</th>
-                <th>Submitted Date</th>
+                <th (click)="toggleDateSort()" style="cursor: pointer" class="user-select-none">
+                  SUBMITTED DATE
+                  <i class="bi ms-1 text-muted" [ngClass]="isSortDescending ? 'bi-sort-down' : 'bi-sort-up'"></i>
+                </th>
                 <th>Status</th>
                 <th class="text-center pe-4">Actions</th>
               </tr>

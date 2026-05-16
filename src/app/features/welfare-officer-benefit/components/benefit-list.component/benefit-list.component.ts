@@ -21,7 +21,7 @@ export class BenefitListComponent implements OnInit {
 
   isLoading = true;
   searchTerm = '';
-
+  isSortDescending: boolean = true;
   ngOnInit(): void {
     this.loadBenefits();
   }
@@ -52,6 +52,10 @@ export class BenefitListComponent implements OnInit {
       }
     });
   }
+  toggleDateSort() {
+    this.isSortDescending = !this.isSortDescending;
+    this.applySorting();
+  }
 
   // Live search functionality
   filterBenefits(): void {
@@ -65,6 +69,17 @@ export class BenefitListComponent implements OnInit {
         (b.status && b.status.toLowerCase().includes(term))
       );
     }
+    this.applySorting();
+  }
+  applySorting() {
+    this.filteredBenefits.sort((a, b) => {
+      // Make sure 'a.date' matches whatever your actual date property is named
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+
+      // If descending, B - A (Newest first). If ascending, A - B (Oldest first)
+      return this.isSortDescending ? (dateB - dateA) : (dateA - dateB);
+    });
   }
 
   // Match C# status to CSS Class
