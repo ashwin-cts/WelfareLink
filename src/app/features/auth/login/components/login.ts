@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -15,12 +15,11 @@ import { AuthResponse, AuthErrorResponse, RegisterCitizenRequest } from '../mode
   styleUrl: './login.css'
 })
 export class Login implements OnInit {
+  @Output() closeOverlay = new EventEmitter<void>(); // NEW: Tells the home page to close the modal
 
   isLoginMode = true;
-
   loginForm: FormGroup;
   registerForm: FormGroup;
-
   isLoading = false;
   errorMessage = '';
   successMessage = '';
@@ -63,6 +62,11 @@ export class Login implements OnInit {
     });
   }
 
+  // NEW METHOD: Triggers the event to close the modal
+  closeModal() {
+    this.closeOverlay.emit();
+  }
+
   toggleVisibility(field: 'login' | 'register') {
     if (field === 'login') this.showLoginPassword = !this.showLoginPassword;
     if (field === 'register') this.showRegisterPassword = !this.showRegisterPassword;
@@ -87,7 +91,6 @@ export class Login implements OnInit {
     this.registerForm.reset({ gender: '' });
   }
 
-  // --- LOGIN LOGIC ---
   onSubmit() {
     if (this.loginForm.invalid) return;
 
@@ -97,7 +100,7 @@ export class Login implements OnInit {
     this.cdr.detectChanges();
 
     this.authService.login(this.loginForm.value).subscribe({
-      next: (res: any) => { // Changed strictly for flexibility with the C# response casing
+      next: (res: any) => { 
         this.isLoading = false;
 
         // 1. Save the token
@@ -106,37 +109,29 @@ export class Login implements OnInit {
           localStorage.setItem('token', validToken);
         }
 
-        // 2. Safely grab the role and name regardless of how the C# API capitalized it
         const userRole = res.role || res.Role || this.loginForm.value.userType;
         const userName = res.fullName || res.FullName || res.username || res.Username || this.loginForm.value.username;
 
         localStorage.setItem('userRole', userRole);
         localStorage.setItem('userName', userName);
-
         this.cdr.detectChanges();
 
-        // 3. The Route Dictionary: Map every role to its specific dashboard
         const roleRedirects: { [key: string]: string } = {
           'Admin': '/admin-dashboard',
           'Citizen': '/citizen-dashboard',
           'ProgramManager': '/program-manager/dashboard',
           'WelfareOfficer': '/welfare-officer/dashboard',
-          // THIS LINE HAS BEEN FIXED TO MATCH THE NEW ROUTING
           'ComplianceOfficer': '/compliance/dashboard',
           'GovernmentAuditor': '/auditor-dashboard'
         };
 
-        // 4. Look up the route. If the role is missing/invalid, fall back to standard dashboard.
         const targetRoute = roleRedirects[userRole] || '/dashboard';
-
-        // 5. Navigate!
         this.router.navigate([targetRoute]);
       },
       error: (err: HttpErrorResponse) => this.handleError(err)
     });
   }
 
-  // --- REGISTRATION LOGIC ---
   onRegisterSubmit() {
     if (this.registerForm.invalid) return;
 
@@ -145,11 +140,11 @@ export class Login implements OnInit {
     this.successMessage = '';
     this.cdr.detectChanges();
 
-    const newCitizen: any = { // <--- Changed to any to bypass TS interface error if auth.model isn't updated yet
+    const newCitizen: any = { 
       username: this.registerForm.value.username,
       password: this.registerForm.value.password,
       email: this.registerForm.value.email,
-      name: this.registerForm.value.fullName, // <--- THIS IS THE FIX! Changed fullName to name
+      name: this.registerForm.value.fullName, 
       dateOfBirth: this.registerForm.value.dateOfBirth,
       gender: this.registerForm.value.gender,
       contactInfo: this.registerForm.value.contactInfo,
@@ -168,7 +163,6 @@ export class Login implements OnInit {
     });
   }
 
-  // --- SHARED ERROR HANDLING ---
   private handleError(err: HttpErrorResponse) {
     this.isLoading = false;
     const errData = err.error as AuthErrorResponse;
@@ -183,7 +177,6 @@ export class Login implements OnInit {
     } else {
       this.errorMessage = 'A network or server error occurred. Please try again later.';
     }
-
     this.cdr.detectChanges();
   }
 }

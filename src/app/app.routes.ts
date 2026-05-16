@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
-
+import { HomeComponent } from './features/home-component/home.component';
 // ==========================================
 // 1. AUTH & ACCOUNT COMPONENTS
 // ==========================================
@@ -80,8 +80,7 @@ import { ComplianceRecordsComponent } from './features/compliance-officer/compon
 //import { ComplianceRecordsComponent } from './features/compliance-officer/components/compliance-officer-records.component/compliance-officer-records.component';
 
 export const routes: Routes = [
-  // --- Public / Auth Routes ---
-  { path: 'login', component: Login },
+  
 
   // --- Account Management Routes ---
   { path: 'account/edit-profile', component: EditProfileComponent, canActivate: [authGuard] },
@@ -164,6 +163,12 @@ export const routes: Routes = [
     ]
   },
   // --- Fallback Routes ---
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: '**', redirectTo: '/login' }
+  //{ path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'home', component: HomeComponent },
+  //default
+   {path: '', component: HomeComponent, pathMatch: 'full' },
+   { path: 'login', redirectTo: '/home', pathMatch: 'full' },
+  // { path: '**', redirectTo: '/login' }
+  // Catch-all wildcard route: Redirects any unknown URLs back to the Home page
+{ path: '**', redirectTo: '', pathMatch: 'full' }
 ];

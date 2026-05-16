@@ -1,0 +1,54 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-3 sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-primary" href="#">
+      <i class="bi bi-shield-check fs-3"></i>
+      <span class="fs-4" style="color: #1e3a8a;">WelfareLink</span>
+    </a>
+
+    <div class="ms-auto">
+      <button (click)="openLogin()" class="btn btn-primary px-4 py-2 fw-semibold rounded-pill shadow-sm" style="background: linear-gradient(to right, #0ea5e9, #10b981); border: none;">
+        Login
+      </button>
+    </div>
+  </div>
+</nav>
+
+<section class="hero-section d-flex align-items-center">
+  <div class="container text-center text-md-start">
+    <div class="row align-items-center justify-content-between min-vh-75">
+      
+      <div class="col-lg-6 mt-5 mb-5 mb-lg-0 pe-lg-5 text-center text-lg-start fade-in-up">
+        <span class="badge bg-opacity-10 px-3 py-2 rounded-pill mb-3 fw-semibold" style="color: #0ea5e9; background-color: rgba(14, 165, 233, 0.1);">
+          Secure & Transparent
+        </span>
+        <h1 class="display-4 fw-extrabold text-dark mb-4 lh-sm">
+          Streamlining Social Welfare for Everyone.
+        </h1>
+        <p class="lead text-secondary mb-5 pe-lg-4 lh-base">
+          <strong>WelfareLink connects citizens directly with essential government programs. Track your benefits and ensure transparency in every disbursement.
+        </strong>
+        </p>
+        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
+          <button (click)="openLogin()" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow" style="background: linear-gradient(to right, #0ea5e9, #10b981); border: none;">
+            Get Started <i class="bi bi-arrow-right ms-2"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="col-lg-5 fade-in-up delay-1 text-center">
+        <img 
+        src="/hero-image.jpg" 
+        alt="Welfare Community" 
+        class="img-fluid rounded-5 shadow-lg border border-white"
+        style="border-width: 8px !important; max-height: 450px; object-fit: cover;"
+        >
+      </div>
+      
+
+    </div>
+  </div>
+</section>
+
+@if (isLoginVisible) {
+  <app-login (closeOverlay)="closeLogin()"></app-login>
+}
