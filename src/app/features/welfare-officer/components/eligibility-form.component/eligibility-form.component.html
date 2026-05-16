@@ -51,9 +51,17 @@
             <p class="mb-2">
               <strong>Program:</strong> {{ applicationData.program?.title || 'N/A' }}
             </p>
-            <p class="mb-0">
+            <p class="mb-2">
               <strong>Status: </strong>
               <span class="badge bg-secondary">{{ applicationData.status || 'Pending' }}</span>
+            </p>
+            <p class="mb-2">
+              <strong>Eligible Gender: </strong>
+              <span class="badge bg-secondary">{{ applicationData.program.eligibleGender }}</span>
+            </p>
+            <p class="mb-0">
+              <strong>Required Documents: </strong>
+              <span class="badge bg-secondary">{{ applicationData.program.requiredDocuments }}</span>
             </p>
           </div>
         </div>
@@ -72,6 +80,10 @@
             <p class="mb-2">
               <strong>Contact:</strong>
               {{ citizenData.contactInfo || citizenData.email || 'N/A' }}
+            </p>
+            <p class="mb-2">
+              <strong>Date of Birth: </strong>
+              {{ citizenData.dateOfBirth | date: 'mediumDate'}}
             </p>
             <p class="mb-0"><strong>Address:</strong> {{ citizenData.address || 'N/A' }}</p>
           </div>
@@ -123,21 +135,18 @@
                   </span>
                 </td>
                 <td>
-                  <button type="button" (click)="onViewDocument(doc.documentID)"
-                    class="btn btn-sm btn-info text-white shadow-sm">
+                  <button type="button" (click)="onViewDocument(doc.documentID)" class="btn btn-sm btn-info text-white shadow-sm">
                     <i class="bi bi-eye"></i> View
                   </button>
                 </td>
                 <td class="text-end pe-4">
                   @if (doc.verificationStatus !== 'Approved') {
-                  <button type="button" class="btn btn-sm btn-outline-success me-1"
-                    (click)="updateDocStatus(doc.documentID, 'Approved')">
+                  <button type="button" class="btn btn-sm btn-outline-success me-1" (click)="updateDocStatus(doc.documentID, 'Approved')">
                     <i class="bi bi-check-lg"></i> Approve
                   </button>
                   }
                   @if (doc.verificationStatus !== 'Rejected') {
-                  <button type="button" class="btn btn-sm btn-outline-danger"
-                    (click)="updateDocStatus(doc.documentID, 'Rejected')">
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="updateDocStatus(doc.documentID, 'Rejected')">
                     <i class="bi bi-x-lg"></i> Reject
                   </button>
                   }
@@ -212,8 +221,7 @@
             </div>
             <div class="col-12">
               <label class="form-label fw-bold text-secondary">Assessment Notes</label>
-              <textarea class="form-control" rows="4" formControlName="notes"
-                placeholder="Enter detailed reasons for decision..."></textarea>
+              <textarea class="form-control" rows="4" formControlName="notes" placeholder="Enter detailed reasons for decision..."></textarea>
               @if (
               eligibilityForm.get('notes')?.touched && eligibilityForm.get('notes')?.invalid
               ) {
