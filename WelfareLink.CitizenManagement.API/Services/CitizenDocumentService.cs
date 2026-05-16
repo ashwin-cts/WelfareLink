@@ -1,6 +1,7 @@
-using System.Security.Claims; // ADDED THIS FOR JWT CLAIMS
+using System.Security.Claims;
 using WelfareLink.CitizenManagement.API.Interfaces;
 using WelfareLink.CitizenManagement.API.Models;
+using WelfareLink.CitizenManagement.API.Exceptions; // Added for custom exceptions
 
 namespace WelfareLink.CitizenManagement.API.Services;
 
@@ -40,7 +41,12 @@ public class CitizenDocumentService : ICitizenDocumentService
 
     public async Task<CitizenDocument> GetDocumentByIdAsync(int documentId)
     {
-        return await _documentRepository.GetByIdAsync(documentId);
+        var document = await _documentRepository.GetByIdAsync(documentId);
+        if (document == null)
+        {
+            throw new NotFoundException($"Document with ID {documentId} was not found.");
+        }
+        return document;
     }
 
     public async Task<bool> UploadDocumentAsync(CitizenDocument document, IFormFile file)
@@ -50,6 +56,10 @@ public class CitizenDocumentService : ICitizenDocumentService
             if (file != null && file.Length > 0)
             {
                 document.FileURI = await SaveFileAsync(file, document.DocType);
+            }
+            else
+            {
+                throw new BusinessValidationException("A valid file must be provided for upload.");
             }
 
             document.UploadedDate = DateTime.Now;
@@ -69,9 +79,10 @@ public class CitizenDocumentService : ICitizenDocumentService
 
             return true;
         }
-        catch
+        catch (Exception)
         {
-            return false;
+            // FIX: Removed the 'ex' parameter to match your custom exception constructor
+            throw new BadRequestException("An error occurred while attempting to upload the document.");
         }
     }
 
@@ -80,36 +91,44 @@ public class CitizenDocumentService : ICitizenDocumentService
         try
         {
             var document = await _documentRepository.GetByIdAsync(documentId);
-            if (document != null)
+            if (document == null)
             {
-                if (!string.IsNullOrEmpty(document.FileURI))
-                {
-                    var webRoot = _environment.WebRootPath
-                                  ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
-                    var filePath = Path.Combine(webRoot, document.FileURI.TrimStart('/'));
-                    if (File.Exists(filePath))
-                    {
-                        File.Delete(filePath);
-                    }
-                }
-
-                await _documentRepository.DeleteAsync(documentId);
-
-                var userId = GetCurrentUserId();
-                await _auditLogService.LogActionAsync(
-                    userId: userId,
-                    action: "Delete",
-                    entityType: "CitizenDocument",
-                    entityId: documentId,
-                    description: $"Doc Id {documentId} Deleted document '{document.DocType}' for user ID of citizen:{userId}",
-                    status: "Success"
-                );
+                throw new NotFoundException($"Cannot delete: Document with ID {documentId} was not found.");
             }
+
+            if (!string.IsNullOrEmpty(document.FileURI))
+            {
+                var webRoot = _environment.WebRootPath
+                              ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
+                var filePath = Path.Combine(webRoot, document.FileURI.TrimStart('/'));
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            }
+
+            await _documentRepository.DeleteAsync(documentId);
+
+            var userId = GetCurrentUserId();
+            await _auditLogService.LogActionAsync(
+                userId: userId,
+                action: "Delete",
+                entityType: "CitizenDocument",
+                entityId: documentId,
+                description: $"Doc Id {documentId} Deleted document '{document.DocType}' for user ID of citizen:{userId}",
+                status: "Success"
+            );
+
             return true;
         }
-        catch
+        catch (NotFoundException)
         {
-            return false;
+            throw;
+        }
+        catch (Exception)
+        {
+            // FIX: Removed the 'ex' parameter
+            throw new BadRequestException("An error occurred while attempting to delete the document.");
         }
     }
 
@@ -118,15 +137,23 @@ public class CitizenDocumentService : ICitizenDocumentService
         try
         {
             var document = await _documentRepository.GetByIdAsync(documentId);
-            if (document == null) return false;
+            if (document == null)
+            {
+                throw new NotFoundException($"Cannot update status: Document with ID {documentId} was not found.");
+            }
 
             document.VerificationStatus = status;
             await _documentRepository.UpdateAsync(document);
             return true;
         }
-        catch
+        catch (NotFoundException)
         {
-            return false;
+            throw;
+        }
+        catch (Exception)
+        {
+            // FIX: Removed the 'ex' parameter
+            throw new BadRequestException("An error occurred while attempting to update the document's verification status.");
         }
     }
 
@@ -135,7 +162,15 @@ public class CitizenDocumentService : ICitizenDocumentService
         try
         {
             var document = await _documentRepository.GetByIdAsync(documentId);
-            if (document == null) return false;
+            if (document == null)
+            {
+                throw new NotFoundException($"Cannot re-upload: Document with ID {documentId} was not found.");
+            }
+
+            if (file == null || file.Length == 0)
+            {
+                throw new BusinessValidationException("A valid file must be provided for re-upload.");
+            }
 
             // Delete old file
             if (!string.IsNullOrEmpty(document.FileURI))
@@ -168,15 +203,23 @@ public class CitizenDocumentService : ICitizenDocumentService
 
             return true;
         }
-        catch
+        catch (NotFoundException)
         {
-            return false;
+            throw;
+        }
+        catch (BusinessValidationException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            // FIX: Removed the 'ex' parameter
+            throw new BadRequestException("An error occurred while attempting to re-upload the document.");
         }
     }
 
     public async Task<string> SaveFileAsync(IFormFile file, string docType)
     {
-        // WebRootPath is null when the API has no wwwroot folder yet — fall back to ContentRootPath/wwwroot
         var webRoot = _environment.WebRootPath
                       ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
 
@@ -188,7 +231,7 @@ public class CitizenDocumentService : ICitizenDocumentService
         }
 
         var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
-        var istTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now, istZone);
+        var istTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
 
         var uniqueFileName = $"{docType}_{istTime:yyyyMMddHHmmss}_{Guid.NewGuid()}_{file.FileName}";
         var filePath = Path.Combine(uploadsFolder, uniqueFileName);
