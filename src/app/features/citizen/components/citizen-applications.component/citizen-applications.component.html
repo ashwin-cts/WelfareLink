@@ -1,99 +1,145 @@
 <app-citizen-navbar></app-citizen-navbar>
-
+ 
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h2><i class="bi bi-person-lines-fill text-primary me-2"></i>My Applications</h2>
-      <p class="text-muted mb-0">Track the status of your welfare program applications.</p>
-    </div>
-    <a routerLink="/citizen/programs" class="btn btn-success">
-      <i class="bi bi-grid-3x3-gap me-2"></i> Apply New Program
-    </a>
-  </div>
-
-  @if (errorMessage) {
-    <div class="alert alert-danger">{{ errorMessage }}</div>
-  }
-
-  <div class="card shadow-sm border-0">
-    <div class="card-body p-0">
-      @if (isLoading) {
-        <div class="text-center py-5">
-          <div class="spinner-border text-primary"></div>
-        </div>
-      }
-
-      @if (!isLoading && applications.length > 0) {
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                <!-- <th>Application ID</th> -->
-                <th>Program</th>
-                <th>Submitted Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (app of applications; track app) {
-                <tr>
-                  <!-- <td>
-                    <strong>#{{ app.applicationID }}</strong>
-                  </td> -->
-                  <td>
-                    <strong>{{ app.program?.title || 'Program #' + app.programID }}</strong>
-                    @if (app.program?.status === 'Suspended') {
-                      <span class="badge bg-warning text-dark ms-2"
-                        ><i class="bi bi-pause-circle-fill"></i> Suspended</span
-                      >
-                    }
-                    @if (app.program?.status === 'Expired') {
-                      <span class="badge bg-danger ms-2"
-                        ><i class="bi bi-x-circle-fill"></i> Expired</span
-                      >
-                    }
-                  </td>
-                  <td>{{ app.submittedDate | date: 'dd MMM yyyy' }}</td>
-                  <td>
-                    <span
-                      class="badge"
-                      [ngClass]="{
-                        'bg-success': app.status === 'Approved' || 'Fully Disbursed',
-                        'bg-warning text-dark': app.status === 'Pending',
-                        'bg-info text-dark': app.status === 'Under Review',
-                        'bg-danger': app.status === 'Rejected',
-                      }"
-                    >
-                      <i class="bi bi-circle-fill me-1" style="font-size: 8px"></i>{{ app.status }}
-                    </span>
-                  </td>
-                  <td>
-                    <a
-                      [routerLink]="['/citizen/application', app.applicationID]"
-                      class="btn btn-sm btn-outline-info"
-                      title="View Details"
-                    >
-                      <i class="bi bi-eye me-1"></i> View
-                    </a>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-
-      @if (!isLoading && applications.length === 0) {
-        <div class="text-center py-5">
-          <i class="bi bi-inbox" style="font-size: 4rem; color: #cbd5e1"></i>
-          <h4 class="mt-3 text-muted">No applications yet</h4>
-          <p class="text-muted">You haven't applied for any welfare program yet.</p>
-          <a routerLink="/citizen/programs" class="btn btn-primary mt-2"
-            >Browse Available Programs</a
-          >
-        </div>
-      }
-    </div>
-  </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+<div>
+<h2><i class="bi bi-person-lines-fill text-primary me-2"></i>My Applications</h2>
+<p class="text-muted mb-0">Track the status of your welfare program applications.</p>
 </div>
+<a routerLink="/citizen/programs" class="btn btn-success">
+<i class="bi bi-grid-3x3-gap me-2"></i> Apply New Program
+</a>
+</div>
+ 
+  @if (errorMessage) {
+<div class="alert alert-danger">{{ errorMessage }}</div>
+
+  }
+<!-- ADDED: Success Message Alert -->
+
+  @if (successMessage) {
+<div class="alert alert-success alert-dismissible fade show">
+
+      {{ successMessage }}
+<button type="button" class="btn-close" (click)="successMessage = ''"></button>
+</div>
+
+  }
+ 
+  <div class="card shadow-sm border-0">
+<div class="card-body p-0">
+
+      @if (isLoading) {
+<div class="text-center py-5">
+<div class="spinner-border text-primary"></div>
+</div>
+
+      }
+ 
+      @if (!isLoading && applications.length > 0) {
+<div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+<thead class="table-light">
+<tr>
+<th>Program</th>
+<th>Submitted Date</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody>
+
+              @for (app of applications; track app) {
+<tr>
+<td>
+<strong>{{ app.program?.title || 'Program #' + app.programID }}</strong>
+
+                    @if (app.program?.status === 'Suspended') {
+<span class="badge bg-warning text-dark ms-2"
+><i class="bi bi-pause-circle-fill"></i> Suspended</span
+>
+
+                    }
+
+                    @if (app.program?.status === 'Expired') {
+<span class="badge bg-danger ms-2"
+><i class="bi bi-x-circle-fill"></i> Expired</span
+>
+
+                    }
+</td>
+<td>{{ app.submittedDate | date: 'dd MMM yyyy' }}</td>
+<td>
+<span
+
+                      class="badge"
+
+                      [ngClass]="{
+
+                        'bg-success': app.status === 'Approved' || app.status === 'Fully Disbursed',
+
+                        'bg-warning text-dark': app.status === 'Pending',
+
+                        'bg-info text-dark': app.status === 'Under Review',
+
+                        'bg-danger': app.status === 'Rejected'
+
+                      }"
+>
+<i class="bi bi-circle-fill me-1" style="font-size: 8px"></i>{{ app.status }}
+</span>
+</td>
+<!-- UPDATED ACTIONS COLUMN -->
+<td>
+<div class="d-flex gap-2">
+<a
+
+                        [routerLink]="['/citizen/application', app.applicationID]"
+
+                        class="btn btn-sm btn-outline-info"
+
+                        title="View Details"
+>
+<i class="bi bi-eye me-1"></i> View
+</a>
+<!-- Show Resubmit Button ONLY if rejected -->
+
+                      @if (app.status === 'Rejected') {
+<button 
+
+                          class="btn btn-sm btn-warning" 
+
+                          (click)="resubmitApplication(app)"
+
+                          title="Re-submit Application">
+<i class="bi bi-arrow-clockwise me-1"></i> Resubmit
+</button>
+
+                      }
+</div>
+</td>
+</tr>
+
+              }
+</tbody>
+</table>
+</div>
+
+      }
+ 
+      @if (!isLoading && applications.length === 0) {
+<div class="text-center py-5">
+<i class="bi bi-inbox" style="font-size: 4rem; color: #cbd5e1"></i>
+<h4 class="mt-3 text-muted">No applications yet</h4>
+<p class="text-muted">You haven't applied for any welfare program yet.</p>
+<a routerLink="/citizen/programs" class="btn btn-primary mt-2">
+
+            Browse Available Programs
+</a>
+</div>
+
+      }
+</div>
+</div>
+</div>
+ 
