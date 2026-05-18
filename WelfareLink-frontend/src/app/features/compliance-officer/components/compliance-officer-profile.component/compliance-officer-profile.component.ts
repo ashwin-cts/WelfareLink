@@ -12,7 +12,7 @@ import { RouterModule, Router } from '@angular/router';
 export class ComplianceOfficerProfileComponent {
   isAccountDropdownOpen = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   toggleDropdown(event: Event) {
     event.preventDefault();
@@ -23,6 +23,7 @@ export class ComplianceOfficerProfileComponent {
     localStorage.removeItem('token');
     localStorage.removeItem('jwt');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('currentUser');
     this.router.navigate(['/login']);
   }
 }
