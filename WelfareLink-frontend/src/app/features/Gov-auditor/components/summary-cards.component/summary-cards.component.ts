@@ -10,8 +10,9 @@ import { AuditorDashboardStats } from '../../models/auditor.model';
 })
 export class SummaryCardsComponent {
   // Receives data from the parent
+  @Input() isLoading: boolean = true;
   @Input() stats: AuditorDashboardStats | null = null;
-  
+
   // Emits an event to the parent when a quick action button is clicked
   @Output() changeTab = new EventEmitter<'budget' | 'resource' | 'disbursement'>();
 
