@@ -24,6 +24,7 @@ export class ComplianceOfficerProfileComponent {
     localStorage.removeItem('jwt');
     localStorage.removeItem('userRole');
     localStorage.removeItem('currentUser');
+    localStorage.clear();
     this.router.navigate(['/login']);
   }
 }
