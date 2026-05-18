@@ -1,0 +1,195 @@
+@model WelfareLink.Models.Benefit
+
+@{
+    ViewData["Title"] = "Create Benefit";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-plus-circle-fill"></i> Allocate New Benefit</h1>
+    <a asp-action="Index" class="btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<div class="content-card">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div id="app-detail-box" class="d-none alert alert-info border-0 shadow-sm mb-4 p-3">
+                <h6 class="mb-3 fw-bold"><i class="bi bi-info-circle-fill me-1"></i> Application, Citizen &amp; Program Details</h6>
+                <div class="row g-2 small">
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">Application ID</span><br /><strong id="d-app-id"></strong></div>
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">Submitted Date</span><br /><strong id="d-submitted"></strong></div>
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">App Status</span><br /><strong id="d-app-status"></strong></div>
+                </div>
+                <hr class="my-2" />
+                <div class="row g-2 small">
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">Citizen ID</span><br /><strong id="d-citizen-id"></strong></div>
+                    <div class="col-sm-6 col-md-9"><span class="text-muted">Citizen Name</span><br /><strong id="d-citizen-name"></strong></div>
+                </div>
+                <hr class="my-2" />
+                <div class="row g-2 small">
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">Program ID</span><br /><strong id="d-prog-id"></strong></div>
+                    <div class="col-sm-6 col-md-6"><span class="text-muted">Program Title</span><br /><strong id="d-prog-title"></strong></div>
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">Program Status</span><br /><strong id="d-prog-status"></strong></div>
+                    <div class="col-sm-12 col-md-3"><span class="text-muted">Description</span><br /><span id="d-prog-desc"></span></div>
+                    <div class="col-sm-12 col-md-6"><span class="text-muted">Max Benefit</span><br /><span id="d-prog-MaxBenefit"></span></div>
+                    <div class="col-sm-6 col-md-3"><span class="text-muted">Budget</span><br /><strong id="d-prog-budget"></strong></div>
+                </div>
+                <hr class="my-2" />
+                <div class="row g-2 small" id="resource-row">
+                    <div class="col-sm-4 col-md-4"><span class="text-muted">Total Resources Allocated</span><br /><strong id="d-total-resource" class="text-secondary">Loading...</strong></div>
+                    <div class="col-sm-4 col-md-4"><span class="text-muted">Used in Benefits</span><br /><strong id="d-used-resource" class="text-warning"></strong></div>
+                    <div class="col-sm-4 col-md-4"><span class="text-muted">Remaining Available</span><br /><strong id="d-remaining-resource"></strong></div>
+                </div>
+            </div>
+
+            <form asp-action="Create" class="needs-validation" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="form-floating-modern">
+                            <label asp-for="ApplicationID" class="form-label-modern">
+                                <i class="bi bi-file-earmark-text"></i> Welfare Application
+                            </label>
+                            <select asp-for="ApplicationID" asp-items="ViewBag.ApplicationList" class="form-select">
+                                <option value="">-- Select Application --</option>
+                            </select>
+                            <span asp-validation-for="ApplicationID" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating-modern">
+                            <label asp-for="Type" class="form-label-modern">
+                                <i class="bi bi-tag"></i> Benefit Type
+                            </label>
+                            <select asp-for="Type" class="form-select">
+                                <option value="">Select Type</option>
+                                <option value="Cash">💰 Cash Benefit</option>
+                                <option value="Food">🍚 Food Benefit</option>
+                                <option value="Medical">🏥 Medical Benefit</option>
+                                <option value="Education">📚 Education Benefit</option>
+                                <option value="Housing">🏠 Housing Benefit</option>
+                            </select>
+                            <span asp-validation-for="Type" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating-modern">
+                            <label asp-for="Amount" class="form-label-modern">
+                                <i class="bi bi-currency-rupee"></i> Amount
+                            </label>
+                            <input asp-for="Amount" class="form-control" placeholder="Enter Amount" />
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating-modern">
+                            <label asp-for="Date" class="form-label-modern">
+                                <i class="bi bi-calendar-event"></i> Allocation Date
+                            </label>
+                            <input asp-for="Date" type="date" class="form-control" />
+                            <span asp-validation-for="Date" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="form-floating-modern">
+                            <label asp-for="Status" class="form-label-modern">
+                                <i class="bi bi-flag"></i> Status
+                            </label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="">Select Status</option>
+                                <option value="Allocated" selected>✅ Allocated</option>
+                                <option value="Partially Disbursed">⏳ Partially Disbursed</option>
+                                <option value="Fully Disbursed">💸 Fully Disbursed</option>
+                                <option value="Failed">❌ Failed</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                            <small class="text-muted">Status will be automatically updated based on disbursements</small>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex gap-3 justify-content-end">
+                    <a asp-action="Index" class="btn-modern btn-secondary-modern">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn-modern btn-success-modern">
+                        <i class="bi bi-check-circle"></i> Allocate Benefit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        const appData = @Html.Raw(ViewBag.ApplicationsJson ?? "[]");
+
+        function showAppDetails(id) {
+            const box = document.getElementById('app-detail-box');
+            const app = appData.find(a => a.ApplicationID == id);
+            if (!app) { box.classList.add('d-none'); return; }
+
+            document.getElementById('d-app-id').textContent      = '#' + app.ApplicationID;
+            document.getElementById('d-submitted').textContent    = app.SubmittedDate;
+            document.getElementById('d-app-status').textContent   = app.Status;
+            document.getElementById('d-citizen-id').textContent   = '#' + app.CitizenID;
+            document.getElementById('d-citizen-name').textContent = app.CitizenName || '-';
+            document.getElementById('d-prog-id').textContent      = '#' + app.ProgramID;
+            document.getElementById('d-prog-title').textContent   = app.ProgramTitle;
+            document.getElementById('d-prog-status').textContent  = app.ProgramStatus;
+            document.getElementById('d-prog-desc').textContent    = app.ProgramDesc;
+           document.getElementById('d-prog-MaxBenefit').textContent = app.ProgramMaxBenefit;
+            document.getElementById('d-prog-budget').textContent  = app.ProgramBudget != null
+                ? '₹' + Number(app.ProgramBudget).toLocaleString('en-IN') : '-';
+
+            box.classList.remove('d-none');
+            fetchResourceInfo(app.ProgramID);
+        }
+
+        function fetchResourceInfo(programId) {
+            const totalEl  = document.getElementById('d-total-resource');
+            const usedEl   = document.getElementById('d-used-resource');
+            const remainEl = document.getElementById('d-remaining-resource');
+
+            totalEl.textContent = 'Loading...';
+            usedEl.textContent  = '';
+            remainEl.textContent = '';
+
+            fetch(`/Benefit/GetProgramResourceInfo?programId=${programId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data || !data.hasResource) {
+                        totalEl.textContent = 'No resource constraint defined';
+                        totalEl.className   = 'fw-semibold text-muted';
+                        usedEl.textContent  = '-';
+                        remainEl.textContent = '-';
+                        return;
+                    }
+                    totalEl.textContent  = '₹' + data.totalResource.toLocaleString('en-IN');
+                    totalEl.className    = 'fw-semibold text-secondary';
+                    usedEl.textContent   = '₹' + data.alreadyAllocated.toLocaleString('en-IN');
+                    usedEl.className     = 'fw-semibold text-warning';
+                    remainEl.textContent = '₹' + data.remainingResource.toLocaleString('en-IN');
+                    remainEl.className   = data.remainingResource <= 0
+                        ? 'fw-semibold text-danger'
+                        : 'fw-semibold text-success';
+                })
+                .catch(() => { totalEl.textContent = 'Unavailable'; });
+        }
+
+        document.getElementById('ApplicationID').addEventListener('change', function () {
+            showAppDetails(this.value);
+        });
+    </script>
+}

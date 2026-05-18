@@ -1,0 +1,71 @@
+@model WelfareLink.Models.Disbursement
+
+@{
+    ViewData["Title"] = "Delete Disbursement";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-trash-fill text-danger"></i> Delete Disbursement</h1>
+    <a asp-action="Index" class="btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<div class="content-card">
+    <div class="alert-delete">
+        <h4><i class="bi bi-exclamation-triangle-fill"></i> Confirm Deletion</h4>
+        <p class="mb-0">Are you sure you want to permanently delete this disbursement record? This action cannot be undone.</p>
+    </div>
+
+    <div class="detail-grid mb-4">
+        <div class="detail-item">
+            <label><i class="bi bi-hash"></i> Disbursement ID</label>
+            <p>@Model?.DisbursementID</p>
+        </div>
+
+        <div class="detail-item">
+            <label><i class="bi bi-gift"></i> Linked Benefit</label>
+            <p>
+                @if (Model?.Benefit != null)
+                {
+                    <span class="badge bg-info">@Model.Benefit.Type</span>
+                }
+                <span>ID: @Model?.BenefitID</span>
+            </p>
+        </div>
+
+        <div class="detail-item">
+            <label><i class="bi bi-person-circle"></i> Citizen ID</label>
+            <p>@Model?.CitizenID</p>
+        </div>
+
+        <div class="detail-item">
+            <label><i class="bi bi-person-badge"></i> Officer ID</label>
+            <p>@Model?.OfficerID</p>
+        </div>
+
+        <div class="detail-item">
+            <label><i class="bi bi-calendar-event"></i> Date</label>
+            <p>@Model?.Date.ToString("MMMM dd, yyyy")</p>
+        </div>
+
+        <div class="detail-item">
+            <label><i class="bi bi-flag"></i> Status</label>
+            <p>@Model?.Status</p>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="DisbursementID" />
+        <div class="d-flex gap-3">
+            <button type="submit" class="btn-modern btn-danger-modern">
+                <i class="bi bi-trash"></i> Yes, Delete Permanently
+            </button>
+            <a asp-action="Index" class="btn-modern btn-secondary-modern">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>

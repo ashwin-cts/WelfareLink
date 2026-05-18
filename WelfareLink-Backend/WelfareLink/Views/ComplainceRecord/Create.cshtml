@@ -1,0 +1,156 @@
+@model WelfareLink.Models.ComplainceRecord
+@{
+    ViewData["Title"] = "Raise Compliance Violation";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-exclamation-triangle"></i> Raise Compliance Violation</h1>
+    <a asp-action="Index" class="btn btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> Back to Records
+    </a>
+</div>
+
+<div class="content-card" style="max-width:700px;margin:0 auto;">
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+        @if (ViewBag.AlreadyFlagged == true)
+        {
+            <div class="alert alert-warning">
+                This entity already has an open compliance record. <a asp-action="Details" asp-route-id="@ViewBag.ExistingRecordId">View existing record</a>
+            </div>
+        }
+
+        <!-- Application Context (Always shown since form is only accessible from ApplicationDetails) -->
+        <div class="alert alert-info mb-3">
+            <i class="bi bi-info-circle"></i> <strong>Context:</strong> Flagging application #@Model.ApplicationId for citizen <strong>@Model.CitizenName</strong>
+        </div>
+
+        <!-- Hidden Application ID -->
+        <input type="hidden" asp-for="ApplicationId" />
+
+        <!-- Read-only Application Name -->
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <label class="form-label-modern">Application</label>
+                <input type="text" class="form-control" value="@Model.ApplicationName" readonly />
+            </div>
+        </div>
+
+        <!-- Entity Type Selector (Cascading) -->
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <label class="form-label-modern">Entity Type</label>
+                <select asp-for="EntityType" class="form-select" id="entityTypeSelect" required>
+                    <option value="">-- Select --</option>
+                    @if (Model.BenefitsList.Count > 0)
+                    {
+                        <option value="Benefit">Benefit</option>
+                    }
+                    @if (Model.DisbursementsList.Count > 0)
+                    {
+                        <option value="Disbursement">Disbursement</option>
+                    }
+                    @if (Model.EligibilityChecksList.Count > 0)
+                    {
+                        <option value="EligibilityCheck">Eligibility Check</option>
+                    }
+                </select>
+                <span asp-validation-for="EntityType" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label-modern">Entity ID</label>
+                <select asp-for="EntityId" class="form-select" id="entityIdSelect" required>
+                    <option value="">-- Select --</option>
+                </select>
+                <span asp-validation-for="EntityId" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-floating-modern mb-3">
+            <label asp-for="ViolationType" class="form-label-modern">Violation Type</label>
+            <select asp-for="ViolationType" class="form-select" required>
+                <option value="">-- Select --</option>
+                <option>AmountExceedsBudget</option>
+                <option>AmountMismatch</option>
+                <option>DisbursementWrong</option>
+                <option>BenefitAllocationWrong</option>
+                <option>NoEligibilityCheck</option>
+                <option>UnverifiedDocApproved</option>
+                <option>DocumentMissing</option>
+                <option>DuplicateApplication</option>
+                <option>MoreThan2DaysSinceApproval</option>
+                <option>Other</option>
+            </select>
+            <span asp-validation-for="ViolationType" class="text-danger"></span>
+        </div>
+
+        <div class="form-floating-modern mb-4">
+            <label asp-for="Description" class="form-label-modern">Description</label>
+            <textarea asp-for="Description" class="form-control" rows="5"
+                      placeholder="Describe the violation in detail..." required></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="action-buttons">
+            <a asp-action="Index" class="btn btn-modern btn-secondary-modern">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-modern btn-danger-modern">
+                <i class="bi bi-flag-fill"></i> Raise Violation
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Data structures for cascading dropdowns (using camelCase from JSON)
+        const benefitsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BenefitsList, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
+        const disbursementsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DisbursementsList, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
+        const eligibilityChecksData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.EligibilityChecksList, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
+
+        document.getElementById('entityTypeSelect').addEventListener('change', function() {
+            const entityType = this.value;
+            const entityIdSelect = document.getElementById('entityIdSelect');
+
+            // Clear existing options
+            entityIdSelect.innerHTML = '<option value="">-- Select --</option>';
+
+            if (!entityType) return;
+
+            let dataSource = [];
+
+            if (entityType === 'Benefit') {
+                dataSource = benefitsData;
+                dataSource.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.benefitID;
+                    option.textContent = `Benefit #${item.benefitID} - ${item.type} (₹${item.amount.toFixed(2)})`;
+                    entityIdSelect.appendChild(option);
+                });
+            } else if (entityType === 'Disbursement') {
+                dataSource = disbursementsData;
+                dataSource.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.disbursementID;
+                    option.textContent = `Disbursement #${item.disbursementID} - ₹${item.amount.toFixed(2)} (${item.status})`;
+                    entityIdSelect.appendChild(option);
+                });
+            } else if (entityType === 'EligibilityCheck') {
+                dataSource = eligibilityChecksData;
+                dataSource.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.checkID;
+                    option.textContent = `Check #${item.checkID} (${item.status})`;
+                    entityIdSelect.appendChild(option);
+                });
+            }
+        });
+
+        // If EntityType is pre-selected, trigger cascade
+        if (document.getElementById('entityTypeSelect').value) {
+            document.getElementById('entityTypeSelect').dispatchEvent(new Event('change'));
+        }
+    </script>
+}

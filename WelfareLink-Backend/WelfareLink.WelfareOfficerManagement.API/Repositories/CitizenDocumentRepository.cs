@@ -1,0 +1,53 @@
+using WelfareLink.WelfareOfficerManagement.API.Interfaces;
+using WelfareLink.WelfareOfficerManagement.API.Models;
+using Microsoft.EntityFrameworkCore;
+using WelfareLink.WelfareOfficerManagement.API.Data;
+
+namespace WelfareLink.WelfareOfficerManagement.API.Repositories;
+
+public class CitizenDocumentRepository : ICitizenDocumentRepository
+{
+    
+        private readonly WelfareLinkDbContext _context;
+
+        public CitizenDocumentRepository(WelfareLinkDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<IEnumerable<CitizenDocument>> GetByCitizenIdAsync(int citizenId)
+        {
+            return await _context.CitizenDocuments
+                .Where(d => d.CitizenId == citizenId) // Matches your "CitizenId" property
+                .ToListAsync();
+        }
+
+        public async Task<CitizenDocument> GetByIdAsync(int documentId)
+        {
+            return await _context.CitizenDocuments
+                .FirstOrDefaultAsync(d => d.DocumentID == documentId); // Matches your "DocumentID" property
+        }
+
+        public async Task AddAsync(CitizenDocument document)
+        {
+            await _context.CitizenDocuments.AddAsync(document);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(CitizenDocument document)
+        {
+            _context.CitizenDocuments.Update(document);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int documentId)
+        {
+            var document = await _context.CitizenDocuments.FindAsync(documentId);
+            if (document != null)
+            {
+                _context.CitizenDocuments.Remove(document);
+                await _context.SaveChangesAsync();
+            }
+        }
+    
+}

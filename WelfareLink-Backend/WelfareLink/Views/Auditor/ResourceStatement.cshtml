@@ -1,0 +1,228 @@
+@using System.Dynamic
+@{
+    ViewData["Title"] = "Budget Monitoring - Resource Statement";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-3">Budget Monitoring - Resource Allocation Statement</h1>
+            <hr />
+        </div>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <strong>Error:</strong> @ViewBag.Error
+        </div>
+    }
+
+    <!-- Navigation Tabs -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs" id="auditorTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Dashboard", "Auditor")">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("BudgetMonitoring", "Auditor")">Budget Monitoring</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="@Url.Action("ResourceStatement", "Auditor")">Resource Statement</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("DisbursementStatement", "Auditor")">Disbursement Statement</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Resource Allocation History Table -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Section 2: Resource Allocation History</h5>
+                    <small class="text-muted">Resource Allocation History from Program Officer</small>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Resource ID</th>
+                                    <th>Program Name</th>
+                                    <th>Allocated Resource (₹)</th>
+                                    <th>Remaining Allocation Pending (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Count > 0)
+                                {
+                                    @foreach (var resource in Model)
+                                    {
+                                        var dict = (IDictionary<string, object>)resource;
+                                        <tr>
+                                            <td>
+                                                @if (dict["Date"] is DateTime date)
+                                                {
+                                                    @date.ToString("yyyy-MM-dd HH:mm")
+                                                }
+                                                else
+                                                {
+                                                    @DateTime.Now.ToString("yyyy-MM-dd HH:mm")
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-secondary">RES-@dict["ResourceID"]</span>
+                                            </td>
+                                            <td>
+                                                <strong>@dict["ProgramName"]</strong>
+                                            </td>
+                                            <td>
+                                                ₹ @string.Format("{0:N2}", (decimal)dict["AllocatedResource"])
+                                            </td>
+                                            <td>
+                                                @{
+                                                    decimal remaining = (decimal)dict["RemainingAllocationPending"];
+                                                    var remainingClass = remaining > 0 ? "text-success" : "text-danger";
+                                                }
+                                                <span class="@remainingClass">
+                                                    ₹ @string.Format("{0:N2}", remaining)
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center">
+                                            <em>No resource allocations found</em>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (Model != null && Model.Count > 0)
+                    {
+                        <div class="alert alert-info mt-3">
+                            <strong>Note:</strong> Each row represents a separate resource allocation entry. Multiple allocations for the same program will appear as separate rows with their respective dates and amounts.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Resource Allocations</h6>
+                    <h3>@(Model?.Count ?? 0)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Allocated Resources</h6>
+                    <h3>
+                        ₹ 
+                        @{
+                            decimal totalAllocated = 0;
+                            if (Model != null)
+                            {
+                                foreach (var r in Model)
+                                {
+                                    totalAllocated += (decimal)((IDictionary<string, object>)r)["AllocatedResource"];
+                                }
+                            }
+                            @string.Format("{0:N2}", totalAllocated)
+                        }
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export/Print Options -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <button class="btn btn-secondary" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                    <button class="btn btn-success" onclick="exportToCSV()">
+                        <i class="fas fa-download"></i> Export to CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .badge {
+        padding: 0.35rem 0.65rem;
+        border-radius: 0.25rem;
+    }
+
+    .badge-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .text-success {
+        color: #28a745;
+    }
+
+    .text-danger {
+        color: #dc3545;
+    }
+</style>
+
+<script>
+    function exportToCSV() {
+        var table = document.querySelector('table');
+        var rows = [];
+        
+        // Get headers
+        var headers = [];
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
+        rows.push(headers.join(','));
+        
+        // Get rows
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            var cells = [];
+            tr.querySelectorAll('td').forEach(td => {
+                cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+            });
+            rows.push(cells.join(','));
+        });
+        
+        // Create and download file
+        var csv = rows.join('\n');
+        var blob = new Blob([csv], { type: 'text/csv' });
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'resource-statement-' + new Date().toISOString().split('T')[0] + '.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+</script>

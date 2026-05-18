@@ -1,0 +1,6 @@
+@WelfareLink.AuditorManagement.API_HostAddress = http://localhost:5062
+
+GET {{WelfareLink.AuditorManagement.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,473 @@
+using System.Security.Claims; // ADDED THIS FOR JWT CLAIMS
+using WelfareLink.WelfareOfficerManagement.API.Exceptions;
+using WelfareLink.WelfareOfficerManagement.API.Interfaces;
+using WelfareLink.WelfareOfficerManagement.API.Models;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace WelfareLink.WelfareOfficerManagement.API.Services
+{
+    public class DisbursementService : IDisbursementService
+    {
+        private readonly IDisbursementRepository _disbursementRepository;
+        private readonly IBenefitRepository _benefitRepository;
+        private readonly IWelfareApplicationRepository _applicationRepository;
+        private readonly IEligibilityCheckRepository _eligibilityCheckRepository;
+        private readonly IResourceRepository _resourceRepository;
+        private readonly IAuditLogService _auditLogService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly string[] _validStatuses = { "Completed", "Pending", "Disbursement Pending", "Failed" };
+
+        public DisbursementService(IDisbursementRepository disbursementRepository, IBenefitRepository benefitRepository, IWelfareApplicationRepository applicationRepository, IEligibilityCheckRepository eligibilityCheckRepository, IResourceRepository resourceRepository, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
+        {
+            _disbursementRepository = disbursementRepository;
+            _benefitRepository = benefitRepository;
+            _applicationRepository = applicationRepository;
+            _eligibilityCheckRepository = eligibilityCheckRepository;
+            _resourceRepository = resourceRepository;
+            _auditLogService = auditLogService;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        private int? GetCurrentUserId()
+        {
+            // Securely extracts the UserId from the JWT Token sent by Postman/Client
+            var userIdClaim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                           ?? _httpContextAccessor?.HttpContext?.User?.FindFirst("UserId")?.Value;
+
+            if (int.TryParse(userIdClaim, out int userId))
+            {
+                return userId;
+            }
+
+            return null;
+        }
+
+        public async Task<IEnumerable<Disbursement>> GetAllDisbursementsAsync()
+        {
+            return await _disbursementRepository.GetAllAsync();
+        }
+
+        public async Task<Disbursement?> GetDisbursementByIdAsync(int id)
+        {
+            if (id <= 0)
+            {
+                throw new BadRequestException("Disbursement ID must be greater than zero.");
+            }
+            return await _disbursementRepository.GetByIdAsync(id);
+        }
+
+        public async Task<Disbursement> CreateDisbursementAsync(Disbursement disbursement)
+        {
+            await ValidateDisbursementAsync(disbursement);
+            await ValidateResourceAvailabilityAsync(disbursement);
+
+            // Resolve CitizenID from the WelfareApplication linked to this Benefit
+            var benefit = await _benefitRepository.GetByIdAsync(disbursement.BenefitID);
+            if (benefit?.WelfareApplication != null)
+            {
+                disbursement.CitizenID = benefit.WelfareApplication.CitizenID;
+
+                // Validate that the application's eligibility check is not rejected
+                await ValidateEligibilityCheckAsync(benefit.ApplicationID);
+            }
+
+            var createdDisbursement = await _disbursementRepository.AddAsync(disbursement);
+
+            var userId = GetCurrentUserId();
+            await _auditLogService.LogActionAsync(
+                userId: userId,
+                action: "Create",
+                entityType: "Disbursement",
+                entityId: createdDisbursement.DisbursementID,
+                description: $"Created disbursement - Amount: \u20b9{createdDisbursement.Amount:N2}, Status: {createdDisbursement.Status}",
+                newValue: createdDisbursement.Status,
+                status: "Success"
+            );
+
+            // If disbursement is completed and amount is less than benefit amount, create pending record for balance
+            if (disbursement.Status == "Completed")
+            {
+                if (benefit != null)
+                {
+                    // Get total already disbursed (including the one just created)
+                    var existingDisbursements = await _disbursementRepository.GetByBenefitIdAsync(disbursement.BenefitID);
+                    var totalDisbursed = existingDisbursements
+                        .Where(d => d.Status == "Completed")
+                        .Sum(d => d.Amount);
+
+                    var remainingBalance = benefit.Amount - totalDisbursed;
+
+                    if (remainingBalance > 0)
+                    {
+                        // Create a new pending disbursement for the remaining balance
+                        var balanceDisbursement = new Disbursement
+                        {
+                            BenefitID = disbursement.BenefitID,
+                            CitizenID = disbursement.CitizenID,
+                            OfficerID = disbursement.OfficerID,
+                            Amount = remainingBalance,
+                            Date = DateTime.Now,
+                            Status = "Pending"
+                        };
+                        await _disbursementRepository.AddAsync(balanceDisbursement);
+                    }
+                }
+            }
+
+            // Update benefit status based on total disbursed amount
+            await UpdateBenefitStatusAsync(disbursement.BenefitID);
+
+            return createdDisbursement;
+        }
+
+        public async Task<Disbursement> UpdateDisbursementAsync(Disbursement disbursement)
+        {
+            if (disbursement.DisbursementID <= 0)
+            {
+                throw new BadRequestException("Disbursement ID must be greater than zero.");
+            }
+
+            if (!await _disbursementRepository.ExistsAsync(disbursement.DisbursementID))
+            {
+                throw new BusinessValidationException($"Disbursement with ID {disbursement.DisbursementID} does not exist.");
+            }
+
+            await ValidateDisbursementAsync(disbursement);
+            await ValidateResourceAvailabilityAsync(disbursement);
+
+            // Get existing disbursement to check if amount changed and create balance record if needed
+            var existingDisbursement = await _disbursementRepository.GetByIdAsync(disbursement.DisbursementID);
+
+            // Resolve CitizenID from the WelfareApplication linked to this Benefit
+            var benefit = await _benefitRepository.GetByIdAsync(disbursement.BenefitID);
+            if (benefit?.WelfareApplication != null)
+            {
+                disbursement.CitizenID = benefit.WelfareApplication.CitizenID;
+            }
+
+            var updatedDisbursement = await _disbursementRepository.UpdateAsync(disbursement);
+
+            // If disbursement is completed and amount is less than original pending/disbursement-pending amount,
+            // create a new Pending record for the remaining balance so the officer can process it later
+            if (existingDisbursement != null &&
+                (existingDisbursement.Status == "Pending" || existingDisbursement.Status == "Disbursement Pending") &&
+                disbursement.Status == "Completed" &&
+                disbursement.Amount < existingDisbursement.Amount)
+            {
+                var balanceAmount = existingDisbursement.Amount - disbursement.Amount;
+
+                // Create a new pending disbursement for the remaining balance
+                var balanceDisbursement = new Disbursement
+                {
+                    BenefitID = disbursement.BenefitID,
+                    CitizenID = disbursement.CitizenID,
+                    OfficerID = disbursement.OfficerID,
+                    Amount = balanceAmount,
+                    Date = DateTime.Now,
+                    Status = "Pending"
+                };
+                await _disbursementRepository.AddAsync(balanceDisbursement);
+            }
+
+            // Update benefit status based on total disbursed amount
+            await UpdateBenefitStatusAsync(disbursement.BenefitID);
+
+            return updatedDisbursement;
+        }
+
+        public async Task<bool> DeleteDisbursementAsync(int id)
+        {
+            if (id <= 0)
+            {
+                throw new BadRequestException("Disbursement ID must be greater than zero.");
+            }
+
+            var disbursement = await _disbursementRepository.GetByIdAsync(id);
+            if (disbursement == null)
+            {
+                throw new BusinessValidationException($"Disbursement with ID {id} does not exist.");
+            }
+
+            var benefitId = disbursement.BenefitID;
+            var result = await _disbursementRepository.DeleteAsync(id);
+
+            // Update benefit status after deletion
+            await UpdateBenefitStatusAsync(benefitId);
+
+            return result;
+        }
+
+        public async Task<bool> DisbursementExistsAsync(int id)
+        {
+            if (id <= 0)
+            {
+                return false;
+            }
+            return await _disbursementRepository.ExistsAsync(id);
+        }
+
+        public async Task<IEnumerable<Disbursement>> GetDisbursementsByBenefitIdAsync(int benefitId)
+        {
+            if (benefitId <= 0)
+            {
+                throw new BadRequestException("Benefit ID must be greater than zero.");
+            }
+            return await _disbursementRepository.GetByBenefitIdAsync(benefitId);
+        }
+
+        #region Private Methods
+
+        /// <summary>
+        /// Updates the benefit status based on total completed disbursements
+        /// - "Allocated" if no disbursements completed
+        /// - "Partially Disbursed" if some amount disbursed but not all
+        /// - "Fully Disbursed" if total disbursed >= benefit amount
+        /// </summary>
+        private async Task UpdateBenefitStatusAsync(int benefitId)
+        {
+            var benefit = await _benefitRepository.GetByIdAsync(benefitId);
+            if (benefit == null) return;
+
+            var disbursements = await _disbursementRepository.GetByBenefitIdAsync(benefitId);
+            var totalDisbursed = disbursements
+                .Where(d => d.Status == "Completed")
+                .Sum(d => d.Amount);
+
+            string newStatus;
+            if (totalDisbursed <= 0)
+            {
+                newStatus = "Allocated";
+            }
+            else if (totalDisbursed >= benefit.Amount)
+            {
+                newStatus = "Fully Disbursed";
+            }
+            else
+            {
+                newStatus = "Partially Disbursed";
+            }
+
+            if (benefit.Status != newStatus)
+            {
+                benefit.Status = newStatus;
+                await _benefitRepository.UpdateAsync(benefit);
+
+                if (newStatus == "Fully Disbursed")
+                {
+                    var allBenefits = await _benefitRepository.GetByApplicationIdAsync(benefit.ApplicationID);
+                    if (allBenefits.Any() && allBenefits.All(b => b.Status.Equals("Fully Disbursed", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        await _applicationRepository.UpdateStatusAsync(benefit.ApplicationID, "Fully Disbursed");
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Private Validation Methods
+
+        private async Task ValidateResourceAvailabilityAsync(Disbursement disbursement)
+        {
+            // Only completed disbursements consume the resource allocation
+            if (disbursement.Status != "Completed") return;
+
+            var benefit = await _benefitRepository.GetByIdAsync(disbursement.BenefitID);
+            if (benefit?.WelfareApplication == null) return;
+
+            var programId = benefit.WelfareApplication.ProgramID;
+            var program = benefit.WelfareApplication.Program;
+
+
+            var resources = await _resourceRepository.GetResourcesByProgramIdAsync(programId);
+            var totalResourceQuantity = (double)resources.Sum(r => r.Quantity);
+
+            if (totalResourceQuantity == 0)
+            {
+
+                throw new BusinessValidationException(
+                    $"Resource Unavailable: Programme '{program.Title}' has no resources allocated. " +
+                    $"Please contact the Programme Manager to allocate resources before disbursing benefits.");
+
+            }
+
+            // Sum completed disbursements across ALL benefits for this program (excluding current record when updating)
+            var allDisbursements = await _disbursementRepository.GetAllAsync();
+            var totalCompletedForProgram =
+                    await _disbursementRepository
+                    .GetCompletedDisbursementTotalForProgramAsync(programId,
+                                                                  disbursement.DisbursementID);
+
+            var available = totalResourceQuantity - totalCompletedForProgram;
+
+            if (disbursement.Amount > available)
+            {
+                if (available <= 0)
+                    throw new BusinessValidationException(
+                        $"Resource Insufficient: The programme resource allocation of ₹{totalResourceQuantity:N2} has been fully exhausted. " +
+                        $"Please contact the Programme Manager to allocate additional resources.");
+                else
+                    throw new BusinessValidationException(
+                        $"Resource Insufficient: Only ₹{available:N2} remains from the programme allocation of ₹{totalResourceQuantity:N2}. " +
+                        $"Reduce the disbursement amount or contact the Programme Manager.");
+            }
+        }
+
+        private async Task ValidateDisbursementAsync(Disbursement disbursement)
+        {
+            if (disbursement == null)
+            {
+                throw new BadRequestException("Disbursement cannot be null.");
+            }
+
+            await ValidateBenefitIdAsync(disbursement.BenefitID);
+            await ValidateAmountAsync(disbursement);
+            ValidateDate(disbursement.Date);
+            ValidateStatus(disbursement.Status);
+
+            // CitizenID and OfficerID are required only when status is "Completed"
+            // For "Pending" status, they can be 0 (to be assigned later by officer)
+            if (disbursement.Status == "Completed")
+            {
+                ValidateCitizenId(disbursement.CitizenID);
+                ValidateOfficerId(disbursement.OfficerID);
+            }
+            else
+            {
+                // For Pending/Failed status, validate only if values are provided (not 0)
+                if (disbursement.CitizenID != 0)
+                {
+                    ValidateCitizenId(disbursement.CitizenID);
+                }
+                if (disbursement.OfficerID != 0)
+                {
+                    ValidateOfficerId(disbursement.OfficerID);
+                }
+            }
+        }
+
+        private async Task ValidateBenefitIdAsync(int benefitId)
+        {
+            if (benefitId <= 0)
+            {
+                throw new BadRequestException("Benefit ID must be greater than zero.");
+            }
+
+            if (!await _benefitRepository.ExistsAsync(benefitId))
+            {
+                throw new BusinessValidationException($"Benefit with ID {benefitId} does not exist. Please select a valid benefit.");
+            }
+        }
+
+        private async Task ValidateAmountAsync(Disbursement disbursement)
+        {
+            if (disbursement.Amount <= 0)
+            {
+                throw new BadRequestException("Disbursement amount must be greater than zero.");
+            }
+
+            var benefit = await _benefitRepository.GetByIdAsync(disbursement.BenefitID);
+            if (benefit == null) return;
+
+            // Get all existing disbursements for this benefit
+            var existingDisbursements = await _disbursementRepository.GetByBenefitIdAsync(disbursement.BenefitID);
+
+            // Calculate total already disbursed (excluding current disbursement if updating)
+            var totalAlreadyDisbursed = existingDisbursements
+                .Where(d => d.Status == "Completed" && d.DisbursementID != disbursement.DisbursementID)
+                .Sum(d => d.Amount);
+
+            // Calculate total pending (excluding current disbursement if updating)
+            var totalPending = existingDisbursements
+                .Where(d => d.Status == "Pending" && d.DisbursementID != disbursement.DisbursementID)
+                .Sum(d => d.Amount);
+
+            var remainingToDisburse = benefit.Amount - totalAlreadyDisbursed;
+
+            // Validate amount doesn't exceed remaining balance for any status
+            if (disbursement.Amount > remainingToDisburse)
+            {
+                throw new BadRequestException(
+                    $"Disbursement amount (₹{disbursement.Amount:N2}) exceeds remaining balance (₹{remainingToDisburse:N2}). " +
+                    $"Total benefit: ₹{benefit.Amount:N2}, Already disbursed: ₹{totalAlreadyDisbursed:N2}");
+            }
+        }
+
+        private void ValidateCitizenId(int citizenId)
+        {
+            if (citizenId <= 0)
+            {
+                throw new BadRequestException("Citizen ID must be greater than zero.");
+            }
+
+            if (citizenId > 999999999) // Max 9 digits
+            {
+                throw new BadRequestException("Citizen ID exceeds maximum allowed digits.");
+            }
+        }
+
+        private void ValidateOfficerId(int officerId)
+        {
+            if (officerId <= 0)
+            {
+                throw new BadRequestException("Officer ID must be greater than zero.");
+            }
+
+            if (officerId > 999999) // Max 6 digits
+            {
+                throw new BadRequestException("Officer ID exceeds maximum allowed digits.");
+            }
+        }
+
+        private void ValidateDate(DateTime date)
+        {
+            if (date == default)
+            {
+                throw new BadRequestException("Date is required.");
+            }
+
+            if (date > DateTime.Now.AddDays(1))
+            {
+                throw new BadRequestException("Disbursement date cannot be in the future.");
+            }
+
+            if (date < DateTime.Now.AddYears(-10))
+            {
+                throw new BadRequestException("Disbursement date cannot be older than 10 years.");
+            }
+        }
+
+        private void ValidateStatus(string status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+            {
+                throw new BadRequestException("Status is required.");
+            }
+
+            if (!_validStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new BadRequestException($"Invalid status. Valid statuses are: {string.Join(", ", _validStatuses)}");
+            }
+
+        }
+
+        private async Task ValidateEligibilityCheckAsync(int applicationId)
+        {
+            // Get the latest eligibility check for this application
+            var latestCheck = await _eligibilityCheckRepository.GetLatestCheckForApplicationAsync(applicationId);
+
+            if (latestCheck != null)
+            {
+                // Check if the result is "Rejected" or result code indicates rejection
+                if (latestCheck.Result.Equals("Rejected", StringComparison.OrdinalIgnoreCase) ||
+                    latestCheck.ResultCode.Equals("Rejected", StringComparison.OrdinalIgnoreCase) ||
+                    latestCheck.ResultCode.Equals("REJECTED", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new BusinessValidationException($"Cannot create disbursement for application #{applicationId}. The application has been rejected in the eligibility check.");
+                }
+            }
+        }
+
+        #endregion
+    }
+}

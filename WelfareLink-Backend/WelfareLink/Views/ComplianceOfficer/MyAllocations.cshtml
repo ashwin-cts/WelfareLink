@@ -1,0 +1,127 @@
+@{
+    ViewData["Title"] = "My Allocations";
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-list-task"></i> My Allocations</h1>
+        <p class="text-muted">View all compliance officer allocations</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.Error))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> @ViewBag.Error
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table table-modern">
+            <thead>
+                <tr>
+                    <th>Benefit ID</th>
+                    <th>Citizen Name</th>
+                    <th>Program</th>
+                    <th>Benefit Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Compliance</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="allocationsTableBody">
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Loading allocations...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function loadAllocations() {
+            try {
+                const response = await fetch('/api/ComplianceOfficerDashboard/allocations');
+                const data = await response.json();
+                const allocations = Array.isArray(data) ? data : (data.data || []);
+                displayAllocations(allocations);
+            } catch (error) {
+                console.error('Error loading allocations:', error);
+                document.getElementById('allocationsTableBody').innerHTML = 
+                    '<tr><td colspan="7" class="text-center text-danger">Error loading allocations</td></tr>';
+            }
+        }
+
+        function displayAllocations(allocations) {
+            const tbody = document.getElementById('allocationsTableBody');
+
+            if (!allocations || allocations.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No allocations found</td></tr>';
+                return;
+            }
+
+            let html = '';
+            allocations.forEach(a => {
+                const statusClass = a.status === 'Completed' || a.status === 'Disbursed' ? 'bg-success' :
+                                   a.status === 'Pending' || a.status === 'Processing' ? 'bg-warning' : 'bg-info';
+
+                const isCompliant = (a.amount || 0) <= (a.program?.maxBenefitPerCitizen || 99999999);
+                const complianceIcon = isCompliant ? '<i class="bi bi-check-circle text-success"></i>' : 
+                                      '<i class="bi bi-exclamation-circle text-danger"></i>';
+
+                html += `
+                    <tr>
+                        <td><strong>#${a.benefitID}</strong></td>
+                        <td>${a.citizen?.name || 'N/A'}</td>
+                        <td>${a.program?.title || 'N/A'}</td>
+                        <td class="fw-bold text-success">₹${(a.amount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                        <td>${new Date(a.date).toLocaleDateString()}</td>
+                        <td><span class="badge ${statusClass}">${a.status || 'Pending'}</span></td>
+                        <td>${complianceIcon}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning-modern" onclick="raiseCompliance(${a.benefitID})">
+                                <i class="bi bi-plus-circle"></i> Raise Issue
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        async function raiseCompliance(benefitID) {
+            const violationType = prompt('Enter violation type (e.g., MaxBenefitExceeded, DisbursementDelayed):');
+            if (!violationType) return;
+
+            const description = prompt('Enter description:');
+            if (!description) return;
+
+            try {
+                const response = await fetch('/api/ComplianceOfficerDashboard/raise-compliance-allocation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ benefitID, violationType, description, priority: 'High' })
+                });
+
+                if (response.ok) {
+                    alert('Compliance issue raised successfully');
+                    loadAllocations();
+                } else {
+                    alert('Error raising compliance issue');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error raising compliance issue');
+            }
+        }
+            });
+            tbody.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAllocations);
+    </script>
+}

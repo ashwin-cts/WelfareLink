@@ -1,0 +1,193 @@
+@{
+    ViewData["Title"] = "Re-submit Application — Select Documents";
+    var application = ViewBag.Application as WelfareLink.Models.WelfareApplication;
+    var program = ViewBag.Program as WelfareLink.Models.WelfareProgram;
+    var documents = ViewBag.Documents as IEnumerable<WelfareLink.Models.CitizenDocument> ?? Enumerable.Empty<WelfareLink.Models.CitizenDocument>();
+    var previousDocIds = ViewBag.PreviousDocIds as List<int> ?? new List<int>();
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-arrow-repeat"></i> Re-submit Application #@application?.ApplicationID</h1>
+    <a asp-controller="Citizen" asp-action="ApplicationDetails" asp-route-id="@application?.ApplicationID"
+       class="btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> Back to Application
+    </a>
+</div>
+
+<div class="alert alert-warning mb-3">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <strong>Re-submitting a rejected application.</strong>
+    Select the documents you want to submit. Once re-submitted, the status will reset to <strong>Pending</strong> for review.
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.Error
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (program != null)
+{
+    <div class="content-card mb-3">
+        <h4 class="mb-3"><i class="bi bi-diagram-3"></i> Program Details</h4>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <label>Program ID</label>
+                <p><strong>#@program.ProgramID</strong></p>
+            </div>
+            <div class="detail-item">
+                <label>Program Title</label>
+                <p><strong>@program.Title</strong></p>
+            </div>
+            <div class="detail-item">
+                <label>Start Date</label>
+                <p>@program.StartDate.ToString("dd MMM yyyy")</p>
+            </div>
+            <div class="detail-item">
+                <label>End Date</label>
+                <p>@program.EndDate.ToString("dd MMM yyyy")</p>
+            </div>
+            @if (!string.IsNullOrEmpty(program.Description))
+            {
+                <div class="detail-item" style="grid-column: span 2;">
+                    <label>Description</label>
+                    <p>@program.Description</p>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<form asp-action="ReselectDocuments" asp-route-id="@application?.ApplicationID" method="post" id="docSelectForm">
+    @Html.AntiForgeryToken()
+
+    <div class="content-card mb-3">
+        <h4 class="mb-3"><i class="bi bi-files"></i> Your Uploaded Documents</h4>
+        <p class="text-muted mb-3">
+            <i class="bi bi-info-circle"></i> Tick the documents you want to submit with this re-submission. Previously selected documents are pre-checked.
+        </p>
+
+        @if (!documents.Any())
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>No documents found.</strong> You have not uploaded any documents yet.
+                Please <a asp-controller="CitizenDocument" asp-action="UploadDocument" class="alert-link">upload documents</a> before re-submitting.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-modern">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">Select</th>
+                            <th>Document ID</th>
+                            <th>Document Name</th>
+                            <th>Document Type</th>
+                            <th>Uploaded Date</th>
+                            <th>Verification Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doc in documents)
+                        {
+                            var isChecked = previousDocIds.Contains(doc.DocumentID);
+                            <tr class="doc-row" id="row-@doc.DocumentID" style="cursor:pointer;@(isChecked ? "background:rgba(16,185,129,0.08);" : "")" onclick="toggleDoc(@doc.DocumentID)">
+                                <td class="text-center">
+                                    <input type="checkbox"
+                                           class="form-check-input doc-checkbox"
+                                           name="selectedDocumentIds"
+                                           value="@doc.DocumentID"
+                                           id="doc-@doc.DocumentID"
+                                           @(isChecked ? "checked" : "")
+                                           onclick="event.stopPropagation();"
+                                           onchange="onCheckboxChange()" />
+                                </td>
+                                <td><span class="badge bg-secondary">#@doc.DocumentID</span></td>
+                                <td><strong>@(doc.DocumentName ?? "-")</strong></td>
+                                <td><strong>@doc.DocType</strong></td>
+                                <td>@doc.UploadedDate.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    @if (doc.VerificationStatus == "Approved")
+                                    {
+                                        <span class="status-badge status-fully-disbursed">
+                                            <i class="bi bi-check-circle"></i> Approved
+                                        </span>
+                                    }
+                                    else if (doc.VerificationStatus == "Pending")
+                                    {
+                                        <span class="status-badge status-pending">
+                                            <i class="bi bi-clock"></i> Pending
+                                        </span>
+                                    }
+                                    else if (doc.VerificationStatus == "Rejected")
+                                    {
+                                        <span class="status-badge status-failed">
+                                            <i class="bi bi-x-circle"></i> Rejected
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-processing">@doc.VerificationStatus</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="selectionSummary" class="alert alert-info mt-2 @(previousDocIds.Any() ? "" : "d-none")">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <span id="selectedCount">@previousDocIds.Count</span> document(s) selected.
+            </div>
+        }
+    </div>
+
+    <div class="d-flex gap-2">
+        @if (documents.Any())
+        {
+            <button type="submit" class="btn-modern btn-success-modern" id="submitBtn" @(previousDocIds.Any() ? "" : "disabled")>
+                <i class="bi bi-arrow-repeat"></i> Re-submit Application
+            </button>
+        }
+        <a asp-controller="Citizen" asp-action="ApplicationDetails" asp-route-id="@application?.ApplicationID"
+           class="btn-modern btn-secondary-modern">
+            <i class="bi bi-arrow-left"></i> Cancel
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        function toggleDoc(docId) {
+            var cb = document.getElementById('doc-' + docId);
+            cb.checked = !cb.checked;
+            onCheckboxChange();
+        }
+
+        function onCheckboxChange() {
+            var checked = document.querySelectorAll('.doc-checkbox:checked');
+            var count = checked.length;
+            var submitBtn = document.getElementById('submitBtn');
+            var summary = document.getElementById('selectionSummary');
+            var countSpan = document.getElementById('selectedCount');
+
+            if (submitBtn) submitBtn.disabled = count === 0;
+            if (summary && countSpan) {
+                countSpan.textContent = count;
+                summary.classList.toggle('d-none', count === 0);
+            }
+
+            document.querySelectorAll('.doc-checkbox').forEach(function (cb) {
+                var row = document.getElementById('row-' + cb.value);
+                if (row) {
+                    row.style.background = cb.checked ? 'rgba(16,185,129,0.08)' : '';
+                }
+            });
+        }
+    </script>
+}

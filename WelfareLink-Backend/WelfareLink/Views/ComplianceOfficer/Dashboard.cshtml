@@ -1,0 +1,408 @@
+@{
+    ViewData["Title"] = "Compliance Officer Dashboard";
+}
+
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-shield-exclamation"></i> Compliance Officer Dashboard</h1>
+        <p class="text-muted">Monitor welfare applications and compliance status</p>
+    </div>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(ViewBag.Error))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> @ViewBag.Error
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="content-card">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="text-muted mb-1">Total Applications</p>
+                    <h3 id="totalApplications" class="mb-0">-</h3>
+                </div>
+                <i class="bi bi-file-earmark" style="font-size: 2.5rem; color: #1e3c72; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="content-card">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="text-muted mb-1">Pending Allocation</p>
+                    <h3 id="pendingAllocations" class="mb-0">-</h3>
+                </div>
+                <i class="bi bi-hourglass-split" style="font-size: 2.5rem; color: #f59e0b; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="content-card">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="text-muted mb-1">No Disbursement</p>
+                    <h3 id="noDisbursement" class="mb-0">-</h3>
+                </div>
+                <i class="bi bi-exclamation-circle" style="font-size: 2.5rem; color: #ef4444; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="content-card">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="text-muted mb-1">Total Disbursed</p>
+                    <h3 id="totalDisbursedAmount" class="mb-0">-</h3>
+                </div>
+                <i class="bi bi-cash-coin" style="font-size: 2.5rem; color: #10b981; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0"><i class="bi bi-list-check"></i> All Applications</h5>
+        <button class="btn btn-sm btn-outline-primary" onclick="loadApplicationsData()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Application ID</th>
+                    <th>Citizen Name</th>
+                    <th>Program</th>
+                    <th>Application Status</th>
+                    <th>Max Benefit</th>
+                    <th>Allocated</th>
+                    <th>Disbursed</th>
+                    <th>Remaining</th>
+                    <th>Compliance Flag Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="applicationsTableBody">
+                <tr>
+                    <td colspan="10" class="text-center text-muted py-4">Loading applications...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const apiBaseUrl = '@Configuration["ApiSettings:ComplianceAndAuditLog"]';
+        let complianceRecordsMap = {};
+
+        // Fetch all compliance records and create a map for quick lookup
+        async function loadComplianceRecords() {
+            try {
+                const complianceUrl = apiBaseUrl + '/api/complaincerecordapi';
+                console.log('Fetching from:', complianceUrl);
+
+                const response = await fetch(complianceUrl, { credentials: 'include' });
+                console.log('Response Status:', response.status);
+
+                if (!response.ok) {
+                    console.error('API Error:', response.status);
+                    return;
+                }
+
+                const records = await response.json();
+                console.log('Raw API Response:', records);
+
+                // Handle both array and wrapped response
+                const recordsArray = Array.isArray(records) ? records : (records.data || records.records || []);
+                console.log('Records Array:', recordsArray);
+
+                complianceRecordsMap = {};
+
+                recordsArray.forEach(record => {
+                    console.log('Processing record:', record);
+
+                    // Check if this is an application compliance record
+                    // Handle both EntityType and entityType (case variations)
+                    const entityType = record.EntityType || record.entityType;
+                    const entityId = record.EntityId || record.entityId;
+
+                    console.log('EntityType:', entityType, 'EntityId:', entityId);
+
+                    if (entityType && entityId) {
+                        // Store by EntityId (ApplicationID)
+                        if (!complianceRecordsMap[entityId]) {
+                            complianceRecordsMap[entityId] = record;
+                        } else {
+                            // Keep the most recent record
+                            const existingDate = new Date(complianceRecordsMap[entityId].CreatedDate || complianceRecordsMap[entityId].createdDate);
+                            const newDate = new Date(record.CreatedDate || record.createdDate);
+                            if (newDate > existingDate) {
+                                complianceRecordsMap[entityId] = record;
+                            }
+                        }
+                    }
+                });
+
+                console.log('Final Compliance Records Map:', complianceRecordsMap);
+            } catch (error) {
+                console.error('Error loading compliance records:', error);
+            }
+        }
+
+        // Get compliance status badge HTML for an application
+        function getComplianceStatusBadge(applicationId) {
+            const record = complianceRecordsMap[applicationId];
+            console.log('Looking up compliance for app:', applicationId, 'Found:', record);
+
+            if (!record) {
+                return '<span class="badge bg-light text-dark">No compliance raised</span>';
+            }
+
+            const status = record.Status || record.status || 'Unknown';
+            let badgeClass = 'bg-secondary';
+
+            switch(status.toLowerCase()) {
+                case 'open':
+                    badgeClass = 'bg-danger';
+                    break;
+                case 'under investigation':
+                    badgeClass = 'bg-warning text-dark';
+                    break;
+                case 'resolved':
+                    badgeClass = 'bg-success';
+                    break;
+                case 'dismissed':
+                    badgeClass = 'bg-info';
+                    break;
+                default:
+                    badgeClass = 'bg-secondary';
+            }
+
+            return `<span class="badge ${badgeClass}">${status}</span>`;
+        }
+
+        async function loadApplicationsData() {
+            try {
+                // First load compliance records
+                await loadComplianceRecords();
+
+                const response = await fetch(apiBaseUrl + '/api/complianceofficerdashboardapi/dashboard/applications-list', { credentials: 'include' });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error Response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to fetch applications'}`);
+                }
+
+                const result = await response.json();
+                console.log('Applications Data:', result);
+
+                const rawApps = result.data || result || [];
+                const applications = (Array.isArray(rawApps) ? rawApps : []).map(a => {
+                    const benefitsRaw = a.Benefits || a.benefits || [];
+                    const benefits = (Array.isArray(benefitsRaw) ? benefitsRaw : []).map(b => {
+                        const disbRaw = b.Disbursements || b.disbursements || [];
+                        const disbursements = (Array.isArray(disbRaw) ? disbRaw : []).map(d => ({
+                            DisbursementID: d.DisbursementID ?? d.disbursementID ?? d.id ?? d.DisbursementId ?? d.disbursementId,
+                            Amount: d.Amount ?? d.amount ?? 0,
+                            Date: d.Date ?? d.date ?? d.DisbursementDate ?? d.disbursementDate ?? null,
+                            Status: d.Status ?? d.status ?? ''
+                        }));
+
+                        return {
+                            BenefitID: b.BenefitID ?? b.benefitID ?? b.id ?? b.BenefitId ?? b.benefitId,
+                            BenefitType: b.BenefitType ?? b.benefitType ?? b.Type ?? b.type ?? '',
+                            BenefitAmount: b.BenefitAmount ?? b.benefitAmount ?? b.Amount ?? b.amount ?? 0,
+                            BenefitStatus: b.BenefitStatus ?? b.benefitStatus ?? b.Status ?? b.status ?? '',
+                            BenefitDate: b.BenefitDate ?? b.benefitDate ?? b.Date ?? b.date ?? null,
+                            DaysAllocated: b.DaysAllocated ?? b.daysAllocated ?? 0,
+                            DisbursementCount: b.DisbursementCount ?? b.disbursementCount ?? (disbursements.length),
+                            Disbursements: disbursements
+                        };
+                    });
+
+                    return {
+                        ApplicationID: a.ApplicationID ?? a.applicationID ?? a.id ?? a.applicationId ?? a.ApplicationId ?? 0,
+                        CitizenName: a.CitizenName ?? a.citizenName ?? (a.Citizen && (a.Citizen.Name ?? a.Citizen.name)) ?? '',
+                        ProgramTitle: a.ProgramTitle ?? a.programTitle ?? (a.Program && (a.Program.Title ?? a.Program.title)) ?? '',
+                        ApplicationStatus: a.ApplicationStatus ?? a.applicationStatus ?? a.Status ?? a.status ?? '',
+                        MaxBenefit: a.MaxBenefit ?? a.maxBenefit ?? a.MaxBenefitPerCitizen ?? 0,
+                        TotalBenefitAllocated: a.TotalBenefitAllocated ?? a.totalBenefitAllocated ?? a.TotalAllocated ?? 0,
+                        TotalDisbursed: a.TotalDisbursed ?? a.totalDisbursed ?? a.TotalBenefitDisbursed ?? 0,
+                        RemainingToDisborse: a.RemainingToDisborse ?? a.remainingToDisborse ?? a.Remaining ?? 0,
+                        Benefits: benefits,
+                        IsPendingAllocation: a.IsPendingAllocation ?? a.isPendingAllocation ?? false,
+                        HasNoDisbursement: a.HasNoDisbursement ?? a.hasNoDisbursement ?? false,
+                        IsFlagged: a.IsFlagged ?? a.isFlagged ?? false
+                    };
+                });
+
+                displayApplicationsTable(applications);
+                updateDashboardStats(applications);
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                document.getElementById('applicationsTableBody').innerHTML = 
+                    '<tr><td colspan="10" class="text-center text-danger"><strong>Error:</strong> ' + error.message + '</td></tr>';
+            }
+        }
+
+        function displayApplicationsTable(applications) {
+            const tbody = document.getElementById('applicationsTableBody');
+
+            if (!applications || applications.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">No applications found</td></tr>';
+                return;
+            }
+
+            let html = '';
+            applications.forEach(app => {
+                const statusClass = getStatusClass(app.ApplicationStatus);
+                const complianceStatusHtml = getComplianceStatusBadge(app.ApplicationID);
+
+                html += `
+                    <tr>
+                        <td><strong>${app.ApplicationID}</strong></td>
+                        <td>${app.CitizenName}</td>
+                        <td>${app.ProgramTitle}</td>
+                        <td><span class="badge ${statusClass}">${app.ApplicationStatus}</span></td>
+                        <td>₹${parseFloat(app.MaxBenefit || 0).toFixed(2)}</td>
+                        <td>₹${parseFloat(app.TotalBenefitAllocated || 0).toFixed(2)}</td>
+                        <td>₹${parseFloat(app.TotalDisbursed || 0).toFixed(2)}</td>
+                        <td>₹${parseFloat(app.RemainingToDisborse || 0).toFixed(2)}</td>
+                        <td>${complianceStatusHtml}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-info" title="View Details" onclick="viewApplicationDetails(${app.ApplicationID})">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" title="Show Details" onclick="toggleDetails(${app.ApplicationID})">
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr id="details-${app.ApplicationID}" class="detail-row" style="display: none;">
+                        <td colspan="10">
+                            <div class="details-container p-3">
+                                <h6>Allocated Benefits & Disbursements</h6>
+                                <div id="benefit-details-${app.ApplicationID}">
+                                    ${renderBenefitDetails(app.Benefits || [])}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function renderBenefitDetails(benefits) {
+            if (!benefits || benefits.length === 0) {
+                return '<p class="text-muted">No benefits allocated</p>';
+            }
+
+            let html = '<div class="table-responsive">';
+            html += '<table class="table table-sm table-bordered">';
+            html += '<thead class="table-light"><tr><th>Benefit ID</th><th>Type</th><th>Amount</th><th>Status</th><th>Days Allocated</th><th>Disbursements</th></tr></thead>';
+            html += '<tbody>';
+
+            benefits.forEach(benefit => {
+                const disbursedTotal = (benefit.Disbursements || []).reduce((sum, d) => sum + (d.Amount || 0), 0);
+                html += `<tr>
+                    <td>${benefit.BenefitID}</td>
+                    <td>${benefit.BenefitType}</td>
+                    <td>₹${parseFloat(benefit.BenefitAmount || 0).toFixed(2)}</td>
+                    <td><span class="badge bg-info">${benefit.BenefitStatus}</span></td>
+                    <td>${benefit.DaysAllocated}</td>
+                    <td>
+                        <button class="btn btn-xs btn-outline-secondary" onclick="toggleDisbursements(${benefit.BenefitID})">
+                            ${benefit.DisbursementCount} disbursement(s) - ₹${disbursedTotal.toFixed(2)}
+                        </button>
+                    </td>
+                </tr>`;
+
+                if (benefit.Disbursements && benefit.Disbursements.length > 0) {
+                    html += `<tr id="disbursements-${benefit.BenefitID}" class="disbursement-details" style="display: none;">
+                        <td colspan="6" class="p-3">
+                            <h6>Disbursement Details</h6>
+                            <table class="table table-sm">
+                                <thead class="table-light"><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+                                <tbody>`;
+
+                    benefit.Disbursements.forEach(disburse => {
+                        html += `<tr>
+                            <td>${new Date(disburse.Date).toLocaleDateString()}</td>
+                            <td>₹${parseFloat(disburse.Amount || 0).toFixed(2)}</td>
+                            <td><span class="badge bg-success">${disburse.Status}</span></td>
+                        </tr>`;
+                    });
+
+                    html += `</tbody></table></td></tr>`;
+                }
+            });
+
+            html += '</tbody></table></div>';
+            return html;
+        }
+
+        function toggleDetails(applicationID) {
+            const detailRow = document.getElementById(`details-${applicationID}`);
+            if (detailRow) {
+                detailRow.style.display = detailRow.style.display === 'none' ? 'table-row' : 'none';
+            }
+        }
+
+        function toggleDisbursements(benefitID) {
+            const disbursementRow = document.getElementById(`disbursements-${benefitID}`);
+            if (disbursementRow) {
+                disbursementRow.style.display = disbursementRow.style.display === 'none' ? 'table-row' : 'none';
+            }
+        }
+
+        function getStatusClass(status) {
+            switch(status?.toLowerCase()) {
+                case 'approved': return 'bg-success';
+                case 'pending': return 'bg-warning text-dark';
+                case 'rejected': return 'bg-danger';
+                case 'completed': return 'bg-info';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function updateDashboardStats(applications) {
+            const totalApps = applications.length;
+            const pendingAllocationApps = applications.filter(a => a.IsPendingAllocation).length;
+            const noDisbursementApps = applications.filter(a => a.HasNoDisbursement).length;
+            const totalDisbursedAmount = applications.reduce((sum, a) => sum + parseFloat(a.TotalDisbursed), 0);
+
+            document.getElementById('totalApplications').textContent = totalApps;
+            document.getElementById('pendingAllocations').textContent = pendingAllocationApps;
+            document.getElementById('noDisbursement').textContent = noDisbursementApps;
+            document.getElementById('totalDisbursedAmount').textContent = '₹' + totalDisbursedAmount.toFixed(2);
+        }
+
+        function viewApplicationDetails(applicationID) {
+            window.location.href = `/ComplianceOfficer/ApplicationDetails/${applicationID}`;
+        }
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', loadApplicationsData);
+    </script>
+}

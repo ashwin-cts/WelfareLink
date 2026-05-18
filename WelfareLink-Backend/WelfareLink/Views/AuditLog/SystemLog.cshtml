@@ -1,0 +1,272 @@
+@using WelfareLink.Services
+@model AuditLogPagedResponse
+
+@{
+    ViewData["Title"] = "System Audit Log";
+    var filterType = ViewBag.FilterType as string;
+    var filterValue = ViewBag.FilterValue as string;
+}
+
+<div class="container-fluid mt-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">System Audit Log</h1>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Filter Audit Logs</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="entityTypeFilter" class="form-label">Filter by Entity Type</label>
+                    <select class="form-select" id="entityTypeFilter">
+                        <option value="">-- Select Entity Type --</option>
+                        <option value="User">User</option>
+                        <option value="Program">Program</option>
+                        <option value="Resource">Resource</option>
+                        <option value="WelfareApplication">Welfare Application</option>
+                        <option value="Citizen">Citizen</option>
+                        <option value="CitizenDocument">Citizen Document</option>
+                        <option value="EligibilityCheck">Eligibility Check</option>
+                        <option value="Benefit">Benefit</option>
+                        <option value="Disbursement">Disbursement</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="actionFilter" class="form-label">Filter by Action</label>
+                    <select class="form-select" id="actionFilter">
+                        <option value="">-- Select Action --</option>
+                        <option value="Create">Create</option>
+                        <option value="Update">Update</option>
+                        <option value="Delete">Delete</option>
+                        <option value="Upload">Upload</option>
+                        <option value="Download">Download</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate">
+                </div>
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate">
+                </div>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-12">
+                    <button type="button" class="btn btn-primary" id="filterBtn">Apply Filter</button>
+                    <a href="@Url.Action("SystemLog", "AuditLog")" class="btn btn-secondary">Clear Filter</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Data.Any())
+    {
+        <!-- Audit Log Table -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    Activity Records
+                    <span class="badge bg-primary float-end">Total: @Model.TotalCount records</span>
+                </h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Entity Type</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model.Data)
+                        {
+                            <tr>
+                                <td>
+                                    <small>@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</small>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(log.UserName))
+                                    {
+                                        <span>@log.UserName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">System</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        var actionBadgeClass = log.Action switch
+                                        {
+                                            "Create" => "bg-success",
+                                            "Update" => "bg-info",
+                                            "Delete" => "bg-danger",
+                                            "Upload" => "bg-warning",
+                                            "Download" => "bg-primary",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @actionBadgeClass">@log.Action</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">@log.EntityType</span>
+                                </td>
+                                <td>
+                                    @log.Description
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">Success</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                @{
+                    int totalPages = Model.TotalPages;
+                    int currentPage = Model.PageNumber;
+                    int pageSize = Model.PageSize;
+                }
+
+                <!-- Previous Button -->
+                @if (currentPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("SystemLog", "AuditLog", new { pageNumber = currentPage - 1, pageSize = pageSize })">
+                            Previous
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                }
+
+                <!-- Page Numbers -->
+                @{
+                    int startPage = Math.Max(1, currentPage - 2);
+                    int endPage = Math.Min(totalPages, currentPage + 2);
+
+                    if (startPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("SystemLog", "AuditLog", new { pageNumber = 1, pageSize = pageSize })">1</a>
+                        </li>
+                        if (startPage > 2)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+                    }
+
+                    for (int i = startPage; i <= endPage; i++)
+                    {
+                        if (i == currentPage)
+                        {
+                            <li class="page-item active" aria-current="page">
+                                <span class="page-link">
+                                    @i
+                                    <span class="visually-hidden">(current)</span>
+                                </span>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("SystemLog", "AuditLog", new { pageNumber = i, pageSize = pageSize })">@i</a>
+                            </li>
+                        }
+                    }
+
+                    if (endPage < totalPages)
+                    {
+                        if (endPage < totalPages - 1)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("SystemLog", "AuditLog", new { pageNumber = totalPages, pageSize = pageSize })">@totalPages</a>
+                        </li>
+                    }
+                }
+
+                <!-- Next Button -->
+                @if (currentPage < totalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("SystemLog", "AuditLog", new { pageNumber = currentPage + 1, pageSize = pageSize })">
+                            Next
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                }
+            </ul>
+        </nav>
+
+        <p class="text-center text-muted mt-3">
+            Showing @((currentPage - 1) * pageSize + 1) to @Math.Min(currentPage * pageSize, Model.TotalCount) of @Model.TotalCount records
+        </p>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            No audit logs found.
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('filterBtn').addEventListener('click', function() {
+            const entityType = document.getElementById('entityTypeFilter').value;
+            const action = document.getElementById('actionFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            let url = '/AuditLog/SystemLog';
+
+            if (entityType) {
+                url = '/AuditLog/FilterByEntityType?entityType=' + encodeURIComponent(entityType);
+            } else if (action) {
+                url = '/AuditLog/FilterByAction?action=' + encodeURIComponent(action);
+            } else if (startDate && endDate) {
+                url = '/AuditLog/FilterByDateRange?startDate=' + startDate + '&endDate=' + endDate;
+            }
+
+            window.location.href = url;
+        });
+    </script>
+}

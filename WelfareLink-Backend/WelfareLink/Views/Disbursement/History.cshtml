@@ -1,0 +1,190 @@
+@model IEnumerable<WelfareLink.Models.Disbursement>
+
+@{
+    ViewData["Title"] = "Disbursement History";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-clock-history"></i> Disbursement History</h1>
+    <a asp-action="Index" class="btn-modern btn-secondary-modern">
+        <i class="bi bi-arrow-left"></i> Back to Disbursements
+    </a>
+</div>
+
+<!-- Filter Card -->
+<div class="content-card mb-4">
+    <h5 class="mb-3"><i class="bi bi-funnel"></i> Filter Records</h5>
+    <form asp-action="History" method="get">
+        <div class="row g-3">
+            <div class="col-md-2">
+                <label class="form-label-modern">
+                    <i class="bi bi-calendar"></i> Start Date
+                </label>
+                <input type="date" name="startDate" value="@ViewBag.StartDate" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label-modern">
+                    <i class="bi bi-calendar"></i> End Date
+                </label>
+                <input type="date" name="endDate" value="@ViewBag.EndDate" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label-modern">
+                    <i class="bi bi-tag"></i> Benefit Type
+                </label>
+                <select name="benefitType" class="form-select">
+                    <option value="">All Types</option>
+                    @if (ViewBag.BenefitTypes != null)
+                    {
+                        @foreach (var type in ViewBag.BenefitTypes)
+                        {
+                            <option value="@type" selected="@(ViewBag.SelectedBenefitType == type)">@type</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label-modern">
+                    <i class="bi bi-person-badge"></i> Officer ID
+                </label>
+                <select name="officerId" class="form-select">
+                    <option value="">All Officers</option>
+                    @if (ViewBag.OfficerIds != null)
+                    {
+                        @foreach (var id in ViewBag.OfficerIds)
+                        {
+                            <option value="@id" selected="@(ViewBag.SelectedOfficerId != null && ViewBag.SelectedOfficerId == id)">@id</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label-modern">
+                    <i class="bi bi-flag"></i> Status
+                </label>
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    @if (ViewBag.Statuses != null)
+                    {
+                        @foreach (var status in ViewBag.Statuses)
+                        {
+                            <option value="@status" selected="@(ViewBag.SelectedStatus == status)">@status</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end gap-2">
+                <button type="submit" class="btn-modern btn-primary-modern flex-grow-1">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+                <a asp-action="History" class="btn-modern btn-secondary-modern">
+                    <i class="bi bi-x-circle"></i>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Summary Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="content-card text-center">
+            <i class="bi bi-list-ul text-primary" style="font-size: 2rem;"></i>
+            <h3 class="mt-2 mb-0">@Model.Count()</h3>
+            <p class="text-muted mb-0">Total Records</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="content-card text-center">
+            <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+            <h3 class="mt-2 mb-0">@Model.Count(d => d.Status == "Completed")</h3>
+            <p class="text-muted mb-0">Completed</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="content-card text-center">
+            <i class="bi bi-hourglass-split text-warning" style="font-size: 2rem;"></i>
+            <h3 class="mt-2 mb-0">@Model.Count(d => d.Status == "Pending")</h3>
+            <p class="text-muted mb-0">Pending</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="content-card text-center">
+            <i class="bi bi-x-circle text-danger" style="font-size: 2rem;"></i>
+            <h3 class="mt-2 mb-0">@Model.Count(d => d.Status == "Failed")</h3>
+            <p class="text-muted mb-0">Failed</p>
+        </div>
+    </div>
+</div>
+
+<!-- History Table -->
+<div class="content-card">
+    <div class="table-responsive">
+        <table class="table table-modern">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-hash"></i> Disbursement ID</th>
+                    <th><i class="bi bi-gift"></i> Benefit ID</th>
+                    <th><i class="bi bi-tag"></i> Type</th>
+                    <th><i class="bi bi-person"></i> Citizen ID</th>
+                    <th><i class="bi bi-person-badge"></i> Officer ID</th>
+                    <th><i class="bi bi-calendar"></i> Date</th>
+                    <th><i class="bi bi-flag"></i> Status</th>
+                    <th><i class="bi bi-gear"></i> Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderByDescending(d => d.Date))
+                {
+                    <tr>
+                        <td><strong>#@item.DisbursementID</strong></td>
+                        <td>@item.BenefitID</td>
+                        <td>
+                            @if (item.Benefit != null)
+                            {
+                                <span class="badge bg-info">
+                                    <i class="bi bi-box"></i> @item.Benefit.Type
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A</span>
+                            }
+                        </td>
+                        <td><i class="bi bi-person-circle text-primary"></i> @item.CitizenID</td>
+                        <td><i class="bi bi-person-badge text-secondary"></i> @item.OfficerID</td>
+                        <td>@item.Date.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            @{
+                                var statusClass = item.Status?.ToLower() switch
+                                {
+                                    "completed" => "status-completed",
+                                    "pending" => "status-pending",
+                                    "failed" => "status-failed",
+                                    _ => "status-pending"
+                                };
+                            }
+                            <span class="status-badge @statusClass">
+                                <i class="bi bi-circle-fill" style="font-size: 8px;"></i> @item.Status
+                            </span>
+                        </td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@item.DisbursementID" class="btn-modern btn-info-modern btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-search" style="font-size: 4rem; color: #cbd5e1;"></i>
+            <h4 class="mt-3 text-muted">No records found</h4>
+            <p class="text-muted">Try adjusting your filter criteria.</p>
+        </div>
+    }
+</div>

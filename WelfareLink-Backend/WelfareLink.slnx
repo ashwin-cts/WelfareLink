@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="WelfareLink.AuditorManagement.API/WelfareLink.AuditorManagement.API.csproj" />
+  <Project Path="WelfareLink.Authentication.API/WelfareLink.Authentication.API.csproj" />
+  <Project Path="WelfareLink.CitizenManagement.API/WelfareLink.CitizenManagement.API.csproj" />
+  <Project Path="WelfareLink.ComplianceAndAuditLog.API/WelfareLink.ComplianceAndAuditLog.API.csproj" />
+  <Project Path="WelfareLink.ProgramManagement.API/WelfareLink.ProgramManagement.API.csproj" />
+  <Project Path="WelfareLink.UserManagement.API/WelfareLink.UserManagement.API.csproj" Id="137772dd-41a8-42e4-87f8-c25564892096" />
+  <Project Path="WelfareLink.WelfareOfficerManagement.API/WelfareLink.WelfareOfficerManagement.API.csproj" />
+  <Project Path="WelfareLink/WelfareLink.csproj" />
+</Solution>

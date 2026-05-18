@@ -1,0 +1,240 @@
+@using System.Dynamic
+@{
+    ViewData["Title"] = "Budget Monitoring - Program Breakdown";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-3">Budget Monitoring - Program Breakdown</h1>
+            <hr />
+        </div>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <strong>Error:</strong> @ViewBag.Error
+        </div>
+    }
+
+    <!-- Navigation Tabs -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs" id="auditorTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Dashboard", "Auditor")">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="@Url.Action("BudgetMonitoring", "Auditor")">Budget Monitoring</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("ResourceStatement", "Auditor")">Resource Statement</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("DisbursementStatement", "Auditor")">Disbursement Statement</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Program Breakdown Table -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Section 1: Program Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Program Name</th>
+                                    <th>Program Status</th>
+                                    <th>Program Budget</th>
+                                    <th>Allocated Resource</th>
+                                    <th>Citizens Applied</th>
+                                    <th>Total Disbursed</th>
+                                    <th>Remaining Resource</th>
+                                    <th>Utilization %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Count > 0)
+                                {
+                                    @foreach (var program in Model)
+                                    {
+                                        var dict = (IDictionary<string, object>)program;
+                                        <tr>
+                                            <td>
+                                                <strong>@dict["ProgramName"]</strong>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var status = dict["ProgramStatus"]?.ToString() ?? "Unknown";
+                                                    var statusClass = status == "Active" ? "badge-success" : 
+                                                                     status == "Inactive" ? "badge-danger" : 
+                                                                     "badge-warning";
+                                                }
+                                                <span class="badge @statusClass">@status</span>
+                                            </td>
+                                            <td>
+                                                ₹ @string.Format("{0:N2}", (decimal)dict["ProgramBudget"])
+                                            </td>
+                                            <td>
+                                                ₹ @string.Format("{0:N2}", (decimal)dict["AllocatedResource"])
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-info">@dict["CitizensApplied"]</span>
+                                            </td>
+                                            <td>
+                                                ₹ @string.Format("{0:N2}", (decimal)dict["TotalDisbursed"])
+                                            </td>
+                                            <td>
+                                                <span style="color: @((decimal)dict["RemainingResource"] > 0 ? "#28a745" : "#dc3545");">
+                                                    ₹ @string.Format("{0:N2}", (decimal)dict["RemainingResource"])
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    decimal utilPercent = (decimal)dict["UtilizationPercent"];
+                                                    var percentClass = utilPercent >= 75 ? "table-danger" : 
+                                                                      utilPercent >= 50 ? "table-warning" : 
+                                                                      "table-success";
+                                                }
+                                                <div class="progress">
+                                                    <div class="progress-bar @(utilPercent >= 75 ? "bg-danger" : utilPercent >= 50 ? "bg-warning" : "bg-success")" 
+                                                         role="progressbar" 
+                                                         style="width: @(Math.Min(utilPercent, 100))%;" 
+                                                         aria-valuenow="@utilPercent" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                        @string.Format("{0:F1}", utilPercent)%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="8" class="text-center">
+                                            <em>No programs found</em>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Programs</h6>
+                    <h3>@(Model?.Count ?? 0)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Budget</h6>
+                    <h3>
+                        ₹ 
+                        @{
+                            decimal totalBudget = 0;
+                            if (Model != null)
+                            {
+                                foreach (var p in Model)
+                                {
+                                    totalBudget += (decimal)((IDictionary<string, object>)p)["ProgramBudget"];
+                                }
+                            }
+                            @string.Format("{0:N2}", totalBudget)
+                        }
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Disbursed</h6>
+                    <h3>
+                        ₹ 
+                        @{
+                            decimal totalDisbursed = 0;
+                            if (Model != null)
+                            {
+                                foreach (var p in Model)
+                                {
+                                    totalDisbursed += (decimal)((IDictionary<string, object>)p)["TotalDisbursed"];
+                                }
+                            }
+                            @string.Format("{0:N2}", totalDisbursed)
+                        }
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 0.25rem;
+        display: flex;
+        height: 1rem;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        text-align: center;
+        transition: width 0.6s ease;
+        font-size: 0.75rem;
+    }
+
+    .badge {
+        padding: 0.35rem 0.65rem;
+        border-radius: 0.25rem;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .badge-warning {
+        background-color: #ffc107;
+        color: black;
+    }
+
+    .badge-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+</style>

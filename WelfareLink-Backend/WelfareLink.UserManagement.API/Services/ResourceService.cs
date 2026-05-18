@@ -1,0 +1,140 @@
+using WelfareLink.UserManagement.API.Exceptions;
+using WelfareLink.UserManagement.API.Interfaces;
+using WelfareLink.UserManagement.API.Models;
+using System.Security.Claims; // Included for JWT Claims
+
+namespace WelfareLink.UserManagement.API.Services;
+
+public class ResourceService : IResourceService
+{
+    private readonly IResourceRepository _resourceRepository;
+    private readonly IWelfareProgramRepository _programRepository;
+    private readonly IAuditLogService _auditLogService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public ResourceService(IResourceRepository resourceRepository, IWelfareProgramRepository programRepository, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
+    {
+        _resourceRepository = resourceRepository;
+        _programRepository = programRepository;
+        _auditLogService = auditLogService;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private int? GetCurrentUserId()
+    {
+        // Securely extracts the UserId from the JWT Token sent by Postman/Client
+        var userIdClaim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                       ?? _httpContextAccessor?.HttpContext?.User?.FindFirst("UserId")?.Value;
+
+        if (int.TryParse(userIdClaim, out int userId))
+        {
+            return userId;
+        }
+
+        return null;
+    }
+
+    public async Task<IEnumerable<Resource>> GetAllResourcesAsync()
+    {
+        return await _resourceRepository.GetAllResourcesAsync();
+    }
+
+    public async Task<IEnumerable<Resource>> GetResourcesByProgramIdAsync(int programId)
+    {
+        return await _resourceRepository.GetResourcesByProgramIdAsync(programId);
+    }
+
+    public async Task AddResourceAsync(Resource resource)
+    {
+        await ValidateProgramExists(resource.ProgramID);
+        ValidateResourceQuantity(resource);
+        await ValidateResourceAgainstBudget(resource, excludeResourceId: null); // No exclusion for new resources
+
+        resource.Status = "Available";
+
+        await _resourceRepository.AddResourcesAsync(resource);
+
+        var userId = GetCurrentUserId();
+        await _auditLogService.LogActionAsync(
+            userId: userId,
+            action: "Create",
+            entityType: "Resource",
+            entityId: resource.ResourceID,
+            description: $"Added resource '{resource.ResourceID}' ({resource.Type}) - Quantity: {resource.Quantity}",
+            status: "Success"
+        );
+    }
+
+    public async Task UpdateResourceAsync(Resource resource)
+    {
+        await ValidateProgramExists(resource.ProgramID);
+        ValidateResourceQuantity(resource);
+        await ValidateResourceAgainstBudget(resource, excludeResourceId: resource.ResourceID); // Exclude current resource from calculation
+
+        await _resourceRepository.UpdateResourceAsync(resource);
+
+        var userId = GetCurrentUserId();
+        await _auditLogService.LogActionAsync(
+            userId: userId,
+            action: "Update",
+            entityType: "Resource",
+            entityId: resource.ResourceID,
+            description: $"Updated resource '{resource.ResourceID}' - Quantity: {resource.Quantity}",
+            status: "Success"
+        );
+    }
+
+    private async Task ValidateProgramExists(int programId)
+    {
+        var program = await _programRepository.GetProgramByIdAsync(programId);
+        if (program == null)
+        {
+            throw new NotFoundException($"Program with ID {programId} not found.");
+        }
+
+        if (program.Status != "Active")
+        {
+            throw new BusinessValidationException("Cannot allocate resources to a non-active programme.");
+        }
+    }
+
+    private void ValidateResourceQuantity(Resource resource)
+    {
+        if (resource.Quantity <= 0)
+        {
+            throw new BadRequestException("Resource quantity must be greater than zero.");
+        }
+    }
+
+    private async Task ValidateResourceAgainstBudget(Resource resource, int? excludeResourceId)
+    {
+        var program = await _programRepository.GetProgramByIdAsync(resource.ProgramID);
+        if (program == null)
+        {
+            throw new NotFoundException("Programme not found.");
+        }
+
+        var existingResources = await _resourceRepository.GetResourcesByProgramIdAsync(resource.ProgramID);
+
+        // Only validate budget for "Funds" type resources
+        if (resource.Type?.Equals("Funds", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            // Calculate total allocated funds, excluding the current resource if updating
+            var totalAllocatedFunds = existingResources
+                .Where(r => r.Type != null &&
+                            r.Type.Equals("Funds", StringComparison.OrdinalIgnoreCase) &&
+                            (!excludeResourceId.HasValue || r.ResourceID != excludeResourceId.Value)) // Exclude current resource for updates
+                .Sum(r => r.Quantity);
+
+            var remainingBudget = program.Budget - totalAllocatedFunds;
+            var newTotalFunds = totalAllocatedFunds + resource.Quantity;
+
+            if (newTotalFunds > program.Budget)
+            {
+                var excessAmount = newTotalFunds - program.Budget;
+                throw new BusinessValidationException(
+                    $"Cannot allocate ₹{resource.Quantity:N2}. Programme budget: ₹{program.Budget:N2}, Already allocated: ₹{totalAllocatedFunds:N2}, Remaining: ₹{remainingBudget:N2}. Exceeds by ₹{excessAmount:N2}. Please increase programme budget or reduce allocation amount.");
+            }
+        }
+    }
+}
