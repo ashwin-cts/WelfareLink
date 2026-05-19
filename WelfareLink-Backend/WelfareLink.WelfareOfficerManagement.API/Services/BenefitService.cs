@@ -282,9 +282,9 @@ namespace WelfareLink.WelfareOfficerManagement.API.Services
                 throw new BadRequestException("Date cannot be in the future.");
             }
 
-            if (date < DateTime.Now.AddYears(-10))
+            if (date < DateTime.Now)
             {
-                throw new BadRequestException("Date cannot be older than 10 years.");
+                throw new BadRequestException("Date cannot be in past.");
             }
         }
 
