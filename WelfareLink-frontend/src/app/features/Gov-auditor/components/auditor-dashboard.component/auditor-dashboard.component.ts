@@ -34,7 +34,7 @@ export class AuditorDashboardComponent implements OnInit {
   budgetItems: BudgetMonitoringItem[] = [];
   resourceItems: ResourceStatementItem[] = [];
   disbursementItems: DisbursementStatementItem[] = [];
-
+  isDashboardLoading: boolean = true;
   constructor(private auditorService: AuditorService) { }
 
   ngOnInit(): void {
@@ -58,6 +58,7 @@ export class AuditorDashboardComponent implements OnInit {
   }
 
   loadDashboardData() {
+    this.isDashboardLoading = true;
     this.auditorService.getDashboardStats().subscribe({
       // We use 'any' to read the PascalCase keys from C# and map them to camelCase
       next: (res: any) => {
@@ -70,10 +71,12 @@ export class AuditorDashboardComponent implements OnInit {
           totalResource: res.TotalResource || res.totalResource || 0,
           totalDisbursement: res.TotalDisbursement || res.totalDisbursement || 0,
         };
+        this.isDashboardLoading = false; // TURN SPINNER OFF WHEN DATA ARRIVES
       },
       error: (err: unknown) => {
         console.error(err);
         this.errorMessage = 'Failed to load dashboard statistics.';
+        this.isDashboardLoading = false;
       },
     });
   }

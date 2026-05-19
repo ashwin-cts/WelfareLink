@@ -1,56 +1,66 @@
+@if (isLoading) {
+<div class="d-flex justify-content-center align-items-center py-5">
+  <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <h5 class="ms-3 text-muted mb-0">Loading dashboard...</h5>
+</div>
+} @else {
 @if (stats) {
-  <div class="row">
-    <div class="col-lg-3 col-md-6 mb-3">
-      <div class="card border-left-primary shadow h-100 py-2">
-        <div class="card-body">
-          <div class="text-primary font-weight-bold text-uppercase mb-1">Total Applications</div>
-          <div class="h3 mb-0">{{ stats.totalApplications || 0 }}</div>
-        </div>
-        <div class="card-footer bg-light">
-          <small class="text-muted">Count of all applications</small>
-        </div>
+<div class="row">
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card border-left-primary shadow h-100 py-2">
+      <div class="card-body">
+        <div class="text-primary font-weight-bold text-uppercase mb-1">Total Applications</div>
+        <div class="h3 mb-0">{{ stats.totalApplications || 0 }}</div>
       </div>
-    </div>
-    <div class="col-lg-3 col-md-6 mb-3">
-      <div class="card border-left-success shadow h-100 py-2">
-        <div class="card-body">
-          <div class="text-success font-weight-bold text-uppercase mb-1">Total Programs</div>
-          <div class="h3 mb-0">{{ stats.totalPrograms || 0 }}</div>
-        </div>
-        <div class="card-footer bg-light">
-          <small class="text-muted">Count of all programs</small>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-3 col-md-6 mb-3">
-      <div class="card border-left-warning shadow h-100 py-2">
-        <div class="card-body">
-          <div class="text-warning font-weight-bold text-uppercase mb-1">Total Budget</div>
-          <div class="h3 mb-0">₹ {{ stats.totalBudget || 0 | number: '1.2-2' }}</div>
-        </div>
-        <div class="card-footer bg-light">
-          <small class="text-muted">Sum of all program budgets</small>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-3 col-md-6 mb-3">
-      <div class="card border-left-danger shadow h-100 py-2">
-        <div class="card-body">
-          <div class="text-danger font-weight-bold text-uppercase mb-1">Total Disbursement</div>
-          <div class="h3 mb-0">₹ {{ stats.totalDisbursement || 0 | number: '1.2-2' }}</div>
-        </div>
-        <div class="card-footer bg-light">
-          <small class="text-muted">Sum of all disbursements</small>
-        </div>
+      <div class="card-footer bg-light">
+        <small class="text-muted">Count of all applications</small>
       </div>
     </div>
   </div>
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card border-left-success shadow h-100 py-2">
+      <div class="card-body">
+        <div class="text-success font-weight-bold text-uppercase mb-1">Total Programs</div>
+        <div class="h3 mb-0">{{ stats.totalPrograms || 0 }}</div>
+      </div>
+      <div class="card-footer bg-light">
+        <small class="text-muted">Count of all programs</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card border-left-warning shadow h-100 py-2">
+      <div class="card-body">
+        <div class="text-warning font-weight-bold text-uppercase mb-1">Total Budget</div>
+        <div class="h3 mb-0">₹ {{ stats.totalBudget || 0 | number: '1.2-2' }}</div>
+      </div>
+      <div class="card-footer bg-light">
+        <small class="text-muted">Sum of all program budgets</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card border-left-danger shadow h-100 py-2">
+      <div class="card-body">
+        <div class="text-danger font-weight-bold text-uppercase mb-1">Total Disbursement</div>
+        <div class="h3 mb-0">₹ {{ stats.totalDisbursement || 0 | number: '1.2-2' }}</div>
+      </div>
+      <div class="card-footer bg-light">
+        <small class="text-muted">Sum of all disbursements</small>
+      </div>
+    </div>
+  </div>
+</div>
 }
-
+}
 <div class="row mt-4">
   <div class="col-md-12">
     <div class="card">
-      <div class="card-header"><h5 class="mb-0">Quick Actions</h5></div>
+      <div class="card-header">
+        <h5 class="mb-0">Quick Actions</h5>
+      </div>
       <div class="card-body">
         <button (click)="onTabClick('budget')" class="btn btn-primary me-2">
           <i class="fas fa-chart-pie"></i> View Budget Breakdown
