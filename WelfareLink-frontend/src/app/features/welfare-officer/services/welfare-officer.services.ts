@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { API_CONFIG } from '../../../core/config/api.config';
-import { WelfareApplication, EligibilityCheck } from '../models/welfare-officer.models';
+import { WelfareApplication, EligibilityCheck , ComplianceRecord} from '../models/welfare-officer.models';
 
 import {
   AppAnalyticsDashboard,
@@ -151,6 +151,9 @@ export class WelfareOfficerService {
 
   getApprovalRate(): Observable<AppApprovalRate> {
     return this.http.get<AppApprovalRate>(`${this.config.welfareAnalyticsApi}/approval-rate`);
+  }
+  getComplianceRecords(): Observable<ComplianceRecord[]> {
+    return this.http.get<ComplianceRecord[]>(`${this.config.complianceApi}/ComplainceRecordApi`);
   }
 }
 

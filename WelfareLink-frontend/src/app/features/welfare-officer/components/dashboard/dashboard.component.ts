@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { WelfareOfficerService } from '../../services/welfare-officer.services';
-import { WelfareApplication, DashboardStats } from '../../models/welfare-officer.models';
+import { WelfareApplication, DashboardStats,ComplianceRecord } from '../../models/welfare-officer.models';
 import { DeleteConfirmComponent } from '../delete-confirm/delete-confirm.component';
 import { WelfareApplicationNavbarComponent } from '../welfare-application-navbar.component/welfare-application-navbar.component';
 @Component({
@@ -14,8 +14,9 @@ import { WelfareApplicationNavbarComponent } from '../welfare-application-navbar
 })
 export class DashboardComponent implements OnInit {
   applications: WelfareApplication[] = [];
-  // 1. Replaced any[] with WelfareApplication[]
+ complianceRecords: ComplianceRecord[] = [];
   filteredList: WelfareApplication[] = [];
+ 
   isSortDescending: boolean = true; // Default to newest first
   currentView: string = 'All'; // Tracks if we are in 'All' or 'Pending' view
   stats: DashboardStats = { total: 0, pending: 0, approved: 0, rejected: 0, fullyDisbursed: 0 };
@@ -24,10 +25,15 @@ export class DashboardComponent implements OnInit {
   // 2. Replaced any with WelfareApplication | null (since it starts as null)
   selectedAppForDelete: WelfareApplication | null = null;
 
+   showComplianceModal = false;
+  selectedAppCompliance: any[] = []; 
+  selectedCitizenNameForCompliance: string = '';
+  selectedAppIdForCompliance: number | null = null;
   constructor(private welfareService: WelfareOfficerService) { }
 
   ngOnInit(): void {
     this.loadData();
+    this.loadComplianceData();
   }
 
   loadData(): void {
@@ -46,6 +52,35 @@ export class DashboardComponent implements OnInit {
         console.error('Connection Error:', err);
       }
     });
+  }
+  loadComplianceData(): void {
+    this.welfareService.getComplianceRecords().subscribe({
+      next: (records: ComplianceRecord[]) => {
+        console.log(records);
+        this.complianceRecords = records;
+      },
+      error: (err) => console.error('Failed to load compliance records', err)
+    });
+  }
+  hasOpenCompliance(appId: number): boolean {
+    return this.complianceRecords.some((r: any) => 
+      r.applicationID === appId && r.status === 'Open'
+    );
+  }
+  openComplianceModal(app: WelfareApplication) {
+    this.selectedCitizenNameForCompliance = app.citizen?.name || 'Unknown Citizen';
+    
+    // Filter records using applicationID from the console log structure
+    this.selectedAppCompliance = this.complianceRecords.filter((r: any) => 
+      r.applicationID === app.applicationID
+    );
+    this.showComplianceModal = true;
+  }
+
+  closeComplianceModal() {
+    this.showComplianceModal = false;
+    this.selectedAppCompliance = [];
+    this.selectedCitizenNameForCompliance = ''; // Reset name
   }
   toggleDateSort() {
     this.isSortDescending = !this.isSortDescending;

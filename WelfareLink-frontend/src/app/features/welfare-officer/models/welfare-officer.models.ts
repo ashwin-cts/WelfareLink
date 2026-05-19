@@ -88,3 +88,12 @@ export interface AppEligibilityCheckMonth {
 export interface AppApprovalRate {
   approvalRate: number;
 }
+export interface ComplianceRecord {
+  recordID: number;
+  entityType: string;
+  entityId: number;
+  violationType: string;
+  description: string;
+  status: string;
+  notes?: string;
+}

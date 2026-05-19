@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization; // ADDED FOR AUTHORIZATION
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WelfareLink.ComplianceAndAuditLog.API.Interfaces;
 using WelfareLink.ComplianceAndAuditLog.API.Models;
@@ -7,8 +7,9 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    // Base Rule: Only Admins and Compliance Officers can manage compliance records
-    [Authorize(Roles = "Admin,ComplianceOfficer")]
+    // FIX: Just require the user to be logged in at the controller level.
+    // We will handle the specific role restrictions on the individual endpoints.
+    [Authorize]
     public class ComplainceRecordApiController : ControllerBase
     {
         private readonly IComplainceRecordService _complainceRecordService;
@@ -20,14 +21,13 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
 
         // GET: api/complaincerecordapi
         [HttpGet]
-        // OVERRIDE: Allow Government Auditors to view compliance records during their audits
-        [Authorize(Roles = "Admin,ComplianceOfficer,GovernmentAuditor")]
+        // Allow Welfare Officers to see compliance records for the dashboard UI
+        [Authorize(Roles = "Admin,ComplianceOfficer,GovernmentAuditor,WelfareOfficer")]
         public async Task<IActionResult> GetAll()
             => Ok(await _complainceRecordService.GetAllRecordsAsync());
 
         // GET: api/complaincerecordapi/{id}
         [HttpGet("{id}")]
-        // OVERRIDE: Allow Government Auditors to view specific compliance records
         [Authorize(Roles = "Admin,ComplianceOfficer,GovernmentAuditor")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -37,14 +37,14 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
 
         // GET: api/complaincerecordapi/open
         [HttpGet("open")]
-        // OVERRIDE: Allow Government Auditors to view open compliance records
         [Authorize(Roles = "Admin,ComplianceOfficer,GovernmentAuditor")]
         public async Task<IActionResult> GetOpen()
             => Ok(await _complainceRecordService.GetOpenRecordsAsync());
 
         // POST: api/complaincerecordapi
         [HttpPost]
-        // Falls back to Base Rule: Only Admin & ComplianceOfficer can create records
+        // Explicitly restrict Creation (POST) to only Admins and Compliance Officers
+        [Authorize(Roles = "Admin,ComplianceOfficer")]
         public async Task<IActionResult> Create([FromBody] ComplainceRecord record)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -58,7 +58,8 @@ namespace WelfareLink.ComplianceAndAuditLog.API.Controllers
 
         // PATCH: api/complaincerecordapi/{id}/status
         [HttpPatch("{id}/status")]
-        // Falls back to Base Rule: Only Admin & ComplianceOfficer can resolve/update records
+        // Explicitly restrict Edits/Updates to only Admins and Compliance Officers
+        [Authorize(Roles = "Admin,ComplianceOfficer")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateComplianceStatusRequest req)
         {
             try

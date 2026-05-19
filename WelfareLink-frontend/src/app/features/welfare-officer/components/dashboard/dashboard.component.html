@@ -173,6 +173,10 @@
                         }">{{ app.status }}</span>
                 </td>
                 <td class="text-center pe-4">
+                <button class="btn btn-sm text-white px-3 me-2 rounded-2 shadow-sm" 
+                      [ngClass]="hasOpenCompliance(app.applicationID) ? 'btn-danger' : 'btn-success'"
+                      (click)="openComplianceModal(app)"> <i class="bi bi-shield-check me-1"></i> Compliance
+                </button>
                   <button class="btn btn-cyan btn-sm text-white px-3 me-2 rounded-2 shadow-sm" [routerLink]="['/details', app.applicationID]">
                     <i [class]="currentView === 'Pending' ? 'bi bi-pencil-square' : 'bi bi-eye'" class="me-1"></i>
                     {{ currentView === 'Pending' ? 'Review' : 'View' }}
@@ -202,4 +206,61 @@
 @if (showDeleteModal) {
 <app-delete-confirm [applicationData]="selectedAppForDelete" (confirmed)="handleDelete($event)" (canceled)="closeModal()">
 </app-delete-confirm>
+}
+
+<!-- EXISTING DELETE MODAL -->
+@if (showDeleteModal) {
+  <app-delete-confirm [applicationData]="selectedAppForDelete" (confirmed)="handleDelete($event)" (canceled)="closeModal()"></app-delete-confirm>
+}
+
+<!-- NEW COMPLIANCE MODAL -->
+@if (showComplianceModal) {
+<div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 rounded-4 shadow">
+      
+      <div class="modal-header bg-light border-bottom-0 rounded-top-4">
+        <h5 class="modal-title fw-bold text-navy">
+          <i class="bi bi-shield-exclamation text-warning me-2"></i> 
+          Compliance Records- {{ selectedAppIdForCompliance }}
+        </h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="closeComplianceModal()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        @if (selectedAppCompliance.length === 0) {
+          <div class="text-center py-4">
+            <i class="bi bi-check-circle text-success fs-1 mb-2"></i>
+            <h5 class="text-muted">No compliance records found for this application.</h5>
+          </div>
+        } @else {
+          <div class="list-group">
+            @for (record of selectedAppCompliance; track record.recordID) {
+              <div class="list-group-item list-group-item-action mb-3 border rounded shadow-sm">
+                <div class="d-flex w-100 justify-content-between mb-2">
+                  <h6 class="mb-1 fw-bold">{{ record.violationType }}</h6>
+                  <span class="badge" 
+                        [ngClass]="record.status === 'Open' ? 'bg-danger' : 'bg-success'">
+                    {{ record.status }}
+                  </span>
+                </div>
+                <p class="mb-1 text-muted">{{ record.description }}</p>
+                @if (record.notes) {
+                  <small class="text-info mt-2 d-block">
+                    <strong>Resolution Notes:</strong> {{ record.notes }}
+                  </small>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer border-top-0">
+        <button type="button" class="btn btn-secondary rounded-pill px-4" (click)="closeComplianceModal()">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
 }
