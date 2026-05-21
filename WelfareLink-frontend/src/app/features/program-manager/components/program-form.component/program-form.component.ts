@@ -21,7 +21,7 @@ export class ProgramFormComponent implements OnInit {
   private router = inject(Router);
 
   programForm!: FormGroup;
-  isEditMode = false;
+  isEditMode = false; //to know to create or update
   currentProgramId: number | null = null;
 
   isLoading = false;
@@ -78,13 +78,14 @@ export class ProgramFormComponent implements OnInit {
       next: (data: any) => {
         const program = data.program || data;
 
-        // Format dates for the HTML <input type="date">
+        // Format dates for the HTML <input type="date"> YYYYMMDD and cut the time to match HTML
         const formattedStartDate = program.startDate ? new Date(program.startDate).toISOString().split('T')[0] : '';
         const formattedEndDate = program.endDate ? new Date(program.endDate).toISOString().split('T')[0] : '';
 
         // Parse existing checkboxes
         if (program.eligibleGender) {
           this.selectedGenders = program.eligibleGender.split(',').map((s: string) => s.trim());
+          //multiple gender selected it can be comma separated
         }
         if (program.requiredDocuments) {
           this.selectedDocs = program.requiredDocuments.split(',').map((s: string) => s.trim());
@@ -107,7 +108,7 @@ export class ProgramFormComponent implements OnInit {
     });
   }
 
-  // --- Checkbox Logic translated from your MVC JavaScript ---
+  
   onGenderChange(value: string, event: any) {
     const isChecked = event.target.checked;
 
@@ -136,6 +137,7 @@ export class ProgramFormComponent implements OnInit {
       if (this.selectedDocs.length === 0) this.selectedDocs = ['None'];
     }
     this.programForm.patchValue({ requiredDocuments: this.selectedDocs.join(', ') });
+    //multi doc are selected combine them as comma separated
   }
 
   onSubmit() {

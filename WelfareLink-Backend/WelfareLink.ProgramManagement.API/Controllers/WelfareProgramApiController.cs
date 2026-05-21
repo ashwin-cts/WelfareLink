@@ -165,7 +165,7 @@ namespace WelfareLink.ProgramManagement.API.Controllers
 
         // POST: api/welfareprogramapi
         [HttpPost]
-        // OVERRIDE: ONLY Program Managers (and Admins) can create new programs
+        // OVERRIDE: ONLY Program Managers  can create new programs
         [Authorize(Roles = "ProgramManager")]
         public async Task<IActionResult> Create([FromBody] WelfareProgram program)
         {
@@ -186,7 +186,7 @@ namespace WelfareLink.ProgramManagement.API.Controllers
         [HttpPut("{id}")]
         // OVERRIDE: ONLY Program Managers (and Admins) can edit programs
         [Authorize(Roles = "Admin,ProgramManager")]
-        public async Task<IActionResult> Update(int id, [FromBody] WelfareProgram program)
+        public async Task<IActionResult> Update(int id, [FromBody] WelfareProgram program) //read from the body of http
         {
             if (id != program.ProgramID) return BadRequest(new { Error = "ID mismatch." });
 

@@ -54,6 +54,11 @@ public class WelfareProgramService : IWelfareProgramService
             await _programRepository.UpdateStatusAsync(id, "Expired");
             program = await _programRepository.GetProgramByIdAsync(id);
         }
+        else
+        {
+            if (program == null)
+                throw new NotFoundException($"Programme not found.");
+        }
         return program;
     }
 

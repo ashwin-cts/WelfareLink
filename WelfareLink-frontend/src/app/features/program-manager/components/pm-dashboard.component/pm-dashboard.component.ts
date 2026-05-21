@@ -36,11 +36,7 @@ export class PmDashboardComponent implements OnInit {
     }).subscribe({
       next: (result) => {
         this.programs = result.programs;
-
-        // Logic from your MVC Dashboard: Sum program budgets
         this.totalBudget = this.programs.reduce((sum, p) => sum + p.budget, 0);
-
-        // Logic from your MVC Dashboard: Sum "Funds" type resources
         this.allocatedBudget = result.resources
           .filter(r => r.type.toLowerCase() === 'funds')
           .reduce((sum, r) => sum + r.quantity, 0);

@@ -15,7 +15,7 @@ import { AuthResponse, AuthErrorResponse, RegisterCitizenRequest } from '../mode
   styleUrl: './login.css'
 })
 export class Login implements OnInit {
-  @Output() closeOverlay = new EventEmitter<void>(); // NEW: Tells the home page to close the modal
+  @Output() closeOverlay = new EventEmitter<void>(); 
 
   isLoginMode = true;
   loginForm: FormGroup;
@@ -62,7 +62,7 @@ export class Login implements OnInit {
     });
   }
 
-  // NEW METHOD: Triggers the event to close the modal
+  //Triggers the event to close the modal
   closeModal() {
     this.closeOverlay.emit();
   }
