@@ -60,6 +60,7 @@
                             <!-- <th>ID</th> -->
                             <th>Programme Title</th>
                             <th>Budget</th>
+                            <th>Start Date</th>
                             <th>End Date</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -71,6 +72,7 @@
                             <!-- <td><strong>PRG-{{ program.programID }}</strong></td> -->
                             <td>{{ program.title }}</td>
                             <td>{{ program.budget | currency:'INR' }}</td>
+                            <td>{{ program.startDate | date:'MMM dd, yyyy' }}</td>
                             <td>{{ program.endDate | date:'MMM dd, yyyy' }}</td>
                             <td>
                                 <span class="badge rounded-pill"
