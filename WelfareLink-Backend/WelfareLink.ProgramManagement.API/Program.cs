@@ -146,9 +146,8 @@ namespace WelfareLink.ProgramManagement.API
                 });
 
                 var app = builder.Build();
-                app.UseExceptionHandler();
 
-                // 3. ADDED THIS: Add the exception handler to the HTTP pipeline so it actually catches errors!
+                // Add the exception handler to the HTTP pipeline so it actually catches errors!
                 app.UseExceptionHandler();
 
                 // Configure the HTTP request pipeline.
