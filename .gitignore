@@ -1,0 +1,73 @@
+# =========================
+# IDEs, Editors & System
+# =========================
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.history/*
+.idea/
+.project
+.classpath
+.c9/
+.settings/
+*.launch
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.user
+.DS_Store
+Thumbs.db
+
+# =========================
+# .NET / C# (Backend)
+# =========================
+**/bin/
+**/obj/
+Debug/
+Release/
+*.log
+*.tmp
+*.txt
+
+run-apis.ps1
+
+# Ignore everything inside logs folders but keep the folder structure
+**/logs/*
+!**/logs/.gitkeep
+
+# Ignore everything inside wwwroot folders but keep the folder structure
+**/wwwroot/*
+!**/wwwroot/.gitkeep
+
+# =========================
+# Angular / Node (Frontend)
+# =========================
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Compiled Output & Builds
+dist/
+tmp/
+out-tsc/
+bazel-out/
+
+# Angular & Caching
+.angular/
+.sass-cache/
+
+# Testing & Miscellaneous
+coverage/
+typings/
+__screenshots__/
+connect.lock
+libpeerconnection.log
+testem.log
