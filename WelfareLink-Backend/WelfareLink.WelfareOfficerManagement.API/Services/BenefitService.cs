@@ -282,7 +282,7 @@ namespace WelfareLink.WelfareOfficerManagement.API.Services
                 throw new BadRequestException("Date cannot be in the future.");
             }
 
-            if (date < DateTime.Now)
+            if (date < DateTime.Today)
             {
                 throw new BadRequestException("Date cannot be in past.");
             }

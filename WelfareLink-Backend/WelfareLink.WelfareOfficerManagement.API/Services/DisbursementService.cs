@@ -426,14 +426,14 @@ namespace WelfareLink.WelfareOfficerManagement.API.Services
                 throw new BadRequestException("Date is required.");
             }
 
-            if (date > DateTime.Now.AddDays(1))
+            if (date > DateTime.Today)
             {
                 throw new BadRequestException("Disbursement date cannot be in the future.");
             }
 
-            if (date < DateTime.Now.AddYears(-10))
+            if (date < DateTime.Today)
             {
-                throw new BadRequestException("Disbursement date cannot be older than 10 years.");
+                throw new BadRequestException("Disbursement date cannot be in past.");
             }
         }
 

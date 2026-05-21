@@ -1,5 +1,13 @@
 <app-program-manager-navbar></app-program-manager-navbar>
 <div class="container mt-4">
+    @if (isLoading) {
+    <!-- Loading Spinner -->
+    <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    } @else {
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-speedometer2"></i> Program Dashboard</h1>
@@ -12,35 +20,29 @@
 
     <div class="row g-4 mb-4">
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm text-white h-100"
-                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body">
                     <h6 class="text-uppercase opacity-75">Total Budget</h6>
                     <h2 class="mb-0">{{ totalBudget | currency:'INR' }}</h2>
-                    <i class="bi bi-wallet2 position-absolute end-0 bottom-0 m-3 opacity-25"
-                        style="font-size: 3rem;"></i>
+                    <i class="bi bi-wallet2 position-absolute end-0 bottom-0 m-3 opacity-25" style="font-size: 3rem;"></i>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm text-white h-100"
-                style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            <div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body">
                     <h6 class="text-uppercase opacity-75">Allocated Budget</h6>
                     <h2 class="mb-0">{{ allocatedBudget | currency:'INR' }}</h2>
-                    <i class="bi bi-check2-circle position-absolute end-0 bottom-0 m-3 opacity-25"
-                        style="font-size: 3rem;"></i>
+                    <i class="bi bi-check2-circle position-absolute end-0 bottom-0 m-3 opacity-25" style="font-size: 3rem;"></i>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm text-white h-100"
-                style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">
+            <div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">
                 <div class="card-body">
                     <h6 class="text-uppercase opacity-75">Remaining Budget</h6>
                     <h2 class="mb-0">{{ remainingBudget | currency:'INR' }}</h2>
-                    <i class="bi bi-clock-history position-absolute end-0 bottom-0 m-3 opacity-25"
-                        style="font-size: 3rem;"></i>
+                    <i class="bi bi-clock-history position-absolute end-0 bottom-0 m-3 opacity-25" style="font-size: 3rem;"></i>
                 </div>
             </div>
         </div>
@@ -77,8 +79,7 @@
                                 </span>
                             </td>
                             <td>
-                                <a [routerLink]="['/program-manager/details', program.programID]"
-                                    class="btn btn-sm btn-outline-info">
+                                <a [routerLink]="['/program-manager/details', program.programID]" class="btn btn-sm btn-outline-info">
                                     <i class="bi bi-eye"></i> View
                                 </a>
                             </td>
@@ -89,4 +90,5 @@
             </div>
         </div>
     </div>
+    }
 </div>

@@ -183,7 +183,7 @@ export class DisbursementFormComponent implements OnInit {
 
   handleError(err: any): void {
     this.isSaving = false;
-    this.errorMessage = err.error?.message || err.error?.title || 'An error occurred while saving.';
+    this.errorMessage = err.error?.detail || err.error?.title || err.error?.message || 'An error occurred while saving.';
     window.scrollTo({ top: 0, behavior: 'smooth' });
     console.error(err);
   }
