@@ -1,203 +1,191 @@
 <div class="container py-4">
   @if (isLoading) {
-    <div class="text-center py-5">
-      <div class="spinner-border text-primary" role="status"></div>
-      <div class="mt-2 text-muted fw-bold">Loading Application Details...</div>
-    </div>
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <div class="mt-2 text-muted fw-bold">Loading Application Details...</div>
+  </div>
   }
 
   @if (errorMessage) {
-    <div class="alert alert-danger">{{ errorMessage }}</div>
+  <div class="alert alert-danger">{{ errorMessage }}</div>
   }
 
   @if (!isLoading && application) {
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2>
-        Application Details
-        <span class="text-muted fs-4"><!--{{ application.applicationID }}--></span>
-      </h2>
-      <a routerLink="/citizen/my-applications" class="btn btn-outline-secondary"
-        ><i class="bi bi-arrow-left me-2"></i>Back to Applications</a
-      >
-    </div>
-    <div class="row mb-4">
-      <div class="col-md-6 mb-3">
-        <div class="card h-100 shadow-sm border-0">
-          <div class="card-header bg-light fw-bold text-secondary">
-            <i class="bi bi-person-badge me-2"></i>Applicant Information
-          </div>
-          <div class="card-body">
-            <!-- <p class="mb-1"><strong>Citizen ID:</strong> {{ application.citizen?.citizenId }}</p> -->
-            <p class="mb-1"><strong>Name:</strong> {{ application.citizen?.name }}</p>
-            <p class="mb-1">
-              <strong>Status:</strong>
-              <span class="badge bg-primary ms-2">{{ application.status }}</span>
-            </p>
-            <p class="mb-0">
-              <strong>Submitted On:</strong> {{ application.submittedDate | date: 'mediumDate' }}
-            </p>
-          </div>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+      Application Details
+      <span class="text-muted fs-4"><!--{{ application.applicationID }}--></span>
+    </h2>
+    <a routerLink="/citizen/my-applications" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i>Back to Applications</a>
+  </div>
+  <div class="row mb-4">
+    <div class="col-md-6 mb-3">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-header bg-light fw-bold text-secondary">
+          <i class="bi bi-person-badge me-2"></i>Applicant Information
+        </div>
+        <div class="card-body">
+          <!-- <p class="mb-1"><strong>Citizen ID:</strong> {{ application.citizen?.citizenId }}</p> -->
+          <p class="mb-1"><strong>Name:</strong> {{ application.citizen?.name }}</p>
+          <p class="mb-1">
+            <strong>Status:</strong>
+            <span class="badge bg-primary ms-2">{{ application.status }}</span>
+          </p>
+          <p class="mb-0">
+            <strong>Submitted On:</strong> {{ application.submittedDate | date: 'mediumDate' }}
+          </p>
         </div>
       </div>
-      <div class="col-md-6 mb-3">
-        <div class="card h-100 shadow-sm border-0">
-          <div class="card-header bg-light fw-bold text-secondary">
-            <i class="bi bi-journal-bookmark me-2"></i>Program Information
-          </div>
-          <div class="card-body">
-            <!-- <p class="mb-1">
+    </div>
+    <div class="col-md-6 mb-3">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-header bg-light fw-bold text-secondary">
+          <i class="bi bi-journal-bookmark me-2"></i>Program Information
+        </div>
+        <div class="card-body">
+          <!-- <p class="mb-1">
               <strong>Program ID:</strong> PRG-{{ application.program?.programID }}
             </p> -->
-            <p class="mb-1"><strong>Name:</strong> {{ application.program?.title }}</p>
-            <p class="mb-1">
-              <strong>Program Budget:</strong> ₹ {{ application.program?.budget | number: '1.2-2' }}
-            </p>
-            <p class="mb-0 text-success fw-bold">
-              <i class="bi bi-info-circle me-1"></i> Max Allowable Benefit: ₹
-              {{ application.program?.maxBenefitPerCitizen | number: '1.2-2' }}
-            </p>
+          <p class="mb-1"><strong>Name:</strong> {{ application.program?.title }}</p>
+          <p class="mb-1">
+            <strong>Program Budget:</strong> ₹ {{ application.program?.budget | number: '1.2-2' }}
+          </p>
+          <p class="mb-0 text-success fw-bold">
+            <i class="bi bi-info-circle me-1"></i> Max Allowable Benefit: ₹
+            {{ application.program?.maxBenefitPerCitizen | number: '1.2-2' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card shadow-sm border-0 mb-4 border-start border-4 border-primary">
+    <div class="card-body">
+      <h5 class="card-title text-primary mb-4">Financial Status</h5>
+      <div class="row text-center">
+        <div class="col-md-4 border-end">
+          <h6 class="text-muted">Total Approved Benefit</h6>
+          <h3 class="text-dark">₹ {{ totalApprovedBenefit | number: '1.2-2' }}</h3>
+          <small class="text-muted">Total allocated across all benefit entries</small>
+        </div>
+        <div class="col-md-4 border-end">
+          <h6 class="text-muted">Total Disbursed Amount</h6>
+          <h3 class="text-success">₹ {{ totalDisbursedAmount | number: '1.2-2' }}</h3>
+          <small class="text-muted">Money actually transferred to you</small>
+        </div>
+        <div class="col-md-4">
+          <h6 class="text-muted">Remaining Pending Amount</h6>
+          <h3 [ngClass]="remainingPendingAmount > 0 ? 'text-warning' : 'text-success'">
+            ₹ {{ remainingPendingAmount | number: '1.2-2' }}
+          </h3>
+          <small class="text-muted">Yet to be disbursed</small>
+        </div>
+      </div>
+      @if (totalApprovedBenefit > 0) {
+      <div class="mt-4">
+        <div class="d-flex justify-content-between mb-1">
+          <small class="fw-bold">Disbursement Progress</small>
+          <small>{{ getDisbursementPercentage() | number: '1.0-0' }}% Completed</small>
+        </div>
+        <div class="progress" style="height: 10px">
+          <div class="progress-bar bg-success" role="progressbar" [style.width.%]="getDisbursementPercentage()"
+            [attr.aria-valuenow]="getDisbursementPercentage()" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12 mb-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white fw-bold">
+          <i class="bi bi-award me-2 text-primary"></i>Benefit Allocation History
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <!-- <th>Benefit ID</th> -->
+                  <th>Date Approved</th>
+                  <th>Type</th>
+                  <th>Amount (₹)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (benefit of application.benefits; track benefit) {
+                <tr>
+                  <!-- <td>BEN-{{ benefit.benefitID }}</td> -->
+                  <td>{{ benefit.date | date: 'mediumDate' }}</td>
+                  <td>{{ benefit.type }}</td>
+                  <td class="fw-bold">₹ {{ benefit.amount | number: '1.2-2' }}</td>
+                  <td>
+                    <span class="badge bg-secondary">{{ benefit.status }}</span>
+                  </td>
+                </tr>
+                }
+                @if (!application.benefits || application.benefits.length === 0) {
+                <tr>
+                  <td colspan="5" class="text-center py-3 text-muted">
+                    No benefits allocated yet.
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
-    <div class="card shadow-sm border-0 mb-4 border-start border-4 border-primary">
-      <div class="card-body">
-        <h5 class="card-title text-primary mb-4">Financial Status</h5>
-        <div class="row text-center">
-          <div class="col-md-4 border-end">
-            <h6 class="text-muted">Total Approved Benefit</h6>
-            <h3 class="text-dark">₹ {{ totalApprovedBenefit | number: '1.2-2' }}</h3>
-            <small class="text-muted">Total allocated across all benefit entries</small>
-          </div>
-          <div class="col-md-4 border-end">
-            <h6 class="text-muted">Total Disbursed Amount</h6>
-            <h3 class="text-success">₹ {{ totalDisbursedAmount | number: '1.2-2' }}</h3>
-            <small class="text-muted">Money actually transferred to you</small>
-          </div>
-          <div class="col-md-4">
-            <h6 class="text-muted">Remaining Pending Amount</h6>
-            <h3 [ngClass]="remainingPendingAmount > 0 ? 'text-warning' : 'text-success'">
-              ₹ {{ remainingPendingAmount | number: '1.2-2' }}
-            </h3>
-            <small class="text-muted">Yet to be disbursed</small>
-          </div>
+    <div class="col-md-12">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white fw-bold">
+          <i class="bi bi-cash-stack me-2 text-success"></i>Disbursement Ledger
         </div>
-        @if (totalApprovedBenefit > 0) {
-          <div class="mt-4">
-            <div class="d-flex justify-content-between mb-1">
-              <small class="fw-bold">Disbursement Progress</small>
-              <small>{{ getDisbursementPercentage() | number: '1.0-0' }}% Completed</small>
-            </div>
-            <div class="progress" style="height: 10px">
-              <div
-                class="progress-bar bg-success"
-                role="progressbar"
-                [style.width.%]="getDisbursementPercentage()"
-                [attr.aria-valuenow]="getDisbursementPercentage()"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              ></div>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-12 mb-4">
-        <div class="card shadow-sm border-0">
-          <div class="card-header bg-white fw-bold">
-            <i class="bi bi-award me-2 text-primary"></i>Benefit Allocation History
-          </div>
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-hover mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <!-- <th>Benefit ID</th> -->
-                    <th>Date Approved</th>
-                    <th>Type</th>
-                    <th>Amount (₹)</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (benefit of application.benefits; track benefit) {
-                    <tr>
-                      <!-- <td>BEN-{{ benefit.benefitID }}</td> -->
-                      <td>{{ benefit.date | date: 'mediumDate' }}</td>
-                      <td>{{ benefit.type }}</td>
-                      <td class="fw-bold">₹ {{ benefit.amount | number: '1.2-2' }}</td>
-                      <td>
-                        <span class="badge bg-secondary">{{ benefit.status }}</span>
-                      </td>
-                    </tr>
-                  }
-                  @if (!application.benefits || application.benefits.length === 0) {
-                    <tr>
-                      <td colspan="5" class="text-center py-3 text-muted">
-                        No benefits allocated yet.
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-12">
-        <div class="card shadow-sm border-0">
-          <div class="card-header bg-white fw-bold">
-            <i class="bi bi-cash-stack me-2 text-success"></i>Disbursement Ledger
-          </div>
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-hover mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <!-- <th>Disbursement ID</th> -->
-                    <!-- <th>Linked Benefit ID</th> -->
-                    <th>Transfer Date</th>
-                    <th>Amount (₹)</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (disb of allDisbursements; track disb) {
-                    <tr>
-                      <!-- <td>DIS-{{ disb.disbursementID }}</td>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <!-- <th>Disbursement ID</th> -->
+                  <!-- <th>Linked Benefit ID</th> -->
+                  <th>Transfer Date</th>
+                  <th>Amount (₹)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (disb of allDisbursements; track disb) {
+                <tr>
+                  <!-- <td>DIS-{{ disb.disbursementID }}</td>
                       <td>
                         <span class="text-muted">BEN-{{ disb.benefitID }}</span>
                       </td> -->
-                      <td>{{ disb.date | date: 'mediumDate' }}</td>
-                      <td class="fw-bold text-success">₹ {{ disb.amount | number: '1.2-2' }}</td>
-                      <td>
-                        <span
-                          class="badge"
-                          [ngClass]="{
+                  <td>{{ disb.date | date: 'mediumDate' }}</td>
+                  <td class="fw-bold text-success">₹ {{ disb.amount | number: '1.2-2' }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="{
                             'bg-success':
                               disb.status === 'Completed' || disb.status === 'Disbursed',
-                            'bg-warning text-dark': disb.status === 'Disbursement Pending',
+                            'bg-warning text-dark': disb.status === 'Pending',
                             'bg-danger': disb.status === 'Failed',
-                          }"
-                          >{{ disb.status }}</span
-                        >
-                      </td>
-                    </tr>
-                  }
-                  @if (allDisbursements.length === 0) {
-                    <tr>
-                      <td colspan="5" class="text-center py-3 text-muted">
-                        No disbursements made yet.
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+                          }">{{ disb.status }}</span>
+                  </td>
+                </tr>
+                }
+                @if (allDisbursements.length === 0) {
+                <tr>
+                  <td colspan="5" class="text-center py-3 text-muted">
+                    No disbursements made yet.
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
+  </div>
   }
 </div>
