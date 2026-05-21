@@ -232,8 +232,12 @@ public class CitizenDocumentService : ICitizenDocumentService
 
         var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
         var istTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
+        var shortGuid = Guid.NewGuid().ToString("N").Substring(0, 8);
+        var extension = Path.GetExtension(file.FileName);
+        var uniqueFileName = $"{docType}_{istTime:yyyyMMddHHmmss}_{shortGuid}{extension}";
 
-        var uniqueFileName = $"{docType}_{istTime:yyyyMMddHHmmss}_{Guid.NewGuid()}_{file.FileName}";
+
+        //var uniqueFileName = $"{docType}_{istTime:yyyyMMddHHmmss}_{Guid.NewGuid()}{extension}";
         var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
         using (var fileStream = new FileStream(filePath, FileMode.Create))

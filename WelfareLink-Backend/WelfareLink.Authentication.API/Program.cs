@@ -22,7 +22,7 @@ try
         // Hide standard HttpClient logs so it doesn't spam when calling UserManagement
         .MinimumLevel.Override("System.Net.Http.HttpClient", Serilog.Events.LogEventLevel.Warning)
         .WriteTo.Console()
-        .WriteTo.File("logs/microservice-.txt", rollingInterval: RollingInterval.Day)
+        .WriteTo.File("logs/AuthenticationLogs-.txt", rollingInterval: RollingInterval.Day)
     );
 
     // Add services to the container
@@ -48,6 +48,7 @@ try
             ?? throw new InvalidOperationException("ApiSettings:UserManagement is not configured"));
         // Increase timeout and set headers for better compatibility
         client.Timeout = TimeSpan.FromSeconds(30);
+        //get the url from appsett(user) and fix a window time in HTTP to make a request with this API
     })
     .ConfigurePrimaryHttpMessageHandler(() =>
         new HttpClientHandler

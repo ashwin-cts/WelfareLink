@@ -284,11 +284,9 @@ namespace WelfareLink.WelfareOfficerManagement.API.Services
 
             if (totalResourceQuantity == 0)
             {
-
                 throw new BusinessValidationException(
                     $"Resource Unavailable: Programme '{program.Title}' has no resources allocated. " +
                     $"Please contact the Programme Manager to allocate resources before disbursing benefits.");
-
             }
 
             // Sum completed disbursements across ALL benefits for this program (excluding current record when updating)
@@ -322,7 +320,10 @@ namespace WelfareLink.WelfareOfficerManagement.API.Services
 
             await ValidateBenefitIdAsync(disbursement.BenefitID);
             await ValidateAmountAsync(disbursement);
-            ValidateDate(disbursement.Date);
+
+            // This is now awaited and passes the entire object to allow benefit lookup
+            await ValidateDateAsync(disbursement);
+
             ValidateStatus(disbursement.Status);
 
             // CitizenID and OfficerID are required only when status is "Completed"
@@ -419,21 +420,31 @@ namespace WelfareLink.WelfareOfficerManagement.API.Services
             }
         }
 
-        private void ValidateDate(DateTime date)
+        // Renamed to Async and takes the entire disbursement object
+        private async Task ValidateDateAsync(Disbursement disbursement)
         {
-            if (date == default)
+            if (disbursement.Date == default)
             {
                 throw new BadRequestException("Date is required.");
             }
 
-            if (date > DateTime.Today)
+            if (disbursement.Date > DateTime.Today)
             {
                 throw new BadRequestException("Disbursement date cannot be in the future.");
             }
 
-            if (date < DateTime.Today)
+            if (disbursement.Date < DateTime.Today)
             {
-                throw new BadRequestException("Disbursement date cannot be in past.");
+                throw new BadRequestException("Disbursement date cannot be in the past.");
+            }
+
+            // Fetch the associated benefit
+            var benefit = await _benefitRepository.GetByIdAsync(disbursement.BenefitID);
+
+            
+            if (benefit != null && benefit.Date > DateTime.Today)
+            {
+                throw new BusinessValidationException("Cannot process disbursement: The associated benefit is scheduled for a future date.");
             }
         }
 
@@ -448,7 +459,6 @@ namespace WelfareLink.WelfareOfficerManagement.API.Services
             {
                 throw new BadRequestException($"Invalid status. Valid statuses are: {string.Join(", ", _validStatuses)}");
             }
-
         }
 
         private async Task ValidateEligibilityCheckAsync(int applicationId)

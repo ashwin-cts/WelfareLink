@@ -49,7 +49,7 @@ namespace WelfareLink.Authentication.API.Configuration
                     ClockSkew = TimeSpan.Zero
                 };
 
-                // Handle authorization failure (CRASH-PROOF IMPLEMENTATION)
+                // Handle authorization failure 
                 options.Events = new JwtBearerEvents
                 {
                     OnChallenge = async context =>
@@ -88,7 +88,7 @@ namespace WelfareLink.Authentication.API.Configuration
                 };
             });
 
-            // ✅ THIS IS THE FIX! We removed the strict Fallback Policy.
+            
             services.AddAuthorization();
 
             return services;
@@ -100,6 +100,7 @@ namespace WelfareLink.Authentication.API.Configuration
         /// </summary>
         public static WebApplication UseJwtAuthenticationAndAuthorization(this WebApplication app)
         {
+            //after app.build insert this method for HTTP pipeline
             app.UseAuthentication();
             app.UseAuthorization();
             return app;
