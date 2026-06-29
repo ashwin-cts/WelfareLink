@@ -71,7 +71,7 @@ namespace WelfareLink.CitizenManagement.API.Middleware
                 case StatusCodes.Status404NotFound:
                     title = "Resource not found";
                     break;
-                case StatusCodes.Status422UnprocessableEntity: // ADDED MISSING TITLE HERE
+                case StatusCodes.Status422UnprocessableEntity: 
                     title = "Business Validation Failed";
                     break;
                 case StatusCodes.Status500InternalServerError:

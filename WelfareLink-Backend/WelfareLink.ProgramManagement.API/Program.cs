@@ -50,7 +50,7 @@ namespace WelfareLink.ProgramManagement.API
                             });
                     });
 
-                // 2. ADDED THIS: Register your global exception handler in the DI container
+                // 2. Register your global exception handler in the DI container
                 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
                 // Explicitly configure the Host logger to filter out the noise and write to File/Console
                 builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -79,7 +79,7 @@ namespace WelfareLink.ProgramManagement.API
                 builder.Services.AddScoped<IComplainceRecordRepository, ComplainceRecordRepository>();
                 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
-                // Service registrations
+                
                 builder.Services.AddScoped<IUserService, UserService>();
                 builder.Services.AddScoped<IComplianceCheckService, ComplianceCheckService>();
                 builder.Services.AddScoped<ICitizenService, CitizenService>();
