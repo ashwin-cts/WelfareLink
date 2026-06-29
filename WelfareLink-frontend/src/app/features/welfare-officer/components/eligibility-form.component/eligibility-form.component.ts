@@ -110,7 +110,7 @@ export class EligibilityFormComponent implements OnInit {
           );
 
           // Use filtered docs if we found any, otherwise fallback to all (last resort)
-          rawDocs = filteredDocs.length > 0 ? filteredDocs : data.documents;
+          // rawDocs = filteredDocs.length > 0 ? filteredDocs : data.documents;
         }
 
         // 2. Normalize all the C# properties so the HTML template can easily read them!
